@@ -418,9 +418,8 @@ public class AuthController : ControllerBase
         return Ok(new { Exito = true, Mensaje = "Contraseña actualizada correctamente", Cambiada = true });
     }
 
-    // New login endpoint
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    [HttpPost("login-app")]
+    public async Task<IActionResult> Login_app([FromBody] LoginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Documento) || string.IsNullOrWhiteSpace(request.Password))
             return BadRequest(new { Exito = false, Mensaje = "Documento y contraseña son obligatorios." });
@@ -551,5 +550,142 @@ public class AuthController : ControllerBase
                         IdPersona = user.IdPersona, 
                         bTemporal = user.BContrasenaTemporal == true,
                         IdRol = idRol });
+    }
+
+    [HttpPost("login-web")]
+    public async Task<IActionResult> Login_web([FromBody] LoginRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Documento) || string.IsNullOrWhiteSpace(request.Password))
+            return BadRequest(new { Exito = false, Mensaje = "Documento y contraseña son obligatorios." });
+
+        var documentoRaw = request.Documento.Trim();
+
+        // Try exact match first
+        var user = await _context.UsuarioLogins.FirstOrDefaultAsync(u => u.CDocumento == documentoRaw);
+        if (user == null)
+        {
+            var normalizedInput = documentoRaw.Replace("-", string.Empty).Replace(" ", string.Empty).ToLower();
+            user = await _context.UsuarioLogins.FirstOrDefaultAsync(u => (u.CDocumento ?? string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty).ToLower() == normalizedInput);
+        }
+
+        if (user == null)
+            return Unauthorized(new { Exito = false, Mensaje = "Usuario o contraseña inválidos." });
+
+        if (user.Bloqueado == 1)
+            return BadRequest(new { Exito = false, Mensaje = "Usuario bloqueado." });
+
+        // Verify password
+        if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+        {
+            user.IntentosFallidos = (user.IntentosFallidos ?? 0) + 1;
+
+            if (user.IntentosFallidos >= 3)
+            {
+                user.Bloqueado = 1;
+                user.FechaBloqueo = int.Parse(DateTime.UtcNow.ToString("yyyyMMdd"));
+
+                await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
+                {
+                    IdUsuario = user.IdUsuario,
+                    IdPersona = user.IdPersona,
+                    Usuario = user.CDocumento,
+                    Exito = false,
+                    FechaAttempt = DateTime.UtcNow,
+                    Ip = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    UserAgent = Request.Headers["User-Agent"].ToString(),
+                    IntentosFallidos = user.IntentosFallidos,
+                    Bloqueado = true,
+                    FechaBloqueo = DateTime.UtcNow,
+                    MotivoBloqueo = "Tres intentos fallidos",
+                    Observacion = "Cuenta bloqueada por intentos fallidos en login"
+                });
+            }
+
+            _context.UsuarioLogins.Update(user);
+            await _context.SaveChangesAsync();
+
+            return Unauthorized(new { Exito = false, Mensaje = "Usuario o contraseña inválidos." });
+        }
+
+        // Successful authentication
+        user.IntentosFallidos = 0;
+        user.UltimoLogin = DateTime.UtcNow;
+        _context.UsuarioLogins.Update(user);
+
+        // create claims including roles
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.CDocumento),
+            new Claim("IdPersona", user.IdPersona.ToString())
+        };
+
+        var rolesData = await _context.UsuarioRoles.Where(ur => ur.IdUsuario == user.IdUsuario).Include(ur => ur.IdRolNavigation).Select(ur => new { ur.IdRol, ur.IdRolNavigation.Nombre }).ToListAsync();
+        var roles = rolesData.Select(r => r.Nombre).ToList();
+        var idRol = rolesData.Select(r => r.IdRol).FirstOrDefault();
+        // Only allow login for users with role 'Usuario' or 'Usuario estándar'
+        var allowedRoles = new[] { "Oficial-credito", "Oficial-desembolso", "Admin", "Tecnologia" };
+
+        var hasAllowedRole = roles != null && roles.Any(r => allowedRoles.Contains(r));
+        if (!hasAllowedRole)
+        {
+            // Audit denied login due to missing allowed role
+            await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
+            {
+                IdUsuario = user.IdUsuario,
+                IdPersona = user.IdPersona,
+                Usuario = user.CDocumento,
+                Exito = false,
+                FechaAttempt = DateTime.UtcNow,
+                Ip = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                UserAgent = Request.Headers["User-Agent"].ToString(),
+                IntentosFallidos = user.IntentosFallidos,
+                Bloqueado = false,
+                Observacion = "Intento de login rechazado: rol no permitido"
+            });
+            await _context.SaveChangesAsync();
+
+            // Return a clear unauthorized message when the user has no allowed role
+            return Unauthorized(new { Exito = false, Mensaje = "Usuario no tiene rol asignado o rol no permitido." });
+        }
+
+        var jwtKey = _config["Jwt:Key"] ?? "ChangeThisSecretInProduction_ReplaceMeWithStrongKey";
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: null,
+            audience: null,
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(4),
+            signingCredentials: creds);
+
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+        // audit success
+        await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
+        {
+            IdUsuario = user.IdUsuario,
+            IdPersona = user.IdPersona,
+            Usuario = user.CDocumento,
+            Exito = true,
+            FechaAttempt = DateTime.UtcNow,
+            Ip = HttpContext.Connection.RemoteIpAddress?.ToString(),
+            UserAgent = Request.Headers["User-Agent"].ToString(),
+            IntentosFallidos = user.IntentosFallidos,
+            Bloqueado = false,
+            Observacion = "Login exitoso"
+        });
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            Exito = true,
+            Mensaje = "Autenticación exitosa",
+            Token = tokenString,
+            IdPersona = user.IdPersona,
+            bTemporal = user.BContrasenaTemporal == true,
+            IdRol = idRol
+        });
     }
 }
