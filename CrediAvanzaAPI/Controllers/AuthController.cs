@@ -2,7 +2,7 @@ using CrediAvanzaAPI.Models;
 using CrediAvanzaAPI.Application.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using CrediAvanzaAPI.Services;
+using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using BCrypt.Net;
 using System.Security.Claims;

@@ -1,7 +1,7 @@
 using CrediAvanzaAPI.Models;
 using CrediAvanzaAPI.Application.Requests;
 using CrediAvanzaAPI.Application.DTOs;
-using CrediAvanzaAPI.Services;
+using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

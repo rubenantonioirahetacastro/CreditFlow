@@ -2,7 +2,7 @@ using CrediAvanzaAPI.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Interfaces
 {
     public interface IMantenimientoService
     {

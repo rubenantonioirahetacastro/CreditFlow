@@ -1,3 +1,4 @@
+using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using System;
 using System.IO;

@@ -1,4 +1,5 @@
 ﻿using CrediAvanzaAPI.Models;
+using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CrediAvanzaAPI.Services

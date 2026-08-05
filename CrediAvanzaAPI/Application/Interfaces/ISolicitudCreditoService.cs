@@ -1,6 +1,6 @@
 ﻿using CrediAvanzaAPI.Models;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Interfaces
 {
     public interface ISolicitudCreditoService
     {

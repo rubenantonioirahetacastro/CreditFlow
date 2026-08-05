@@ -1,3 +1,4 @@
+using CrediAvanzaAPI.Application.Interfaces;
 using CrediAvanzaAPI.Models;
 using CrediAvanzaAPI.Application.Requests;
 using CrediAvanzaAPI.Shared.Helpers;

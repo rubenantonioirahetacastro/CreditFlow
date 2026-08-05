@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;

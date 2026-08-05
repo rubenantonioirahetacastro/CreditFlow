@@ -1,7 +1,7 @@
 using CrediAvanzaAPI.Application.Requests;
 using CrediAvanzaAPI.Application.DTOs;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Interfaces
 {
     public interface ISimulacionCalendarioService
     {

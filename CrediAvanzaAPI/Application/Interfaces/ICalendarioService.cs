@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using CrediAvanzaAPI.Models;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Interfaces
 {
     public interface ICalendarioService
     {

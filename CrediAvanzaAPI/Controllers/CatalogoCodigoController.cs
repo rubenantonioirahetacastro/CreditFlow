@@ -1,4 +1,4 @@
-﻿using CrediAvanzaAPI.Services;
+﻿using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

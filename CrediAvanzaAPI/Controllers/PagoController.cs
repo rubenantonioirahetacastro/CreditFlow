@@ -1,5 +1,5 @@
 using CrediAvanzaAPI.Application.Requests;
-using CrediAvanzaAPI.Services;
+using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;

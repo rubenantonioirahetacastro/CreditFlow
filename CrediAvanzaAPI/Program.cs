@@ -1,6 +1,7 @@
 using CrediAvanzaAPI.Shared.Helpers;
 using CrediAvanzaAPI.Models;
 using CrediAvanzaAPI.Services;
+using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;

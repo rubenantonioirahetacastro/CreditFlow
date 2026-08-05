@@ -1,6 +1,6 @@
 ﻿using CrediAvanzaAPI.Models;
 using CrediAvanzaAPI.Application.Requests;
-using CrediAvanzaAPI.Services;
+using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;

@@ -1,6 +1,6 @@
 ﻿using CrediAvanzaAPI.Application.Requests;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Interfaces
 {
     public interface IGastoService
     {

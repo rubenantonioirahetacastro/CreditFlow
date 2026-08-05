@@ -1,4 +1,5 @@
 ﻿using CrediAvanzaAPI.Shared.Helpers;
+using CrediAvanzaAPI.Application.Interfaces;
 using CrediAvanzaAPI.Models;
 using Microsoft.EntityFrameworkCore;
 

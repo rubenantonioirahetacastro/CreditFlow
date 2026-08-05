@@ -1,4 +1,4 @@
-﻿namespace CrediAvanzaAPI.Services
+﻿namespace CrediAvanzaAPI.Application.Interfaces
 {
     public interface ILineaCreditoAdminService
     {
