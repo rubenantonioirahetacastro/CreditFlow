@@ -1,26 +1,26 @@
-# Arquitectura de CrediAvanzaAPI
+# Arquitectura de CreditFlow.API
 
 Este documento resume la migración de la estructura del proyecto hacia una organización por capas (Domain / Application / Infrastructure / Shared), realizada en la rama `clean-architecture-v1` a partir de `main`, en 8 bloques de trabajo incrementales y commits separados.
 
 ## Estructura final de carpetas
 
 ```
-CrediAvanzaAPI/
+CreditFlow.API/
 ├── Controllers/                    (13 archivos) — capa de presentación, sin mover
 ├── Domain/
-│   └── Entities/                   (41 archivos) — entidades EF Core (namespace CrediAvanzaAPI.Domain.Entities)
+│   └── Entities/                   (41 archivos) — entidades EF Core (namespace CreditFlow.API.Domain.Entities)
 ├── Application/
-│   ├── Requests/                   (12 archivos) — DTOs de entrada de los endpoints (namespace CrediAvanzaAPI.Application.Requests)
-│   ├── DTOs/                       (4 archivos, 6 clases) — DTOs de salida de los endpoints (namespace CrediAvanzaAPI.Application.DTOs)
-│   ├── Interfaces/                 (13 archivos) — contratos de servicios de negocio y puertos técnicos (namespace CrediAvanzaAPI.Application.Interfaces)
-│   └── Services/                   (11 archivos) — implementación de la lógica de negocio (namespace CrediAvanzaAPI.Application.Services)
+│   ├── Requests/                   (12 archivos) — DTOs de entrada de los endpoints (namespace CreditFlow.API.Application.Requests)
+│   ├── DTOs/                       (4 archivos, 6 clases) — DTOs de salida de los endpoints (namespace CreditFlow.API.Application.DTOs)
+│   ├── Interfaces/                 (13 archivos) — contratos de servicios de negocio y puertos técnicos (namespace CreditFlow.API.Application.Interfaces)
+│   └── Services/                   (11 archivos) — implementación de la lógica de negocio (namespace CreditFlow.API.Application.Services)
 ├── Infrastructure/
-│   ├── Services/                   (3 archivos) — implementaciones técnicas: Azure/Local Blob Storage, SMTP (namespace CrediAvanzaAPI.Infrastructure.Services)
+│   ├── Services/                   (3 archivos) — implementaciones técnicas: Azure/Local Blob Storage, SMTP (namespace CreditFlow.API.Infrastructure.Services)
 │   └── Data/
-│       ├── DbNegocioContext.cs     — DbContext de EF Core (namespace CrediAvanzaAPI.Infrastructure.Data)
-│       └── Migrations/             (5 archivos) — historial de migraciones EF Core (namespace CrediAvanzaAPI.Infrastructure.Data.Migrations)
+│       ├── DbNegocioContext.cs     — DbContext de EF Core (namespace CreditFlow.API.Infrastructure.Data)
+│       └── Migrations/             (5 archivos) — historial de migraciones EF Core (namespace CreditFlow.API.Infrastructure.Data.Migrations)
 ├── Shared/
-│   └── Helpers/                    (6 archivos) — utilidades transversales (namespace CrediAvanzaAPI.Shared.Helpers)
+│   └── Helpers/                    (6 archivos) — utilidades transversales (namespace CreditFlow.API.Shared.Helpers)
 ├── Mappings/                       — extensiones de mapeo entidad↔DTO
 └── Program.cs                      — composición raíz y registro de DI
 ```
@@ -29,7 +29,7 @@ CrediAvanzaAPI/
 
 ## Decisión de acoplamiento pragmático: Application depende directamente de EF Core
 
-En una clean architecture estricta, la capa Application no debería conocer el ORM: accedería a los datos a través de interfaces de repositorio definidas por Application e implementadas por Infrastructure. En este proyecto **no se introdujo esa capa de repositorios**. Las clases en `Application/Services/` inyectan y usan `DbNegocioContext` (de `Infrastructure.Data`) directamente vía `using CrediAvanzaAPI.Infrastructure.Data;`.
+En una clean architecture estricta, la capa Application no debería conocer el ORM: accedería a los datos a través de interfaces de repositorio definidas por Application e implementadas por Infrastructure. En este proyecto **no se introdujo esa capa de repositorios**. Las clases en `Application/Services/` inyectan y usan `DbNegocioContext` (de `Infrastructure.Data`) directamente vía `using CreditFlow.API.Infrastructure.Data;`.
 
 Esto es una decisión pragmática, no un descuido:
 
@@ -39,11 +39,11 @@ Esto es una decisión pragmática, no un descuido:
 
 ## Namespaces vs. ubicación física
 
-Cada carpeta declara el namespace que corresponde a su ruta (p. ej. `Domain/Entities/*.cs` → `CrediAvanzaAPI.Domain.Entities`). Esto se corrigió explícitamente en los bloques 6 y 7, luego de detectar que un movimiento físico de archivos no había ido acompañado del cambio de `namespace` declarado dentro de cada archivo. Se verificó de punta a punta que no queda ningún rastro (declaración, `using`, ni referencia fully-qualified) de los namespaces viejos: `CrediAvanzaAPI.Models`, `CrediAvanzaAPI.Services`, `CrediAvanzaAPI.Migrations`, `CrediAvanzaAPI.Request`, `CrediAvanzaAPI.Response`, `CrediAvanzaAPI.Helpers`. La carpeta `Dto/` nunca existió en este árbol de trabajo (se descartó por búsqueda exhaustiva durante el bloque 5).
+Cada carpeta declara el namespace que corresponde a su ruta (p. ej. `Domain/Entities/*.cs` → `CreditFlow.API.Domain.Entities`). Esto se corrigió explícitamente en los bloques 6 y 7, luego de detectar que un movimiento físico de archivos no había ido acompañado del cambio de `namespace` declarado dentro de cada archivo. Se verificó de punta a punta que no queda ningún rastro (declaración, `using`, ni referencia fully-qualified) de los namespaces viejos: `CreditFlow.API.Models`, `CreditFlow.API.Services`, `CreditFlow.API.Migrations`, `CreditFlow.API.Request`, `CreditFlow.API.Response`, `CreditFlow.API.Helpers`. La carpeta `Dto/` nunca existió en este árbol de trabajo (se descartó por búsqueda exhaustiva durante el bloque 5).
 
 ## ILineaCreditoAdminService — código muerto conocido
 
-`Application/Interfaces/ILineaCreditoAdminService.cs` es una interfaz vacía (`public interface ILineaCreditoAdminService { }`), sin ninguna clase que la implemente, sin ninguna referencia en `Program.cs` ni en ningún consumidor del proyecto. Se confirmó por búsqueda exhaustiva en todo el repositorio (no solo `CrediAvanzaAPI/`).
+`Application/Interfaces/ILineaCreditoAdminService.cs` es una interfaz vacía (`public interface ILineaCreditoAdminService { }`), sin ninguna clase que la implemente, sin ninguna referencia en `Program.cs` ni en ningún consumidor del proyecto. Se confirmó por búsqueda exhaustiva en todo el repositorio (no solo `CreditFlow.API/`).
 
 **Recomendación:** eliminarla en una tarea aparte, con su propio commit dedicado (p. ej. "chore: eliminar ILineaCreditoAdminService sin uso"), fuera de esta migración estructural. Se mantuvo movida (no eliminada) durante los bloques 6-8 por decisión explícita, para no mezclar una decisión de limpieza de código con el trabajo de reorganización de carpetas/namespaces.
 
@@ -77,4 +77,4 @@ Causa probable: en algún punto se corrió `Scaffold-DbContext ... -Force` contr
 
 Cada commit se validó con `dotnet build` limpio (0 errores) antes de continuar al siguiente. El historial de migraciones de EF Core (`dotnet ef migrations list`) se validó al final de los bloques 7 y 8, confirmando que ambas migraciones (`20260324223508_InitialCreate`, `20260713232410_SincronizarModelo`) siguen siendo reconocidas correctamente.
 
-No hay proyectos de test en la solución (`CrediAvanzaAPI.sln` contiene un único proyecto); `dotnet test` no tiene nada que ejecutar.
+No hay proyectos de test en la solución (`CreditFlow.sln` contiene un único proyecto); `dotnet test` no tiene nada que ejecutar.
