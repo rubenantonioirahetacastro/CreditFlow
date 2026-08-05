@@ -1,4 +1,4 @@
-namespace CrediAvanzaAPI.Request
+namespace CrediAvanzaAPI.Application.Requests
 {
     public class LoginRequest
     {

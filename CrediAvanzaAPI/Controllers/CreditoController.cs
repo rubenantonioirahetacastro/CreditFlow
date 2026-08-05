@@ -1,6 +1,6 @@
 using CrediAvanzaAPI.Models;
-using CrediAvanzaAPI.Request;
-using CrediAvanzaAPI.Response;
+using CrediAvanzaAPI.Application.Requests;
+using CrediAvanzaAPI.Application.DTOs;
 using CrediAvanzaAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -49,7 +49,7 @@ namespace CrediAvanzaAPI.Controllers
                                    from cat in cats.DefaultIfEmpty()
                                    join catsub in _context.CatalogoCodigos on new { codigo = 109, valor = (int?)c.NSubProd } equals new { codigo = catsub.NCodigo, valor = (int?)catsub.NValor } into catsubs
                                    from catsub in catsubs.DefaultIfEmpty()
-                                   select new CrediAvanzaAPI.Response.CreditoListadoResponse
+                                   select new CrediAvanzaAPI.Application.DTOs.CreditoListadoResponse
                                    {
                                        NCodCred = c.NCodCred,
                                        NCodAge = c.NCodAge,

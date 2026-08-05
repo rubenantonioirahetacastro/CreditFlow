@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using CrediAvanzaAPI.Models;
 using Microsoft.EntityFrameworkCore;
-using CrediAvanzaAPI.Request;
+using CrediAvanzaAPI.Application.Requests;
 using Microsoft.AspNetCore.Authorization;
 
 namespace CrediAvanzaAPI.Controllers;

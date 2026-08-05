@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace CrediAvanzaAPI.Response
+namespace CrediAvanzaAPI.Application.DTOs
 {
     public class SimularCalendarioResponse
     {

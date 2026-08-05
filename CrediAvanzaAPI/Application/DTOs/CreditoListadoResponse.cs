@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace CrediAvanzaAPI.Response
+namespace CrediAvanzaAPI.Application.DTOs
 {
     public class CreditoListadoResponse
     {

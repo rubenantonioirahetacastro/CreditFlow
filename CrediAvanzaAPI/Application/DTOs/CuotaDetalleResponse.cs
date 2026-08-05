@@ -1,4 +1,4 @@
-namespace CrediAvanzaAPI.Response
+namespace CrediAvanzaAPI.Application.DTOs
 {
     public class CuotaDetalleResponse
     {

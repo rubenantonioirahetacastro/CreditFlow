@@ -1,7 +1,7 @@
 using CrediAvanzaAPI.Shared.Helpers;
 using CrediAvanzaAPI.Models;
-using CrediAvanzaAPI.Request;
-using CrediAvanzaAPI.Response;
+using CrediAvanzaAPI.Application.Requests;
+using CrediAvanzaAPI.Application.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace CrediAvanzaAPI.Services

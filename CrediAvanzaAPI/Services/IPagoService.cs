@@ -1,5 +1,5 @@
 using CrediAvanzaAPI.Models;
-using CrediAvanzaAPI.Request;
+using CrediAvanzaAPI.Application.Requests;
 
 namespace CrediAvanzaAPI.Services
 {

@@ -1,5 +1,5 @@
 using CrediAvanzaAPI.Models;
-using CrediAvanzaAPI.Request;
+using CrediAvanzaAPI.Application.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using CrediAvanzaAPI.Services;
@@ -56,7 +56,7 @@ public class AuthController : ControllerBase
     // if EnviarCorreo = true. The system does not store passwords in reversible form; stored Password is a BCrypt hash.
     //[Authorize(Roles = "Admin")]
     [HttpPost("reveal-password")]
-    public async Task<IActionResult> RevealPassword([FromBody] Request.GenerateTempPasswordRequest request)
+    public async Task<IActionResult> RevealPassword([FromBody] GenerateTempPasswordRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Usuario))
             return BadRequest(new { Exito = false, Mensaje = "Usuario es requerido" });
@@ -125,7 +125,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePassword([FromBody] Request.ChangePasswordRequest request)
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Usuario) || string.IsNullOrWhiteSpace(request.ContrasenaActual) || string.IsNullOrWhiteSpace(request.ContrasenaNueva))
             return BadRequest(new { Exito = false, Mensaje = "Usuario, ContraseñaActual y ContraseñaNueva son obligatorios." });
@@ -202,7 +202,7 @@ public class AuthController : ControllerBase
 
     // POST: api/auth/unlock
     [HttpPost("unlock")]
-    public async Task<IActionResult> UnlockUser([FromBody] Request.UnlockUserRequest request)
+    public async Task<IActionResult> UnlockUser([FromBody] UnlockUserRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Usuario))
             return BadRequest(new { Exito = false, Mensaje = "Usuario es requerido" });
@@ -242,7 +242,7 @@ public class AuthController : ControllerBase
     // Solicita un token de desbloqueo para usuarios con rol Usuario y lo envía al correo registrado.
     [HttpPost("request-unlock-app")]
     [AllowAnonymous]
-    public async Task<IActionResult> RequestUnlockFromApp([FromBody] Request.UnlockAppRequest request)
+    public async Task<IActionResult> RequestUnlockFromApp([FromBody] UnlockAppRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Usuario))
             return BadRequest(new { Exito = false, Mensaje = "Usuario es requerido" });
@@ -305,7 +305,7 @@ public class AuthController : ControllerBase
     // Confirma el desbloqueo usando el token enviado por correo.
     [HttpPost("confirm-unlock-app")]
     [AllowAnonymous]
-    public async Task<IActionResult> ConfirmUnlockFromApp([FromBody] Request.ConfirmUnlockAppRequest request)
+    public async Task<IActionResult> ConfirmUnlockFromApp([FromBody] ConfirmUnlockAppRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Usuario) || string.IsNullOrWhiteSpace(request.Token))
             return BadRequest(new { Exito = false, Mensaje = "Usuario y Token son obligatorios" });
@@ -374,7 +374,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("change-temp-password")]
-    public async Task<IActionResult> ChangeTempPassword([FromBody] Request.ChangeTempPasswordRequest request)
+    public async Task<IActionResult> ChangeTempPassword([FromBody] ChangeTempPasswordRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Usuario) || string.IsNullOrWhiteSpace(request.ContrasenaNueva))
             return BadRequest(new { Exito = false, Mensaje = "Usuario y ContraseñaNueva son obligatorios." });
