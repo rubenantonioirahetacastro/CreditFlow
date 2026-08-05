@@ -2,7 +2,7 @@
 using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Services
 {
     public class FeriadoService(DbNegocioContext context) : IFeriadoService
     {

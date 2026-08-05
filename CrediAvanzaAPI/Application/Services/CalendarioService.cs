@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 using CrediAvanzaAPI.Shared.Helpers;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Services
 {
     public class CalendarioService : ICalendarioService
     {

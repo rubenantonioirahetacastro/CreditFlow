@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Services
 {
     public class MantenimientoService : IMantenimientoService
     {

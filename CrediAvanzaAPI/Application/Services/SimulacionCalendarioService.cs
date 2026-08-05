@@ -5,7 +5,7 @@ using CrediAvanzaAPI.Application.Requests;
 using CrediAvanzaAPI.Application.DTOs;
 using Microsoft.EntityFrameworkCore;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Services
 {
     public class SimulacionCalendarioService : ISimulacionCalendarioService
     {

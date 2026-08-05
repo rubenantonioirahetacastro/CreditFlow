@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Crypto.Generators;
 using BCrypt.Net;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Services
 {
     public class SolicitudCreditoService(
         DbNegocioContext context,

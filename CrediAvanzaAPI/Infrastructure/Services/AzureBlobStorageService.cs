@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Infrastructure.Services
 {
     public class AzureBlobStorageService : IBlobStorageService
     {

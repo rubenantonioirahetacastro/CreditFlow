@@ -3,7 +3,7 @@ using CrediAvanzaAPI.Application.Interfaces;
 using CrediAvanzaAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Application.Services
 {
     public class SegmentoUsuraService : ISegmentoUsuraService
     {

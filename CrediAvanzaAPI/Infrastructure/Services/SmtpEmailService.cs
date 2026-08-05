@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;
 
-namespace CrediAvanzaAPI.Services
+namespace CrediAvanzaAPI.Infrastructure.Services
 {
     public class SmtpEmailService : IEmailService
     {
