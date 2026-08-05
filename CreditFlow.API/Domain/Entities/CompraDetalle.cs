@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace CreditFlow.API.Domain.Entities;
+
+public partial class CompraDetalle
+{
+    public int IdCompraDetalle { get; set; }
+
+    public int IdCompra { get; set; }
+
+    public string CProducto { get; set; } = null!;
+
+    public int NCantidadCompra { get; set; }
+
+    public int NUnidadMedida { get; set; }
+
+    public decimal NPrecioXunidad { get; set; }
+
+    public decimal NPrecioTotal { get; set; }
+}

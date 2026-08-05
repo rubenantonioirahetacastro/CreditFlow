@@ -1,0 +1,891 @@
+﻿using System;
+using System.Collections.Generic;
+using CreditFlow.API.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace CreditFlow.API.Infrastructure.Data;
+
+public partial class DbNegocioContext : DbContext
+{
+    public DbNegocioContext()
+    {
+    }
+
+    public DbNegocioContext(DbContextOptions<DbNegocioContext> options)
+        : base(options)
+    {
+    }
+
+    public virtual DbSet<Agencia> Agencias { get; set; }
+
+    public virtual DbSet<CapacidadPago> CapacidadPagos { get; set; }
+
+    public virtual DbSet<CatSegmentoUsura> CatSegmentoUsuras { get; set; }
+
+    public virtual DbSet<CatalogoCodigo> CatalogoCodigos { get; set; }
+
+    public virtual DbSet<Compra> Compras { get; set; }
+
+    public virtual DbSet<Conyuge> Conyuges { get; set; }
+
+    public virtual DbSet<CredCalenGasto> CredCalenGastos { get; set; }
+
+    public virtual DbSet<CredCalendCond> CredCalendConds { get; set; }
+
+    public virtual DbSet<CredCalendario> CredCalendarios { get; set; }
+
+    public virtual DbSet<CredCambioGasto> CredCambioGastos { get; set; }
+
+    public virtual DbSet<CredFeriado> CredFeriados { get; set; }
+
+    public virtual DbSet<CredFeriadoAge> CredFeriadoAges { get; set; }
+
+    public virtual DbSet<CredGasto> CredGastos { get; set; }
+
+    public virtual DbSet<CredLineaCredito> CredLineaCreditos { get; set; }
+
+    public virtual DbSet<Credito> Creditos { get; set; }
+
+    public virtual DbSet<Departamento> Departamentos { get; set; }
+
+    public virtual DbSet<Documentacion> Documentacions { get; set; }
+
+    public virtual DbSet<Fiador> Fiadors { get; set; }
+
+    public virtual DbSet<FotoDocumentacion> FotoDocumentacions { get; set; }
+
+    public virtual DbSet<FotoId> FotoIds { get; set; }
+
+    public virtual DbSet<FotoNegocio> FotoNegocios { get; set; }
+
+    public virtual DbSet<GarantiaFoto> GarantiaFotos { get; set; }
+
+    public virtual DbSet<Garantium> Garantia { get; set; }
+
+    public virtual DbSet<LineaCatalogoAuxiliar> LineaCatalogoAuxiliars { get; set; }
+
+    public virtual DbSet<LogErrore> LogErrores { get; set; }
+
+    public virtual DbSet<Municipio> Municipios { get; set; }
+
+    public virtual DbSet<Negocio> Negocios { get; set; }
+
+    public virtual DbSet<PasswordChangeAudit> PasswordChangeAudits { get; set; }
+
+    public virtual DbSet<Persona> Personas { get; set; }
+
+    public virtual DbSet<Role> Roles { get; set; }
+
+    public virtual DbSet<SalarioMinimoVigente> SalarioMinimoVigentes { get; set; }
+
+    public virtual DbSet<TasaMaximaBcr> TasaMaximaBcrs { get; set; }
+
+    public virtual DbSet<UsuarioLogin> UsuarioLogins { get; set; }
+
+    public virtual DbSet<UsuarioRole> UsuarioRoles { get; set; }
+
+    public virtual DbSet<Venta> Ventas { get; set; }
+
+    public virtual DbSet<VerNegocio> VerNegocios { get; set; }
+    public virtual DbSet<Mantenimiento> Mantenimientos { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Agencia>(entity =>
+        {
+            entity.HasKey(e => e.NCodAge).HasName("PK__Agencias__771BAD3EF24D8FB8");
+
+            entity.Property(e => e.NCodAge)
+                .ValueGeneratedNever()
+                .HasColumnName("nCodAge");
+            entity.Property(e => e.CCorreoElectronico)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("cCorreoELectronico");
+            entity.Property(e => e.CDirecAge)
+                .HasMaxLength(200)
+                .IsUnicode(false)
+                .HasColumnName("cDirecAge");
+            entity.Property(e => e.CNomAge)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("cNomAge");
+            entity.Property(e => e.CTelefAge)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("cTelefAge");
+        });
+
+        modelBuilder.Entity<CapacidadPago>(entity =>
+        {
+            entity.HasKey(e => e.IdCapacidadPago);
+
+            entity.ToTable("CapacidadPago");
+
+            entity.Property(e => e.DGastosAlimentacion)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("dGastosAlimentacion");
+            entity.Property(e => e.DGastosEducacion)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("dGastosEducacion");
+            entity.Property(e => e.DGastosSalud)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("dGastosSalud");
+            entity.Property(e => e.DOtrosGastos)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("dOtrosGastos");
+            entity.Property(e => e.DOtrosIngresos)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("dOtrosIngresos");
+        });
+
+        modelBuilder.Entity<CatSegmentoUsura>(entity =>
+        {
+            entity.HasKey(e => e.NCodSegmento).HasName("PK__CatSegme__70B6321C501B9212");
+
+            entity.ToTable("CatSegmentoUsura");
+
+            entity.Property(e => e.NCodSegmento)
+                .ValueGeneratedNever()
+                .HasColumnName("nCodSegmento");
+            entity.Property(e => e.BEstado)
+                .HasDefaultValue(true)
+                .HasColumnName("bEstado");
+            entity.Property(e => e.CDescripcion)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("cDescripcion");
+            entity.Property(e => e.NMultSmmax)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("nMultSMMax");
+            entity.Property(e => e.NMultSmmin)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("nMultSMMin");
+        });
+
+        modelBuilder.Entity<CatalogoCodigo>(entity =>
+        {
+            entity.HasKey(e => new { e.NCodigo, e.NValor });
+
+            entity.Property(e => e.NCodigo).HasColumnName("nCodigo");
+            entity.Property(e => e.NValor).HasColumnName("nValor");
+            entity.Property(e => e.CNomCod)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("cNomCod");
+            entity.Property(e => e.NEstados).HasColumnName("nEstados");
+            entity.Property(e => e.NTipoCodigo).HasColumnName("nTipoCodigo");
+        });
+
+        modelBuilder.Entity<Compra>(entity =>
+        {
+            entity.HasKey(e => e.IdCompra).HasName("PK_CompraDetalle");
+
+            entity.Property(e => e.CProducto)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cProducto");
+            entity.Property(e => e.NCantidadCompra)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("nCantidadCompra");
+            entity.Property(e => e.NPrecioTotal)
+                .HasColumnType("money")
+                .HasColumnName("nPrecioTotal");
+            entity.Property(e => e.NPrecioXunidad)
+                .HasColumnType("money")
+                .HasColumnName("nPrecioXUnidad");
+            entity.Property(e => e.NUnidadMedida).HasColumnName("nUnidadMedida");
+        });
+
+        modelBuilder.Entity<Conyuge>(entity =>
+        {
+            entity.HasKey(e => e.IdConyuge);
+
+            entity.ToTable("Conyuge");
+
+            entity.Property(e => e.CCelular)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cCelular");
+            entity.Property(e => e.CDocumento)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cDocumento");
+            entity.Property(e => e.CNombres)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cNombres");
+            entity.Property(e => e.CPrimerApellido)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cPrimerApellido");
+            entity.Property(e => e.CSegundoApellido)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cSegundoApellido");
+            entity.Property(e => e.CTelefono)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cTelefono");
+            entity.Property(e => e.NTipoDocumento).HasColumnName("nTipoDocumento");
+        });
+
+        modelBuilder.Entity<CredCalenGasto>(entity =>
+        {
+            entity.HasKey(e => e.IdCalenGasto);
+
+            entity.Property(e => e.DFecAsig)
+                .HasColumnType("datetime")
+                .HasColumnName("dFecAsig");
+            entity.Property(e => e.NCodAgePersAsig).HasColumnName("nCodAgePersAsig");
+            entity.Property(e => e.NCodGasto).HasColumnName("nCodGasto");
+            entity.Property(e => e.NMonto)
+                .HasColumnType("money")
+                .HasColumnName("nMonto");
+            entity.Property(e => e.NMontoIgv)
+                .HasColumnType("money")
+                .HasColumnName("nMontoIGV");
+            entity.Property(e => e.NMontoIgvpag)
+                .HasColumnType("money")
+                .HasColumnName("nMontoIGVPag");
+            entity.Property(e => e.NMontoPag)
+                .HasColumnType("money")
+                .HasColumnName("nMontoPag");
+            entity.Property(e => e.NMontoSinIgv)
+                .HasColumnType("money")
+                .HasColumnName("nMontoSinIGV");
+            entity.Property(e => e.NMontoSinIgvpag)
+                .HasColumnType("money")
+                .HasColumnName("nMontoSinIGVPag");
+            entity.Property(e => e.NNroCalen).HasColumnName("nNroCalen");
+            entity.Property(e => e.NNroCuota).HasColumnName("nNroCuota");
+        });
+
+        modelBuilder.Entity<CredCalendCond>(entity =>
+        {
+            entity.HasKey(e => e.IdCredCalendCond);
+
+            entity.ToTable("CredCalendCond");
+
+            entity.Property(e => e.BCobroDom).HasColumnName("bCobroDom");
+            entity.Property(e => e.BCobroFer).HasColumnName("bCobroFer");
+            entity.Property(e => e.BCobroSab).HasColumnName("bCobroSab");
+            entity.Property(e => e.BCuotaDoble).HasColumnName("bCuotaDoble");
+            entity.Property(e => e.NCuotas).HasColumnName("nCuotas");
+            entity.Property(e => e.NDiaFijo).HasColumnName("nDiaFijo");
+            entity.Property(e => e.NNroCalen).HasColumnName("nNroCalen");
+            entity.Property(e => e.NPlazo).HasColumnName("nPlazo");
+        });
+
+        modelBuilder.Entity<CredCalendario>(entity =>
+        {
+            entity.ToTable("CredCalendario");
+
+            entity.Property(e => e.DFecPago)
+                .HasColumnType("datetime")
+                .HasColumnName("dFecPago");
+            entity.Property(e => e.DFecVenc)
+                .HasColumnType("datetime")
+                .HasColumnName("dFecVenc");
+            entity.Property(e => e.NCapPag)
+                .HasColumnType("money")
+                .HasColumnName("nCapPag");
+            entity.Property(e => e.NCapital)
+                .HasColumnType("money")
+                .HasColumnName("nCapital");
+            entity.Property(e => e.NCodAge).HasColumnName("nCodAge");
+            entity.Property(e => e.NCodCred).HasColumnName("nCodCred");
+            entity.Property(e => e.NEstado).HasColumnName("nEstado");
+            entity.Property(e => e.NIgv)
+                .HasColumnType("money")
+                .HasColumnName("nIgv");
+            entity.Property(e => e.NIgvPag)
+                .HasColumnType("money")
+                .HasColumnName("nIgvPag");
+            entity.Property(e => e.NIntComp)
+                .HasColumnType("money")
+                .HasColumnName("nIntComp");
+            entity.Property(e => e.NIntMor)
+                .HasColumnType("money")
+                .HasColumnName("nIntMor");
+            entity.Property(e => e.NIntMorPag)
+                .HasColumnType("money")
+                .HasColumnName("nIntMorPag");
+            entity.Property(e => e.NIntPag)
+                .HasColumnType("money")
+                .HasColumnName("nIntPag");
+            entity.Property(e => e.NNroCalen).HasColumnName("nNroCalen");
+            entity.Property(e => e.NNroCuota).HasColumnName("nNroCuota");
+            entity.Property(e => e.NTotalCuota)
+                .HasColumnType("money")
+                .HasColumnName("nTotalCuota");
+            entity.Property(e => e.Ngasto)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("NGasto");
+        });
+
+        modelBuilder.Entity<CredCambioGasto>(entity =>
+        {
+            entity.HasKey(e => e.NIdCambio);
+
+            entity.ToTable("CredCambioGasto");
+
+            entity.Property(e => e.NIdCambio).HasColumnName("nIdCambio");
+            entity.Property(e => e.DFechaCambio).HasColumnName("dFechaCambio");
+            entity.Property(e => e.NCodCred).HasColumnName("nCodCred");
+            entity.Property(e => e.NMontoNuevo)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("nMontoNuevo");
+            entity.Property(e => e.NMontoOriginal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("nMontoOriginal");
+        });
+
+        modelBuilder.Entity<CredFeriado>(entity =>
+        {
+            entity.HasKey(e => e.NIdFeriado);
+
+            entity.ToTable("CredFeriado");
+
+            entity.Property(e => e.NIdFeriado).HasColumnName("nIdFeriado");
+            entity.Property(e => e.BEstado).HasColumnName("bEstado");
+            entity.Property(e => e.CDescripcion)
+                .HasMaxLength(150)
+                .IsUnicode(false)
+                .HasColumnName("cDescripcion");
+            entity.Property(e => e.DFecha)
+                .HasColumnType("datetime")
+                .HasColumnName("dFecha");
+        });
+
+        modelBuilder.Entity<CredFeriadoAge>(entity =>
+        {
+            entity.HasKey(e => e.IdCredFeriadoAge);
+
+            entity.ToTable("CredFeriadoAge");
+
+            entity.Property(e => e.DFecha)
+                .HasColumnType("datetime")
+                .HasColumnName("dFecha");
+            entity.Property(e => e.NCodAge).HasColumnName("nCodAge");
+            entity.Property(e => e.NIdFeriado).HasColumnName("nIdFeriado");
+        });
+
+        modelBuilder.Entity<CredGasto>(entity =>
+        {
+            entity.HasKey(e => e.IdGasto);
+
+            entity.Property(e => e.CDescripcion)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("cDescripcion");
+            entity.Property(e => e.NPeriodo).HasColumnName("nPeriodo");
+            entity.Property(e => e.NProd).HasColumnName("nProd");
+            entity.Property(e => e.NRangoFinal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("nRangoFinal");
+            entity.Property(e => e.NRangoInicial)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("nRangoInicial");
+            entity.Property(e => e.NSubProd).HasColumnName("nSubProd");
+            entity.Property(e => e.NTipoCargo).HasColumnName("nTipoCargo");
+            entity.Property(e => e.NTipoGasto).HasColumnName("nTipoGasto");
+            entity.Property(e => e.NValor)
+                .HasColumnType("money")
+                .HasColumnName("nValor");
+        });
+
+        modelBuilder.Entity<CredLineaCredito>(entity =>
+        {
+            entity.HasKey(e => e.NCodLinea).HasName("PK__CredLine__50A988C3CC0EBAA0");
+
+            entity.ToTable("CredLineaCredito");
+
+            entity.Property(e => e.NCodLinea).HasColumnName("nCodLinea");
+            entity.Property(e => e.BAplicaSegmentacionUsura)
+                .HasDefaultValue(true)
+                .HasColumnName("bAplicaSegmentacionUsura");
+            entity.Property(e => e.BEstado)
+                .HasDefaultValue(true)
+                .HasColumnName("bEstado");
+            entity.Property(e => e.CDescripcion)
+                .HasMaxLength(400)
+                .IsUnicode(false)
+                .HasColumnName("cDescripcion");
+            entity.Property(e => e.CLinea)
+                .HasMaxLength(150)
+                .IsUnicode(false)
+                .HasColumnName("cLinea");
+            entity.Property(e => e.NMontoMax)
+                .HasColumnType("money")
+                .HasColumnName("nMontoMax");
+            entity.Property(e => e.NMontoMin)
+                .HasColumnType("money")
+                .HasColumnName("nMontoMin");
+            entity.Property(e => e.NPlazoMax).HasColumnName("nPlazoMax");
+            entity.Property(e => e.NPlazoMin).HasColumnName("nPlazoMin");
+            entity.Property(e => e.NProd).HasColumnName("nProd");
+            entity.Property(e => e.NSubProd).HasColumnName("nSubProd");
+            entity.Property(e => e.NTasaCom)
+                .HasColumnType("money")
+                .HasColumnName("nTasaCom");
+        });
+
+        modelBuilder.Entity<Credito>(entity =>
+        {
+            entity.HasKey(e => e.NCodCred).HasName("PK_Creditos_1_Tmp");
+
+            entity.Property(e => e.NCodCred).HasColumnName("nCodCred");
+            entity.Property(e => e.DFecVig)
+                .HasColumnType("datetime")
+                .HasColumnName("dFecVig");
+            entity.Property(e => e.NAceptaTerminos).HasColumnName("nAceptaTerminos");
+            entity.Property(e => e.NCobroEnAgencia).HasColumnName("nCobroEnAgencia");
+            entity.Property(e => e.NCodAge).HasColumnName("nCodAge");
+            entity.Property(e => e.NCodLinea).HasColumnName("nCodLinea");
+            entity.Property(e => e.NDiasAtraso).HasColumnName("nDiasAtraso");
+            entity.Property(e => e.NEstado).HasColumnName("nEstado");
+            entity.Property(e => e.NMontoCuota)
+                .HasColumnType("money")
+                .HasColumnName("nMontoCuota");
+            entity.Property(e => e.NMora)
+                .HasColumnType("money")
+                .HasColumnName("nMora");
+            entity.Property(e => e.NNroCuotas).HasColumnName("nNroCuotas");
+            entity.Property(e => e.NPeriodo).HasColumnName("nPeriodo");
+            entity.Property(e => e.NPrestamo)
+                .HasColumnType("money")
+                .HasColumnName("nPrestamo");
+            entity.Property(e => e.NProd).HasColumnName("nProd");
+            entity.Property(e => e.NSaldoK)
+                .HasColumnType("money")
+                .HasColumnName("nSaldoK");
+            entity.Property(e => e.NSubProd).HasColumnName("nSubProd");
+            entity.Property(e => e.NTasaComision)
+                .HasColumnType("money")
+                .HasColumnName("nTasaComision");
+            entity.Property(e => e.NTasaComp)
+                .HasColumnType("money")
+                .HasColumnName("nTasaComp");
+            entity.Property(e => e.NTasaMor)
+                .HasColumnType("money")
+                .HasColumnName("nTasaMor");
+        });
+
+        modelBuilder.Entity<Departamento>(entity =>
+        {
+            entity.HasKey(e => e.IdDepartamento).HasName("PK__Departam__787A433DF74032C7");
+
+            entity.Property(e => e.CNombre)
+                .HasMaxLength(150)
+                .IsUnicode(false)
+                .HasColumnName("cNombre");
+        });
+
+        modelBuilder.Entity<Documentacion>(entity =>
+        {
+            entity.HasKey(e => e.IdDocumentacion);
+
+            entity.ToTable("Documentacion");
+        });
+
+        modelBuilder.Entity<Fiador>(entity =>
+        {
+            entity.HasKey(e => e.IdFiador);
+
+            entity.ToTable("Fiador");
+
+            entity.Property(e => e.CCelular)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cCelular");
+            entity.Property(e => e.CDireccion)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cDireccion");
+            entity.Property(e => e.CDocumento)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cDocumento");
+            entity.Property(e => e.CNombres)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cNombres");
+            entity.Property(e => e.CPrimerApellido)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cPrimerApellido");
+            entity.Property(e => e.CSegundoApellido)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cSegundoApellido");
+            entity.Property(e => e.CTelefono)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cTelefono");
+            entity.Property(e => e.NTipoDocumento).HasColumnName("nTipoDocumento");
+        });
+
+        modelBuilder.Entity<FotoDocumentacion>(entity =>
+        {
+            entity.HasKey(e => e.IdFoto).HasName("PK_FotoDocumentacion_1");
+
+            entity.ToTable("FotoDocumentacion");
+
+            entity.Property(e => e.VFoto)
+                .IsUnicode(false)
+                .HasColumnName("vFoto");
+        });
+
+        modelBuilder.Entity<FotoId>(entity =>
+        {
+            entity.HasKey(e => e.IdFoto).HasName("PK_Foto");
+
+            entity.ToTable("FotoID");
+
+            entity.Property(e => e.NTipoFoto).HasColumnName("nTipoFoto");
+            entity.Property(e => e.VFoto)
+                .IsUnicode(false)
+                .HasColumnName("vFoto");
+        });
+
+        modelBuilder.Entity<FotoNegocio>(entity =>
+        {
+            entity.HasKey(e => e.IdFoto);
+
+            entity.ToTable("FotoNegocio");
+
+            entity.Property(e => e.NTipoFoto).HasColumnName("nTipoFoto");
+            entity.Property(e => e.VFoto)
+                .IsUnicode(false)
+                .HasColumnName("vFoto");
+        });
+
+        modelBuilder.Entity<GarantiaFoto>(entity =>
+        {
+            entity.HasKey(e => e.IdFoto).HasName("PK_FotoGarantia");
+
+            entity.ToTable("GarantiaFoto");
+
+            entity.Property(e => e.NValor)
+                .HasColumnType("money")
+                .HasColumnName("nValor");
+            entity.Property(e => e.VFoto)
+                .IsUnicode(false)
+                .HasColumnName("vFoto");
+        });
+
+        modelBuilder.Entity<Garantium>(entity =>
+        {
+            entity.HasKey(e => e.IdGarantia);
+        });
+
+        modelBuilder.Entity<LineaCatalogoAuxiliar>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_LineaCreditosTemp");
+
+            entity.ToTable("LineaCatalogoAuxiliar");
+
+            entity.Property(e => e.CDescripcion)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cDescripcion");
+            entity.Property(e => e.NCatalogoCodigo).HasColumnName("nCatalogoCodigo");
+            entity.Property(e => e.NProd).HasColumnName("nProd");
+            entity.Property(e => e.NSubProd).HasColumnName("nSubProd");
+        });
+
+        modelBuilder.Entity<LogErrore>(entity =>
+        {
+            entity.HasKey(e => e.IdLogError).HasName("PK__LogError__7B1F940EA93C6869");
+
+            entity.Property(e => e.FechaError)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Ip)
+                .HasMaxLength(45)
+                .IsUnicode(false)
+                .HasColumnName("IP");
+            entity.Property(e => e.Origen)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.TipoExcepcion)
+                .HasMaxLength(200)
+                .IsUnicode(false);
+            entity.Property(e => e.Usuario)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<Municipio>(entity =>
+        {
+            entity.HasKey(e => e.IdMunicipio).HasName("PK__Municipi__610059786D824024");
+
+            entity.Property(e => e.CNombre)
+                .HasMaxLength(150)
+                .IsUnicode(false)
+                .HasColumnName("cNombre");
+
+            entity.HasOne(d => d.IdDepartamentoNavigation).WithMany(p => p.Municipios)
+                .HasForeignKey(d => d.IdDepartamento)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Municipios_Departamentos");
+        });
+
+        modelBuilder.Entity<Negocio>(entity =>
+        {
+            entity.HasKey(e => e.IdNegocio);
+
+            entity.ToTable("Negocio");
+
+            entity.Property(e => e.CDireccion)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cDireccion");
+            entity.Property(e => e.CGeolocalizacion)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cGeolocalizacion");
+            entity.Property(e => e.CNombre)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cNombre");
+            entity.Property(e => e.CSector).HasColumnName("cSector");
+            entity.Property(e => e.CTelefono)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cTelefono");
+            entity.Property(e => e.THoraCierre).HasColumnName("tHoraCierre");
+            entity.Property(e => e.THoraInicio).HasColumnName("tHoraInicio");
+        });
+
+        modelBuilder.Entity<PasswordChangeAudit>(entity =>
+        {
+            entity.HasKey(e => e.IdAudit).HasName("PK__Password__C87E13DD960906D2");
+
+            entity.HasIndex(e => e.FechaAttempt, "IX_PasswordChangeAudits_Fecha");
+
+            entity.HasIndex(e => e.IdUsuario, "IX_PasswordChangeAudits_IdUsuario");
+
+            entity.HasIndex(e => e.Usuario, "IX_PasswordChangeAudits_Usuario");
+
+            entity.Property(e => e.FechaAttempt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.Ip)
+                .HasMaxLength(45)
+                .IsUnicode(false);
+            entity.Property(e => e.MotivoBloqueo)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.Observacion)
+                .HasMaxLength(500)
+                .IsUnicode(false);
+            entity.Property(e => e.UserAgent)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.Usuario)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<Persona>(entity =>
+        {
+            entity.HasKey(e => e.IdPersona);
+
+            entity.ToTable("Persona");
+
+            entity.Property(e => e.CCelular)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cCelular");
+            entity.Property(e => e.CCorreo)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cCorreo");
+            entity.Property(e => e.CDocumento)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cDocumento");
+            entity.Property(e => e.CNombres)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cNombres");
+            entity.Property(e => e.CPrimerApellido)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cPrimerApellido");
+            entity.Property(e => e.CSegundoApellido)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cSegundoApellido");
+            entity.Property(e => e.CTelefono)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cTelefono");
+            entity.Property(e => e.DFechaExpedicion).HasColumnName("dFechaExpedicion");
+            entity.Property(e => e.DFechaNacimiento).HasColumnName("dFechaNacimiento");
+            entity.Property(e => e.DFechaVencimiento).HasColumnName("dFechaVencimiento");
+            entity.Property(e => e.NDepartamentoDoc).HasColumnName("nDepartamentoDoc");
+            entity.Property(e => e.NDepartamentoNacimiento).HasColumnName("nDepartamentoNacimiento");
+            entity.Property(e => e.NEscolaridad).HasColumnName("nEscolaridad");
+            entity.Property(e => e.NEstadoCivil).HasColumnName("nEstadoCivil");
+            entity.Property(e => e.NMunicipioDoc).HasColumnName("nMunicipioDoc");
+            entity.Property(e => e.NMunicipioNacimiento).HasColumnName("nMunicipioNacimiento");
+            entity.Property(e => e.NNacionalidad).HasColumnName("nNacionalidad");
+            entity.Property(e => e.NProfesion).HasColumnName("nProfesion");
+            entity.Property(e => e.NSexo).HasColumnName("nSexo");
+            entity.Property(e => e.NTipoDocumento).HasColumnName("nTipoDocumento");
+        });
+
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.HasKey(e => e.IdRol).HasName("PK__Roles__2A49584C591AAB31");
+
+            entity.HasIndex(e => e.Nombre, "UQ__Roles__75E3EFCF90476A50").IsUnique();
+
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Descripcion)
+                .HasMaxLength(200)
+                .IsUnicode(false);
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Nombre)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<SalarioMinimoVigente>(entity =>
+        {
+            entity.HasKey(e => e.NCodSalMin).HasName("PK__SalarioM__24E830BDC3C7C532");
+
+            entity.ToTable("SalarioMinimoVigente");
+
+            entity.Property(e => e.NCodSalMin).HasColumnName("nCodSalMin");
+            entity.Property(e => e.BEstado)
+                .HasDefaultValue(true)
+                .HasColumnName("bEstado");
+            entity.Property(e => e.CSector)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasDefaultValue("Comercio y Servicios")
+                .HasColumnName("cSector");
+            entity.Property(e => e.DFecFin).HasColumnName("dFecFin");
+            entity.Property(e => e.DFecInicio).HasColumnName("dFecInicio");
+            entity.Property(e => e.NMontoMensual)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("nMontoMensual");
+        });
+
+        modelBuilder.Entity<TasaMaximaBcr>(entity =>
+        {
+            entity.HasKey(e => e.NCodTasaMax).HasName("PK__TasaMaxi__650D6D6E667849EF");
+
+            entity.ToTable("TasaMaximaBCR");
+
+            entity.Property(e => e.NCodTasaMax).HasColumnName("nCodTasaMax");
+            entity.Property(e => e.BEstado)
+                .HasDefaultValue(true)
+                .HasColumnName("bEstado");
+            entity.Property(e => e.DFecFin).HasColumnName("dFecFin");
+            entity.Property(e => e.DFecInicio).HasColumnName("dFecInicio");
+            entity.Property(e => e.DFecPublicacion).HasColumnName("dFecPublicacion");
+            entity.Property(e => e.NCodSegmento).HasColumnName("nCodSegmento");
+            entity.Property(e => e.NTasaMaxima)
+                .HasColumnType("decimal(7, 4)")
+                .HasColumnName("nTasaMaxima");
+
+            entity.HasOne(d => d.NCodSegmentoNavigation).WithMany(p => p.TasaMaximaBcrs)
+                .HasForeignKey(d => d.NCodSegmento)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__TasaMaxim__nCodS__57A801BA");
+        });
+
+        modelBuilder.Entity<UsuarioLogin>(entity =>
+        {
+            entity.HasKey(e => e.IdUsuario).HasName("PK_UsuaroLogin");
+
+            entity.ToTable("UsuarioLogin");
+
+            entity.Property(e => e.BContrasenaTemporal).HasColumnName("bContrasenaTemporal");
+            entity.Property(e => e.CCorreo)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cCorreo");
+            entity.Property(e => e.CDocumento)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cDocumento");
+            entity.Property(e => e.DFechaContrasenaTemporal)
+                .HasColumnType("datetime")
+                .HasColumnName("dFechaContrasenaTemporal");
+            entity.Property(e => e.Password)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.TokenTime).HasColumnType("datetime");
+            entity.Property(e => e.UltimoLogin).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<UsuarioRole>(entity =>
+        {
+            entity.HasKey(e => e.IdUsuarioRol).HasName("PK__UsuarioR__6806BF4AC5289D17");
+
+            entity.HasIndex(e => new { e.IdUsuario, e.IdRol }, "UQ_UsuarioRoles").IsUnique();
+
+            entity.Property(e => e.FechaAsignacion)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.IdRolNavigation).WithMany(p => p.UsuarioRoles)
+                .HasForeignKey(d => d.IdRol)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UsuarioRoles_Roles");
+
+            entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.UsuarioRoles)
+                .HasForeignKey(d => d.IdUsuario)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UsuarioRoles_Usuario");
+        });
+
+        modelBuilder.Entity<Venta>(entity =>
+        {
+            entity.HasKey(e => e.IdVenta);
+
+            entity.Property(e => e.CProducto)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cProducto");
+            entity.Property(e => e.NCantidadVenta)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("nCantidadVenta");
+            entity.Property(e => e.NPrecioTotal)
+                .HasColumnType("money")
+                .HasColumnName("nPrecioTotal");
+            entity.Property(e => e.NPrecioXunidad)
+                .HasColumnType("money")
+                .HasColumnName("nPrecioXUnidad");
+            entity.Property(e => e.NUnidadMedida).HasColumnName("nUnidadMedida");
+        });
+
+        modelBuilder.Entity<VerNegocio>(entity =>
+        {
+            entity.HasKey(e => e.NCodVar);
+
+            entity.ToTable("VerNegocio");
+
+            entity.Property(e => e.NCodVar).HasColumnName("nCodVar");
+            entity.Property(e => e.CNomVar)
+                .HasMaxLength(150)
+                .IsUnicode(false)
+                .HasColumnName("cNomVar");
+            entity.Property(e => e.CValorVar)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cValorVar");
+            entity.Property(e => e.NTipoVar).HasColumnName("nTipoVar");
+        });
+
+        OnModelCreatingPartial(modelBuilder);
+    }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+}

@@ -399,4 +399,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/CrediAvanzaAPI/wwwroot/uploads/solicitudes
+/CreditFlow.API/wwwroot/uploads/solicitudes
