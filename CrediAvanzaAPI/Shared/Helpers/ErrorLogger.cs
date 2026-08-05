@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace CrediAvanzaAPI.Helpers
+namespace CrediAvanzaAPI.Shared.Helpers
 {
     public class ErrorLogger
     {

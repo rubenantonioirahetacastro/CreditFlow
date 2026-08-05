@@ -2,7 +2,7 @@
 using CrediAvanzaAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
-using CrediAvanzaAPI.Helpers;
+using CrediAvanzaAPI.Shared.Helpers;
 
 namespace CrediAvanzaAPI.Services
 {

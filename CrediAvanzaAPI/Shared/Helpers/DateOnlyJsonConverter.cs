@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace CrediAvanzaAPI.Helpers
+namespace CrediAvanzaAPI.Shared.Helpers
 {
     public sealed class DateOnlyJsonConverter : JsonConverter<DateOnly>
     {

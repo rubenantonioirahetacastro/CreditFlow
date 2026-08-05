@@ -1,6 +1,6 @@
 using CrediAvanzaAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using CrediAvanzaAPI.Helpers;
+using CrediAvanzaAPI.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace CrediAvanzaAPI.Controllers

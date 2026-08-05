@@ -1,4 +1,4 @@
-using CrediAvanzaAPI.Helpers;
+using CrediAvanzaAPI.Shared.Helpers;
 using CrediAvanzaAPI.Models;
 using CrediAvanzaAPI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -53,7 +53,7 @@ builder.Services.AddHealthChecks()
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new CrediAvanzaAPI.Helpers.DateOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new CrediAvanzaAPI.Shared.Helpers.DateOnlyJsonConverter());
     });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

@@ -1,6 +1,6 @@
 using CrediAvanzaAPI.Models;
 using CrediAvanzaAPI.Request;
-using CrediAvanzaAPI.Helpers;
+using CrediAvanzaAPI.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

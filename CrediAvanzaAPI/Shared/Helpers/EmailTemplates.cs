@@ -1,4 +1,4 @@
-﻿namespace CrediAvanzaAPI.Helpers
+﻿namespace CrediAvanzaAPI.Shared.Helpers
 {
     public static class EmailTemplates
     {

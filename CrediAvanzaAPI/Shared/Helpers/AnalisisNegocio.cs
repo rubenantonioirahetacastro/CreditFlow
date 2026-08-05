@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CrediAvanzaAPI.Helpers
+namespace CrediAvanzaAPI.Shared.Helpers
 {
     public class AnalisisNegocio
     {

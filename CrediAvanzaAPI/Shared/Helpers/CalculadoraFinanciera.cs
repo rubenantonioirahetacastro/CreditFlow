@@ -1,7 +1,7 @@
 using CrediAvanzaAPI.Models;
 using System;
 
-namespace CrediAvanzaAPI.Helpers
+namespace CrediAvanzaAPI.Shared.Helpers
 {
     public static class CalculadoraFinanciera
     {
