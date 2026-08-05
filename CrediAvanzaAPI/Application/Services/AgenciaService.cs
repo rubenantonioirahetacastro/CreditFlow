@@ -1,5 +1,6 @@
 using CrediAvanzaAPI.Application.Interfaces;
-using CrediAvanzaAPI.Models;
+using CrediAvanzaAPI.Domain.Entities;
+using CrediAvanzaAPI.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

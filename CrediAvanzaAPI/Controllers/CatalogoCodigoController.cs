@@ -1,4 +1,5 @@
 ﻿using CrediAvanzaAPI.Application.Interfaces;
+using CrediAvanzaAPI.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +17,7 @@ namespace CrediAvanzaAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddCatalogo([FromBody] Models.CatalogoCodigo catalogo)
+        public async Task<IActionResult> AddCatalogo([FromBody] CatalogoCodigo catalogo)
         {
             try
             {
@@ -53,7 +54,7 @@ namespace CrediAvanzaAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateCatalogo([FromBody] Models.CatalogoCodigo catalogo)
+        public async Task<IActionResult> UpdateCatalogo([FromBody] CatalogoCodigo catalogo)
         {
             var updated = await _catalogoCodigoService.UpdateCatalogo(catalogo);
 

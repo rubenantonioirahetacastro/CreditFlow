@@ -1,5 +1,6 @@
 using CrediAvanzaAPI.Shared.Helpers;
-using CrediAvanzaAPI.Models;
+using CrediAvanzaAPI.Domain.Entities;
+using CrediAvanzaAPI.Infrastructure.Data;
 using CrediAvanzaAPI.Application.Interfaces;
 using CrediAvanzaAPI.Application.Services;
 using CrediAvanzaAPI.Infrastructure.Services;

@@ -1,4 +1,5 @@
-using CrediAvanzaAPI.Models;
+using CrediAvanzaAPI.Domain.Entities;
+using CrediAvanzaAPI.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using CrediAvanzaAPI.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;

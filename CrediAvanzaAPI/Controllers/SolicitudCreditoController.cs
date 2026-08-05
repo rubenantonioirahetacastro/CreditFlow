@@ -1,4 +1,4 @@
-﻿using CrediAvanzaAPI.Models;
+﻿using CrediAvanzaAPI.Domain.Entities;
 using CrediAvanzaAPI.Application.Requests;
 using CrediAvanzaAPI.Application.Interfaces;
 using Microsoft.AspNetCore.Http;

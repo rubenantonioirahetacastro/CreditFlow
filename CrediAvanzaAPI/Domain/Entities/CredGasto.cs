@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CrediAvanzaAPI.Models;
+namespace CrediAvanzaAPI.Domain.Entities;
 
 public partial class CredGasto
 {

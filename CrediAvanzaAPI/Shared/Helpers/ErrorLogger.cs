@@ -1,4 +1,5 @@
-﻿using CrediAvanzaAPI.Models;
+﻿using CrediAvanzaAPI.Domain.Entities;
+using CrediAvanzaAPI.Infrastructure.Data;
 using System;
 using System.Runtime.CompilerServices;
 

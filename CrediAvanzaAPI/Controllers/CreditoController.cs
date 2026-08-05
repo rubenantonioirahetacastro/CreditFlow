@@ -1,4 +1,5 @@
-using CrediAvanzaAPI.Models;
+using CrediAvanzaAPI.Domain.Entities;
+using CrediAvanzaAPI.Infrastructure.Data;
 using CrediAvanzaAPI.Application.Requests;
 using CrediAvanzaAPI.Application.DTOs;
 using CrediAvanzaAPI.Application.Interfaces;

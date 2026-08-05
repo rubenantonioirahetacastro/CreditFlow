@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CrediAvanzaAPI.Models;
+using CrediAvanzaAPI.Domain.Entities;
 
 namespace CrediAvanzaAPI.Application.Interfaces
 {

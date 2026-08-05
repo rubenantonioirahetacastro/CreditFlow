@@ -1,5 +1,5 @@
 ﻿using System;
-using CrediAvanzaAPI.Models;
+using CrediAvanzaAPI.Domain.Entities;
 using CrediAvanzaAPI.Application.Requests;
 
 namespace CrediAvanzaAPI.Mappings

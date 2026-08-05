@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using CrediAvanzaAPI.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace CrediAvanzaAPI.Models;
+namespace CrediAvanzaAPI.Infrastructure.Data;
 
 public partial class DbNegocioContext : DbContext
 {

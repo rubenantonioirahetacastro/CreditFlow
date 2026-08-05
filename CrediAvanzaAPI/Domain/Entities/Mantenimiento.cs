@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace CrediAvanzaAPI.Models
+namespace CrediAvanzaAPI.Domain.Entities
 {
     public class Mantenimiento
     {

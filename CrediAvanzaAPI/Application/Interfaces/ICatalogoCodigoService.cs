@@ -1,4 +1,4 @@
-﻿using CrediAvanzaAPI.Models;
+﻿using CrediAvanzaAPI.Domain.Entities;
 
 namespace CrediAvanzaAPI.Application.Interfaces
 {
