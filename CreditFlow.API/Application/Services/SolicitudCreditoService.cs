@@ -52,6 +52,72 @@ namespace CreditFlow.API.Application.Services
                 var documentacion = new Documentacion();
                 var garantia = new Garantium();
 
+                // UsuarioLogin no conoce a Persona: la relación es Persona -> UsuarioLogin
+                // (Persona.IdUsuario referencia a UsuarioLogin.IdUsuario). Por eso el login
+                // se crea y guarda primero, para poder asignar Persona.IdUsuario antes de
+                // guardar la Persona.
+                var correo = string.IsNullOrWhiteSpace(persona.CCorreo)
+                    ? $"{persona.CDocumento}@crediavanza.com"
+                    : persona.CCorreo;
+                const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                var random = new Random();
+
+                var passwordTemporal = new string(
+                    Enumerable.Repeat(chars, 6)
+                        .Select(s => s[random.Next(s.Length)])
+                        .ToArray()
+                );
+                var token = Random.Shared.Next(0, 1_000_000).ToString("D6");
+                var tokenInt = int.Parse(token);
+
+                var usuario = new UsuarioLogin
+                {
+                    CDocumento = persona.CDocumento,
+                    CCorreo = correo,
+                    Password = BCrypt.Net.BCrypt.HashPassword(passwordTemporal),
+                    Token = tokenInt,
+                    TokenTime = DateTime.UtcNow,
+                    Estado = 1,
+                    IntentosFallidos = 0,
+                    Bloqueado = 0,
+                    TokenCheck = false,
+                    BContrasenaTemporal = true,
+                    DFechaContrasenaTemporal = DateTime.UtcNow
+                };
+
+                await context.UsuarioLogins.AddAsync(usuario);
+                // Save now to get IdUsuario assigned so Persona and UsuarioRole can reference it
+                await context.SaveChangesAsync();
+
+                // Ensure default role 'Usuario' exists and assign to the new user
+                var defaultRoleName = "Usuario";
+                var defaultRoleDesc = "Usuario estándar";
+
+                var role = await context.Roles.FirstOrDefaultAsync(r => r.Nombre == defaultRoleName);
+                if (role == null)
+                {
+                    role = new Role
+                    {
+                        Nombre = defaultRoleName,
+                        Descripcion = defaultRoleDesc,
+                        Activo = true,
+                        FechaCreacion = DateTime.UtcNow
+                    };
+                    await context.Roles.AddAsync(role);
+                    await context.SaveChangesAsync();
+                }
+
+                var usuarioRole = new UsuarioRole
+                {
+                    IdUsuario = usuario.IdUsuario,
+                    IdRol = role.IdRol,
+                    FechaAsignacion = DateTime.UtcNow
+                };
+
+                await context.UsuarioRoles.AddAsync(usuarioRole);
+
+                persona.IdUsuario = usuario.IdUsuario;
+
                 await context.Personas.AddAsync(persona);
 
                 if (conyuge != null) await context.Conyuges.AddAsync(conyuge);
@@ -103,68 +169,6 @@ namespace CreditFlow.API.Application.Services
                 await context.CredCalendConds.AddAsync(calendarioCond);
                 await context.SaveChangesAsync();
                 credito.IdCredCalendCond = calendarioCond.IdCredCalendCond;
-
-                var correo = string.IsNullOrWhiteSpace(persona.CCorreo)
-                    ? $"{persona.CDocumento}@crediavanza.com"
-                    : persona.CCorreo;
-                const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-                var random = new Random();
-
-                var passwordTemporal = new string(
-                    Enumerable.Repeat(chars, 6)
-                        .Select(s => s[random.Next(s.Length)])
-                        .ToArray()
-                );
-                var token = Random.Shared.Next(0, 1_000_000).ToString("D6");
-                var tokenInt = int.Parse(token);
-
-                // Add UsuarioLogin for the persona
-                var usuario = new UsuarioLogin
-                {
-                    CDocumento = persona.CDocumento,
-                    IdPersona = persona.IdPersona,
-                    CCorreo = correo,
-                    Password = BCrypt.Net.BCrypt.HashPassword(passwordTemporal),
-                    Token = tokenInt,
-                    TokenTime = DateTime.UtcNow,
-                    Estado = 1,
-                    IntentosFallidos = 0,
-                    Bloqueado = 0,
-                    TokenCheck = false,
-                    BContrasenaTemporal = true,
-                    DFechaContrasenaTemporal = DateTime.UtcNow
-                };
-
-                await context.UsuarioLogins.AddAsync(usuario);
-                // Save now to get IdUsuario assigned so we can create UsuarioRole
-                await context.SaveChangesAsync();
-
-                // Ensure default role 'Usuario' exists and assign to the new user
-                var defaultRoleName = "Usuario";
-                var defaultRoleDesc = "Usuario estándar";
-
-                var role = await context.Roles.FirstOrDefaultAsync(r => r.Nombre == defaultRoleName);
-                if (role == null)
-                {
-                    role = new Role
-                    {
-                        Nombre = defaultRoleName,
-                        Descripcion = defaultRoleDesc,
-                        Activo = true,
-                        FechaCreacion = DateTime.UtcNow
-                    };
-                    await context.Roles.AddAsync(role);
-                    await context.SaveChangesAsync();
-                }
-
-                var usuarioRole = new UsuarioRole
-                {
-                    IdUsuario = usuario.IdUsuario,
-                    IdRol = role.IdRol,
-                    FechaAsignacion = DateTime.UtcNow
-                };
-
-                await context.UsuarioRoles.AddAsync(usuarioRole);
 
                 await context.Creditos.AddAsync(credito);
 

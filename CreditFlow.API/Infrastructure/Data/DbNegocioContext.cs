@@ -724,6 +724,7 @@ public partial class DbNegocioContext : DbContext
             entity.Property(e => e.DFechaExpedicion).HasColumnName("dFechaExpedicion");
             entity.Property(e => e.DFechaNacimiento).HasColumnName("dFechaNacimiento");
             entity.Property(e => e.DFechaVencimiento).HasColumnName("dFechaVencimiento");
+            entity.Property(e => e.IdUsuario).HasColumnName("IdUsuario");
             entity.Property(e => e.NDepartamentoDoc).HasColumnName("nDepartamentoDoc");
             entity.Property(e => e.NDepartamentoNacimiento).HasColumnName("nDepartamentoNacimiento");
             entity.Property(e => e.NEscolaridad).HasColumnName("nEscolaridad");

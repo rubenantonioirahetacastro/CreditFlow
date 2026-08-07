@@ -7,6 +7,8 @@ public partial class Persona
 {
     public int IdPersona { get; set; }
 
+    public int IdUsuario { get; set; }
+
     public int NTipoDocumento { get; set; }
 
     public string CDocumento { get; set; } = null!;
