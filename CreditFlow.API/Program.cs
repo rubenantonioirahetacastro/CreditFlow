@@ -2,7 +2,9 @@ using CreditFlow.API.Shared.Helpers;
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
 using CreditFlow.API.Application.Interfaces;
+using CreditFlow.API.Application.Interfaces.Mantenimientos;
 using CreditFlow.API.Application.Services;
+using CreditFlow.API.Application.Services.Mantenimientos;
 using CreditFlow.API.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -43,6 +45,7 @@ builder.Services.AddScoped<ISimulacionCalendarioService, SimulacionCalendarioSer
 builder.Services.AddScoped<ErrorLogger>();
 builder.Services.AddScoped<IBlobStorageService, AzureBlobStorageService>();
 builder.Services.AddScoped<IMantenimientoService, MantenimientoService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 
 builder.Services.AddApplicationInsightsTelemetry(options =>
 {
