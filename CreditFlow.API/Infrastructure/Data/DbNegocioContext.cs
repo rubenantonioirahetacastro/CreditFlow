@@ -50,6 +50,8 @@ public partial class DbNegocioContext : DbContext
 
     public virtual DbSet<Documentacion> Documentacions { get; set; }
 
+    public virtual DbSet<Empleado> Empleados { get; set; }
+
     public virtual DbSet<Fiador> Fiadors { get; set; }
 
     public virtual DbSet<FotoDocumentacion> FotoDocumentacions { get; set; }
@@ -685,6 +687,42 @@ public partial class DbNegocioContext : DbContext
             entity.Property(e => e.Usuario)
                 .HasMaxLength(100)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<Empleado>(entity =>
+        {
+            entity.HasKey(e => e.IdEmpleado);
+
+            entity.ToTable("Empleados");
+
+            entity.Property(e => e.IdUsuario).HasColumnName("IdUsuario");
+            entity.Property(e => e.CDocumento)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cDocumento");
+            entity.Property(e => e.CNombres)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cNombres");
+            entity.Property(e => e.CPrimerApellido)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cPrimerApellido");
+            entity.Property(e => e.CSegundoApellido)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cSegundoApellido");
+            entity.Property(e => e.NSexo).HasColumnName("nSexo");
+            entity.Property(e => e.NCodAge).HasColumnName("nCodAge");
+            entity.Property(e => e.CCorreo)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cCorreo");
+            entity.Property(e => e.CTelefono)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cTelefono");
+            entity.Property(e => e.NEstado).HasColumnName("nEstado");
         });
 
         modelBuilder.Entity<Persona>(entity =>
