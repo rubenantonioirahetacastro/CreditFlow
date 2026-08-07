@@ -98,7 +98,7 @@ public class AuthController : ControllerBase
         await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
         {
             IdUsuario = user.IdUsuario,
-            IdPersona = user.IdPersona,
+            IdPersona = user.IdUsuario,
             Usuario = user.CDocumento,
             Exito = true,
             FechaAttempt = DateTime.UtcNow,
@@ -152,7 +152,7 @@ public class AuthController : ControllerBase
                 await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
                 {
                     IdUsuario = user.IdUsuario,
-                    IdPersona = user.IdPersona,
+                    IdPersona = user.IdUsuario,
                     Usuario = user.CDocumento,
                     Exito = false,
                     FechaAttempt = DateTime.UtcNow,
@@ -185,7 +185,7 @@ public class AuthController : ControllerBase
         await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
         {
             IdUsuario = user.IdUsuario,
-            IdPersona = user.IdPersona,
+            IdPersona = user.IdUsuario,
             Usuario = user.CDocumento,
             Exito = true,
             FechaAttempt = DateTime.UtcNow,
@@ -223,7 +223,7 @@ public class AuthController : ControllerBase
         await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
         {
             IdUsuario = user.IdUsuario,
-            IdPersona = user.IdPersona,
+            IdPersona = user.IdUsuario,
             Usuario = user.CDocumento,
             Exito = true,
             FechaAttempt = DateTime.UtcNow,
@@ -278,7 +278,7 @@ public class AuthController : ControllerBase
         await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
         {
             IdUsuario = user.IdUsuario,
-            IdPersona = user.IdPersona,
+            IdPersona = user.IdUsuario,
             Usuario = user.CDocumento,
             Exito = true,
             FechaAttempt = DateTime.UtcNow,
@@ -358,7 +358,7 @@ public class AuthController : ControllerBase
         await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
         {
             IdUsuario = user.IdUsuario,
-            IdPersona = user.IdPersona,
+            IdPersona = user.IdUsuario,
             Usuario = user.CDocumento,
             Exito = true,
             FechaAttempt = DateTime.UtcNow,
@@ -403,7 +403,7 @@ public class AuthController : ControllerBase
         await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
         {
             IdUsuario = user.IdUsuario,
-            IdPersona = user.IdPersona,
+            IdPersona = user.IdUsuario,
             Usuario = user.CDocumento,
             Exito = true,
             FechaAttempt = DateTime.UtcNow,
@@ -454,7 +454,7 @@ public class AuthController : ControllerBase
                 await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
                 {
                     IdUsuario = user.IdUsuario,
-                    IdPersona = user.IdPersona,
+                    IdPersona = user.IdUsuario,
                     Usuario = user.CDocumento,
                     Exito = false,
                     FechaAttempt = DateTime.UtcNow,
@@ -483,7 +483,7 @@ public class AuthController : ControllerBase
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.CDocumento),
-            new Claim("IdPersona", user.IdPersona.ToString())
+            new Claim("IdPersona", user.IdUsuario.ToString())
         };
 
         var rolesData = await _context.UsuarioRoles.Where(ur => ur.IdUsuario == user.IdUsuario).Include(ur => ur.IdRolNavigation).Select(ur => new { ur.IdRol, ur.IdRolNavigation.Nombre }).ToListAsync();
@@ -499,7 +499,7 @@ public class AuthController : ControllerBase
             await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
             {
                 IdUsuario = user.IdUsuario,
-                IdPersona = user.IdPersona,
+                IdPersona = user.IdUsuario,
                 Usuario = user.CDocumento,
                 Exito = false,
                 FechaAttempt = DateTime.UtcNow,
@@ -532,7 +532,7 @@ public class AuthController : ControllerBase
         await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
         {
             IdUsuario = user.IdUsuario,
-            IdPersona = user.IdPersona,
+            IdPersona = user.IdUsuario,
             Usuario = user.CDocumento,
             Exito = true,
             FechaAttempt = DateTime.UtcNow,
@@ -548,7 +548,7 @@ public class AuthController : ControllerBase
         return Ok(new { Exito = true, 
                         Mensaje = "Autenticación exitosa", 
                         Token = tokenString, 
-                        IdPersona = user.IdPersona, 
+                        IdPersona = user.IdUsuario, 
                         bTemporal = user.BContrasenaTemporal == true,
                         IdRol = idRol });
     }
@@ -588,7 +588,7 @@ public class AuthController : ControllerBase
                 await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
                 {
                     IdUsuario = user.IdUsuario,
-                    IdPersona = user.IdPersona,
+                    IdPersona = user.IdUsuario,
                     Usuario = user.CDocumento,
                     Exito = false,
                     FechaAttempt = DateTime.UtcNow,
@@ -617,7 +617,7 @@ public class AuthController : ControllerBase
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.CDocumento),
-            new Claim("IdPersona", user.IdPersona.ToString())
+            new Claim("IdPersona", user.IdUsuario.ToString())
         };
 
         var rolesData = await _context.UsuarioRoles.Where(ur => ur.IdUsuario == user.IdUsuario).Include(ur => ur.IdRolNavigation).Select(ur => new { ur.IdRol, ur.IdRolNavigation.Nombre }).ToListAsync();
@@ -633,7 +633,7 @@ public class AuthController : ControllerBase
             await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
             {
                 IdUsuario = user.IdUsuario,
-                IdPersona = user.IdPersona,
+                IdPersona = user.IdUsuario,
                 Usuario = user.CDocumento,
                 Exito = false,
                 FechaAttempt = DateTime.UtcNow,
@@ -666,7 +666,7 @@ public class AuthController : ControllerBase
         await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
         {
             IdUsuario = user.IdUsuario,
-            IdPersona = user.IdPersona,
+            IdPersona = user.IdUsuario,
             Usuario = user.CDocumento,
             Exito = true,
             FechaAttempt = DateTime.UtcNow,
@@ -684,7 +684,7 @@ public class AuthController : ControllerBase
             Exito = true,
             Mensaje = "Autenticación exitosa",
             Token = tokenString,
-            IdPersona = user.IdPersona,
+            IdPersona = user.IdUsuario,
             bTemporal = user.BContrasenaTemporal == true,
             IdRol = idRol
         });

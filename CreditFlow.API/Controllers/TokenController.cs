@@ -52,7 +52,7 @@ public class TokenController : ControllerBase
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.CDocumento),
-            new Claim("IdPersona", user.IdPersona.ToString())
+            new Claim("IdPersona", user.IdUsuario.ToString())
         };
 
         var roles = await _context.UsuarioRoles.Where(ur => ur.IdUsuario == user.IdUsuario).Include(ur => ur.IdRolNavigation).Select(ur => ur.IdRolNavigation.Nombre).ToListAsync();
@@ -93,7 +93,6 @@ public class TokenController : ControllerBase
         // Create new person id placeholder (set to 0)
         var newUser = new UsuarioLogin
         {
-            IdPersona = 0,
             CDocumento = documento,
             Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
             CCorreo = request.Correo ?? string.Empty,

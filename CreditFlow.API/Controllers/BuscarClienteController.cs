@@ -100,7 +100,7 @@ namespace CreditFlow.API.Controllers
 
                 var usuario = await (
                     from p in _context.Personas.AsNoTracking()
-                    join u in _context.UsuarioLogins.AsNoTracking() on p.IdPersona equals u.IdPersona
+                    join u in _context.UsuarioLogins.AsNoTracking() on p.IdPersona equals u.IdUsuario
                     join ur in _context.UsuarioRoles.AsNoTracking() on u.IdUsuario equals ur.IdUsuario
                     join r in _context.Roles.AsNoTracking() on ur.IdRol equals r.IdRol
                     where p.IdPersona == idPersona && r.Nombre == "Usuario"

@@ -7,8 +7,6 @@ public partial class UsuarioLogin
 {
     public int IdUsuario { get; set; }
 
-    public int IdPersona { get; set; }
-
     public string CDocumento { get; set; } = null!;
 
     public string Password { get; set; } = null!;
