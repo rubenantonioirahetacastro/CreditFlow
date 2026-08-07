@@ -42,5 +42,5 @@ jobs:
         with:
           app-name: 'CrediAvanza'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_28C027604F6B4EC3A189EE23B45785BD }}
           package: .
