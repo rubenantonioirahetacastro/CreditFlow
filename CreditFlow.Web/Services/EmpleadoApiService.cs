@@ -51,7 +51,7 @@ public class EmpleadoApiService : IEmpleadoService
             if (response.IsSuccessStatusCode)
                 return (true, null);
 
-            return (false, await ExtraerMensajeErrorAsync(response));
+            return (false, await ExtraerMensajeErrorAsync(response, "No se pudo crear el empleado."));
         }
         catch (HttpRequestException)
         {
@@ -63,7 +63,56 @@ public class EmpleadoApiService : IEmpleadoService
         }
     }
 
-    private static async Task<string> ExtraerMensajeErrorAsync(HttpResponseMessage response)
+    public async Task<(bool Exito, string? Mensaje)> ActualizarAsync(int id, ActualizarEmpleadoRequest request)
+    {
+        try
+        {
+            var httpRequest = new HttpRequestMessage(HttpMethod.Put, $"api/mantenimientos/empleados/{id}")
+            {
+                Content = JsonContent.Create(request)
+            };
+            await AttachTokenAsync(httpRequest);
+
+            var response = await _httpClient.SendAsync(httpRequest);
+            if (response.IsSuccessStatusCode)
+                return (true, null);
+
+            return (false, await ExtraerMensajeErrorAsync(response, "No se pudo actualizar el empleado."));
+        }
+        catch (HttpRequestException)
+        {
+            return (false, "No se pudo conectar con el servidor. Intente nuevamente más tarde.");
+        }
+        catch (JsonException)
+        {
+            return (false, "El servidor respondió de forma inesperada. Intente nuevamente más tarde.");
+        }
+    }
+
+    public async Task<(bool Exito, string? Mensaje)> EliminarAsync(int id)
+    {
+        try
+        {
+            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"api/mantenimientos/empleados/{id}");
+            await AttachTokenAsync(httpRequest);
+
+            var response = await _httpClient.SendAsync(httpRequest);
+            if (response.IsSuccessStatusCode)
+                return (true, null);
+
+            return (false, await ExtraerMensajeErrorAsync(response, "No se pudo eliminar el empleado."));
+        }
+        catch (HttpRequestException)
+        {
+            return (false, "No se pudo conectar con el servidor. Intente nuevamente más tarde.");
+        }
+        catch (JsonException)
+        {
+            return (false, "El servidor respondió de forma inesperada. Intente nuevamente más tarde.");
+        }
+    }
+
+    private static async Task<string> ExtraerMensajeErrorAsync(HttpResponseMessage response, string mensajePorDefecto)
     {
         try
         {
@@ -77,7 +126,7 @@ public class EmpleadoApiService : IEmpleadoService
 
         return response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
             ? "No tenés permiso para realizar esta acción."
-            : "No se pudo crear el empleado.";
+            : mensajePorDefecto;
     }
 
     private async Task AttachTokenAsync(HttpRequestMessage request)

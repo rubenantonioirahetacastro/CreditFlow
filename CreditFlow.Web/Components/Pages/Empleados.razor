@@ -1,6 +1,7 @@
 @page "/empleados"
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+@inject IJSRuntime JS
 
 <PageTitle>Mantenimiento de Empleados</PageTitle>
 
@@ -18,16 +19,17 @@
 
 <AuthorizeView Roles="Admin">
     <Authorized>
-        @if (!MostrandoFormulario)
+        @if (Modo == FormMode.None)
         {
-            <button class="btn btn-primary mb-3" @onclick="MostrarFormularioAsync">
+            <button class="btn btn-primary mb-3" @onclick="MostrarFormularioCrearAsync">
                 Nuevo empleado
             </button>
         }
-        else
+        else if (Modo == FormMode.Crear)
         {
             <div class="card mb-4">
                 <div class="card-body">
+                    <h5>Nuevo empleado</h5>
                     <div class="row g-2">
                         <div class="col-md-4">
                             <label class="form-label">Documento</label>
@@ -78,7 +80,69 @@
                     </div>
 
                     <div class="mt-3">
-                        <button class="btn btn-success" @onclick="GuardarAsync" disabled="@Guardando">
+                        <button class="btn btn-success" @onclick="GuardarCreacionAsync" disabled="@Guardando">
+                            @(Guardando ? "Guardando..." : "Guardar")
+                        </button>
+                        <button class="btn btn-secondary" @onclick="CancelarFormulario">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (Modo == FormMode.Editar)
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Editar empleado (@EditandoDocumento)</h5>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombres</label>
+                            <input class="form-control" @bind="EditandoEmpleado.Nombres" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Primer apellido</label>
+                            <input class="form-control" @bind="EditandoEmpleado.PrimerApellido" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Segundo apellido</label>
+                            <input class="form-control" @bind="EditandoEmpleado.SegundoApellido" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Sexo</label>
+                            <input type="number" class="form-control" @bind="EditandoEmpleado.Sexo" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Código de agencia</label>
+                            <input type="number" class="form-control" @bind="EditandoEmpleado.CodAgencia" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Correo</label>
+                            <input class="form-control" @bind="EditandoEmpleado.Correo" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Teléfono</label>
+                            <input class="form-control" @bind="EditandoEmpleado.Telefono" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Rol</label>
+                            <select class="form-select" @bind="EditandoEmpleado.IdRol">
+                                <option value="0">-- Seleccionar --</option>
+                                @foreach (var rol in Roles)
+                                {
+                                    <option value="@rol.IdRol">@rol.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" @bind="EditandoEmpleado.Estado">
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button class="btn btn-success" @onclick="GuardarEdicionAsync" disabled="@Guardando">
                             @(Guardando ? "Guardando..." : "Guardar")
                         </button>
                         <button class="btn btn-secondary" @onclick="CancelarFormulario">Cancelar</button>
@@ -110,6 +174,9 @@ else
                 <th>Teléfono</th>
                 <th>Rol</th>
                 <th>Estado</th>
+                <AuthorizeView Roles="Admin" Context="accionesContext">
+                    <Authorized><th>Acciones</th></Authorized>
+                </AuthorizeView>
             </tr>
         </thead>
         <tbody>
@@ -124,6 +191,14 @@ else
                     <td>@e.Telefono</td>
                     <td>@(e.Rol ?? "-")</td>
                     <td>@(e.Estado == 1 ? "Activo" : "Inactivo")</td>
+                    <AuthorizeView Roles="Admin" Context="filaContext">
+                        <Authorized>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" @onclick="() => MostrarFormularioEditarAsync(e)">Editar</button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => EliminarAsync(e)">Eliminar</button>
+                            </td>
+                        </Authorized>
+                    </AuthorizeView>
                 </tr>
             }
         </tbody>
@@ -134,13 +209,19 @@ else
     [Inject] private IEmpleadoService EmpleadoService { get; set; } = default!;
     [Inject] private IAuthService AuthService { get; set; } = default!;
 
+    private enum FormMode { None, Crear, Editar }
+
     private List<EmpleadoDto> ListaEmpleados { get; set; } = new();
     private List<RoleDto> Roles { get; set; } = new();
     private CrearEmpleadoRequest NuevoEmpleado { get; set; } = new();
+    private ActualizarEmpleadoRequest EditandoEmpleado { get; set; } = new();
+
+    private FormMode Modo = FormMode.None;
+    private int EditandoId;
+    private string EditandoDocumento = string.Empty;
 
     private bool Cargando = true;
     private bool Guardando;
-    private bool MostrandoFormulario;
     private string? ErrorMensaje;
     private string? ExitoMensaje;
 
@@ -156,21 +237,51 @@ else
         Cargando = false;
     }
 
-    private async Task MostrarFormularioAsync()
+    private async Task AsegurarRolesCargadosAsync()
+    {
+        if (Roles.Count == 0)
+            Roles = await AuthService.ObtenerRolesAsync();
+    }
+
+    private async Task MostrarFormularioCrearAsync()
     {
         ErrorMensaje = null;
         ExitoMensaje = null;
         NuevoEmpleado = new CrearEmpleadoRequest();
-        Roles = await AuthService.ObtenerRolesAsync();
-        MostrandoFormulario = true;
+        await AsegurarRolesCargadosAsync();
+        Modo = FormMode.Crear;
+    }
+
+    private async Task MostrarFormularioEditarAsync(EmpleadoDto empleado)
+    {
+        ErrorMensaje = null;
+        ExitoMensaje = null;
+        await AsegurarRolesCargadosAsync();
+
+        EditandoId = empleado.IdEmpleado;
+        EditandoDocumento = empleado.Documento;
+        EditandoEmpleado = new ActualizarEmpleadoRequest
+        {
+            Nombres = empleado.Nombres,
+            PrimerApellido = empleado.PrimerApellido,
+            SegundoApellido = empleado.SegundoApellido,
+            Sexo = empleado.Sexo,
+            CodAgencia = empleado.CodAgencia,
+            Correo = empleado.Correo,
+            Telefono = empleado.Telefono,
+            Estado = empleado.Estado,
+            IdRol = Roles.FirstOrDefault(r => r.Nombre == empleado.Rol)?.IdRol ?? 0
+        };
+
+        Modo = FormMode.Editar;
     }
 
     private void CancelarFormulario()
     {
-        MostrandoFormulario = false;
+        Modo = FormMode.None;
     }
 
-    private async Task GuardarAsync()
+    private async Task GuardarCreacionAsync()
     {
         ErrorMensaje = null;
         ExitoMensaje = null;
@@ -198,7 +309,54 @@ else
         }
 
         ExitoMensaje = "Empleado creado correctamente.";
-        MostrandoFormulario = false;
+        Modo = FormMode.None;
+        await CargarEmpleadosAsync();
+    }
+
+    private async Task GuardarEdicionAsync()
+    {
+        ErrorMensaje = null;
+        ExitoMensaje = null;
+
+        if (EditandoEmpleado.IdRol <= 0)
+        {
+            ErrorMensaje = "Debe seleccionar un rol.";
+            return;
+        }
+
+        Guardando = true;
+        var (exito, mensaje) = await EmpleadoService.ActualizarAsync(EditandoId, EditandoEmpleado);
+        Guardando = false;
+
+        if (!exito)
+        {
+            ErrorMensaje = mensaje;
+            return;
+        }
+
+        ExitoMensaje = "Empleado actualizado correctamente.";
+        Modo = FormMode.None;
+        await CargarEmpleadosAsync();
+    }
+
+    private async Task EliminarAsync(EmpleadoDto empleado)
+    {
+        ErrorMensaje = null;
+        ExitoMensaje = null;
+
+        var confirmado = await JS.InvokeAsync<bool>("confirm", $"¿Dar de baja a {empleado.Nombres} {empleado.PrimerApellido}?");
+        if (!confirmado)
+            return;
+
+        var (exito, mensaje) = await EmpleadoService.EliminarAsync(empleado.IdEmpleado);
+
+        if (!exito)
+        {
+            ErrorMensaje = mensaje;
+            return;
+        }
+
+        ExitoMensaje = "Empleado dado de baja correctamente.";
         await CargarEmpleadosAsync();
     }
 }
