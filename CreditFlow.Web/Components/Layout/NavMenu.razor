@@ -28,6 +28,16 @@
                     </NavLink>
                 </div>
 
+                <AuthorizeView Roles="Admin,Supervisor,Tecnologia" Context="empleadosContext">
+                    <Authorized>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="empleados">
+                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Mantenimiento de Empleados
+                            </NavLink>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+
                 <div class="nav-item px-3">
                     <form method="post" action="/logout">
                         <AntiforgeryToken />

@@ -29,6 +29,7 @@ builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthApiService>();
+builder.Services.AddScoped<IEmpleadoService, EmpleadoApiService>();
 
 var app = builder.Build();
 

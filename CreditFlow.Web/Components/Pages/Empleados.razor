@@ -1,0 +1,204 @@
+@page "/empleados"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+
+<PageTitle>Mantenimiento de Empleados</PageTitle>
+
+<h3>Empleados</h3>
+
+@if (!string.IsNullOrEmpty(ErrorMensaje))
+{
+    <div class="alert alert-danger" role="alert">@ErrorMensaje</div>
+}
+
+@if (!string.IsNullOrEmpty(ExitoMensaje))
+{
+    <div class="alert alert-success" role="alert">@ExitoMensaje</div>
+}
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        @if (!MostrandoFormulario)
+        {
+            <button class="btn btn-primary mb-3" @onclick="MostrarFormularioAsync">
+                Nuevo empleado
+            </button>
+        }
+        else
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Documento</label>
+                            <input class="form-control" @bind="NuevoEmpleado.Documento" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nombres</label>
+                            <input class="form-control" @bind="NuevoEmpleado.Nombres" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Primer apellido</label>
+                            <input class="form-control" @bind="NuevoEmpleado.PrimerApellido" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Segundo apellido</label>
+                            <input class="form-control" @bind="NuevoEmpleado.SegundoApellido" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Sexo</label>
+                            <input type="number" class="form-control" @bind="NuevoEmpleado.Sexo" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Código de agencia</label>
+                            <input type="number" class="form-control" @bind="NuevoEmpleado.CodAgencia" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Correo</label>
+                            <input class="form-control" @bind="NuevoEmpleado.Correo" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Teléfono</label>
+                            <input class="form-control" @bind="NuevoEmpleado.Telefono" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" @bind="NuevoEmpleado.Password" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Rol</label>
+                            <select class="form-select" @bind="NuevoEmpleado.IdRol">
+                                <option value="0">-- Seleccionar --</option>
+                                @foreach (var rol in Roles)
+                                {
+                                    <option value="@rol.IdRol">@rol.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button class="btn btn-success" @onclick="GuardarAsync" disabled="@Guardando">
+                            @(Guardando ? "Guardando..." : "Guardar")
+                        </button>
+                        <button class="btn btn-secondary" @onclick="CancelarFormulario">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </Authorized>
+</AuthorizeView>
+
+@if (Cargando)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (ListaEmpleados.Count == 0)
+{
+    <p><em>No hay empleados registrados.</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Documento</th>
+                <th>Nombres</th>
+                <th>Apellidos</th>
+                <th>Agencia</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Rol</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in ListaEmpleados)
+            {
+                <tr>
+                    <td>@e.Documento</td>
+                    <td>@e.Nombres</td>
+                    <td>@e.PrimerApellido @e.SegundoApellido</td>
+                    <td>@e.CodAgencia</td>
+                    <td>@e.Correo</td>
+                    <td>@e.Telefono</td>
+                    <td>@(e.Rol ?? "-")</td>
+                    <td>@(e.Estado == 1 ? "Activo" : "Inactivo")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Inject] private IEmpleadoService EmpleadoService { get; set; } = default!;
+    [Inject] private IAuthService AuthService { get; set; } = default!;
+
+    private List<EmpleadoDto> ListaEmpleados { get; set; } = new();
+    private List<RoleDto> Roles { get; set; } = new();
+    private CrearEmpleadoRequest NuevoEmpleado { get; set; } = new();
+
+    private bool Cargando = true;
+    private bool Guardando;
+    private bool MostrandoFormulario;
+    private string? ErrorMensaje;
+    private string? ExitoMensaje;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarEmpleadosAsync();
+    }
+
+    private async Task CargarEmpleadosAsync()
+    {
+        Cargando = true;
+        ListaEmpleados = await EmpleadoService.ObtenerTodosAsync();
+        Cargando = false;
+    }
+
+    private async Task MostrarFormularioAsync()
+    {
+        ErrorMensaje = null;
+        ExitoMensaje = null;
+        NuevoEmpleado = new CrearEmpleadoRequest();
+        Roles = await AuthService.ObtenerRolesAsync();
+        MostrandoFormulario = true;
+    }
+
+    private void CancelarFormulario()
+    {
+        MostrandoFormulario = false;
+    }
+
+    private async Task GuardarAsync()
+    {
+        ErrorMensaje = null;
+        ExitoMensaje = null;
+
+        if (string.IsNullOrWhiteSpace(NuevoEmpleado.Documento) || string.IsNullOrWhiteSpace(NuevoEmpleado.Password))
+        {
+            ErrorMensaje = "Documento y contraseña son obligatorios.";
+            return;
+        }
+
+        if (NuevoEmpleado.IdRol <= 0)
+        {
+            ErrorMensaje = "Debe seleccionar un rol.";
+            return;
+        }
+
+        Guardando = true;
+        var (exito, mensaje) = await EmpleadoService.CrearAsync(NuevoEmpleado);
+        Guardando = false;
+
+        if (!exito)
+        {
+            ErrorMensaje = mensaje;
+            return;
+        }
+
+        ExitoMensaje = "Empleado creado correctamente.";
+        MostrandoFormulario = false;
+        await CargarEmpleadosAsync();
+    }
+}
