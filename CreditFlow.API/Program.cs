@@ -44,7 +44,6 @@ builder.Services.AddScoped<ILineaCreditoService, LineaCreditoService>();
 builder.Services.AddScoped<ISimulacionCalendarioService, SimulacionCalendarioService>();
 builder.Services.AddScoped<ErrorLogger>();
 builder.Services.AddScoped<IBlobStorageService, AzureBlobStorageService>();
-builder.Services.AddScoped<IMantenimientoService, MantenimientoService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
 

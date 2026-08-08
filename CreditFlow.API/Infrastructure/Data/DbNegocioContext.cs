@@ -89,7 +89,6 @@ public partial class DbNegocioContext : DbContext
     public virtual DbSet<Venta> Ventas { get; set; }
 
     public virtual DbSet<VerNegocio> VerNegocios { get; set; }
-    public virtual DbSet<Mantenimiento> Mantenimientos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
