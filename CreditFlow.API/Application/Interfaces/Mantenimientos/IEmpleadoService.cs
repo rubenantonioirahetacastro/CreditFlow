@@ -8,5 +8,9 @@ namespace CreditFlow.API.Application.Interfaces.Mantenimientos
         Task<List<EmpleadoDto>> ObtenerTodosAsync();
 
         Task<EmpleadoDto> CrearAsync(CrearEmpleadoRequest request);
+
+        Task<EmpleadoDto?> ActualizarAsync(int id, ActualizarEmpleadoRequest request);
+
+        Task<bool> EliminarAsync(int id);
     }
 }

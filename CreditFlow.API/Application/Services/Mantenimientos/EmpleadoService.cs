@@ -145,5 +145,99 @@ namespace CreditFlow.API.Application.Services.Mantenimientos
                 throw;
             }
         }
+
+        public async Task<EmpleadoDto?> ActualizarAsync(int id, ActualizarEmpleadoRequest request)
+        {
+            var empleado = await _context.Empleados.FirstOrDefaultAsync(e => e.IdEmpleado == id);
+            if (empleado == null)
+                return null;
+
+            empleado.CNombres = request.Nombres;
+            empleado.CPrimerApellido = request.PrimerApellido;
+            empleado.CSegundoApellido = request.SegundoApellido;
+            empleado.NSexo = request.Sexo;
+            empleado.NCodAge = request.CodAgencia;
+            empleado.CCorreo = request.Correo;
+            empleado.CTelefono = request.Telefono;
+            empleado.NEstado = request.Estado;
+
+            // Empleado.CCorreo y UsuarioLogin.CCorreo se cargan con el mismo valor en
+            // CrearAsync; se mantienen sincronizados también al editar.
+            var usuario = await _context.UsuarioLogins.FirstOrDefaultAsync(u => u.IdUsuario == empleado.IdUsuario);
+            if (usuario != null)
+                usuario.CCorreo = request.Correo;
+
+            var idRolActual = await ObtenerIdRolActualAsync(empleado.IdUsuario);
+            if (idRolActual != request.IdRol)
+            {
+                var nuevoRol = await _context.Roles.FirstOrDefaultAsync(r => r.IdRol == request.IdRol);
+                if (nuevoRol == null)
+                    throw new InvalidOperationException($"El rol con IdRol {request.IdRol} no existe.");
+
+                // No se reemplaza la fila anterior de UsuarioRoles: se agrega una nueva y
+                // ObtenerTodosAsync ya resuelve el rol vigente como el más recientemente
+                // asignado, preservando el historial de reasignaciones.
+                await _context.UsuarioRoles.AddAsync(new UsuarioRole
+                {
+                    IdUsuario = empleado.IdUsuario,
+                    IdRol = request.IdRol,
+                    FechaAsignacion = DateTime.UtcNow
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            var rolVigente = await _context.Roles
+                .Where(r => r.IdRol == request.IdRol)
+                .Select(r => r.Nombre)
+                .FirstOrDefaultAsync();
+
+            return new EmpleadoDto
+            {
+                IdEmpleado = empleado.IdEmpleado,
+                IdUsuario = empleado.IdUsuario,
+                Documento = empleado.CDocumento,
+                Nombres = empleado.CNombres,
+                PrimerApellido = empleado.CPrimerApellido,
+                SegundoApellido = empleado.CSegundoApellido,
+                Sexo = empleado.NSexo,
+                CodAgencia = empleado.NCodAge,
+                Correo = empleado.CCorreo,
+                Telefono = empleado.CTelefono,
+                Estado = empleado.NEstado,
+                Rol = rolVigente
+            };
+        }
+
+        public async Task<bool> EliminarAsync(int id)
+        {
+            var empleado = await _context.Empleados.FirstOrDefaultAsync(e => e.IdEmpleado == id);
+            if (empleado == null)
+                return false;
+
+            // Baja lógica: no se borra la fila (preserva historial e integridad
+            // referencial). Se bloquea también el UsuarioLogin asociado para que un
+            // empleado dado de baja no pueda seguir iniciando sesión.
+            empleado.NEstado = 0;
+
+            var usuario = await _context.UsuarioLogins.FirstOrDefaultAsync(u => u.IdUsuario == empleado.IdUsuario);
+            if (usuario != null)
+            {
+                usuario.Bloqueado = 1;
+                usuario.FechaBloqueo = int.Parse(DateTime.UtcNow.ToString("yyyyMMdd"));
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        private async Task<int?> ObtenerIdRolActualAsync(int idUsuario)
+        {
+            return await _context.UsuarioRoles
+                .Where(ur => ur.IdUsuario == idUsuario)
+                .OrderByDescending(ur => ur.FechaAsignacion)
+                .Select(ur => (int?)ur.IdRol)
+                .FirstOrDefaultAsync();
+        }
     }
 }
