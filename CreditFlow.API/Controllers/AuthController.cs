@@ -489,6 +489,10 @@ public class AuthController : ControllerBase
         var rolesData = await _context.UsuarioRoles.Where(ur => ur.IdUsuario == user.IdUsuario).Include(ur => ur.IdRolNavigation).Select(ur => new { ur.IdRol, ur.IdRolNavigation.Nombre }).ToListAsync();
         var roles = rolesData.Select(r => r.Nombre).ToList();
         var idRol = rolesData.Select(r => r.IdRol).FirstOrDefault();
+
+        foreach (var r in roles)
+            claims.Add(new Claim(ClaimTypes.Role, r));
+
         // Only allow login for users with role 'Usuario' or 'Usuario estándar'
         var allowedRoles = new[] { "Usuario", "Usuario estándar", "Supervisor" };
 
@@ -623,6 +627,10 @@ public class AuthController : ControllerBase
         var rolesData = await _context.UsuarioRoles.Where(ur => ur.IdUsuario == user.IdUsuario).Include(ur => ur.IdRolNavigation).Select(ur => new { ur.IdRol, ur.IdRolNavigation.Nombre }).ToListAsync();
         var roles = rolesData.Select(r => r.Nombre).ToList();
         var idRol = rolesData.Select(r => r.IdRol).FirstOrDefault();
+
+        foreach (var r in roles)
+            claims.Add(new Claim(ClaimTypes.Role, r));
+
         // Only allow login for users with role 'Usuario' or 'Usuario estándar'
         var allowedRoles = new[] { "Oficial-credito", "Oficial-desembolso", "Admin", "Tecnologia" };
 
