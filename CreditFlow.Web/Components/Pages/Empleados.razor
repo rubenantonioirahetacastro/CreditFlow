@@ -153,57 +153,32 @@
     </Authorized>
 </AuthorizeView>
 
-@if (Cargando)
-{
-    <p><em>Cargando...</em></p>
-}
-else if (ListaEmpleados.Count == 0)
-{
-    <p><em>No hay empleados registrados.</em></p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Documento</th>
-                <th>Nombres</th>
-                <th>Apellidos</th>
-                <th>Agencia</th>
-                <th>Correo</th>
-                <th>Teléfono</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <AuthorizeView Roles="Admin" Context="accionesContext">
-                    <Authorized><th>Acciones</th></Authorized>
-                </AuthorizeView>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var e in ListaEmpleados)
-            {
-                <tr>
-                    <td>@e.Documento</td>
-                    <td>@e.Nombres</td>
-                    <td>@e.PrimerApellido @e.SegundoApellido</td>
-                    <td>@e.CodAgencia</td>
-                    <td>@e.Correo</td>
-                    <td>@e.Telefono</td>
-                    <td>@(e.Rol ?? "-")</td>
-                    <td>@(e.Estado == 1 ? "Activo" : "Inactivo")</td>
-                    <AuthorizeView Roles="Admin" Context="filaContext">
-                        <Authorized>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary" @onclick="() => MostrarFormularioEditarAsync(e)">Editar</button>
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => EliminarAsync(e)">Eliminar</button>
-                            </td>
-                        </Authorized>
-                    </AuthorizeView>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<GridEstandar TItem="EmpleadoDto" Data="@ListaEmpleados" IsLoading="@Cargando" EmptyText="No hay empleados registrados." ExportFileName="empleados">
+    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Documento)" Title="Documento" />
+    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Nombres)" Title="Nombres" />
+    <RadzenDataGridColumn TItem="EmpleadoDto" Title="Apellidos" Sortable="false" Filterable="false">
+        <Template Context="e">@e.PrimerApellido @e.SegundoApellido</Template>
+    </RadzenDataGridColumn>
+    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.CodAgencia)" Title="Agencia" />
+    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Correo)" Title="Correo" />
+    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Telefono)" Title="Teléfono" />
+    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Rol)" Title="Rol">
+        <Template Context="e">@(e.Rol ?? "-")</Template>
+    </RadzenDataGridColumn>
+    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Estado)" Title="Estado">
+        <Template Context="e">@(e.Estado == 1 ? "Activo" : "Inactivo")</Template>
+    </RadzenDataGridColumn>
+    <AuthorizeView Roles="Admin" Context="accionesContext">
+        <Authorized>
+            <RadzenDataGridColumn TItem="EmpleadoDto" Title="Acciones" Sortable="false" Filterable="false">
+                <Template Context="e">
+                    <button class="btn btn-sm btn-outline-primary" @onclick="() => MostrarFormularioEditarAsync(e)">Editar</button>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="() => EliminarAsync(e)">Eliminar</button>
+                </Template>
+            </RadzenDataGridColumn>
+        </Authorized>
+    </AuthorizeView>
+</GridEstandar>
 
 @code {
     [Inject] private IEmpleadoService EmpleadoService { get; set; } = default!;

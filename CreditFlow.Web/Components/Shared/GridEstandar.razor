@@ -1,0 +1,88 @@
+@typeparam TItem where TItem : notnull
+@attribute [CascadingTypeParameter(nameof(TItem))]
+@using System.Text
+@inject IJSRuntime JS
+
+<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="mb-2">
+    <RadzenButton Text="Exportar a Excel"
+                  Icon="file_download"
+                  ButtonStyle="ButtonStyle.Success"
+                  Size="ButtonSize.Small"
+                  Click="@ExportarAsync" />
+</RadzenStack>
+
+<RadzenDataGrid @ref="Grid"
+                TItem="TItem"
+                Data="@Data"
+                IsLoading="@IsLoading"
+                EmptyText="@EmptyText"
+                AllowFiltering="true"
+                AllowSorting="true"
+                AllowGrouping="true"
+                AllowPaging="true"
+                PageSize="20"
+                FilterMode="FilterMode.Simple">
+    <Columns>
+        @ChildContent
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public bool IsLoading { get; set; }
+
+    [Parameter] public string EmptyText { get; set; } = "No hay datos para mostrar.";
+
+    public RadzenDataGrid<TItem> Grid { get; set; } = default!;
+
+    [Parameter] public string ExportFileName { get; set; } = "export";
+
+    private async Task ExportarAsync()
+    {
+        var columnas = Grid.ColumnsCollection
+            .Where(c => c.Visible && !string.IsNullOrEmpty(c.Property))
+            .ToList();
+
+        var sb = new StringBuilder();
+        sb.AppendLine(string.Join(",", columnas.Select(c => EscaparCsv(c.Title))));
+
+        foreach (var item in Data ?? Enumerable.Empty<TItem>())
+        {
+            var valores = columnas.Select(c => EscaparCsv(ObtenerValor(item, c.Property)?.ToString()));
+            sb.AppendLine(string.Join(",", valores));
+        }
+
+        var bytes = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetBytes(sb.ToString());
+        await JS.InvokeVoidAsync("Radzen.downloadFile", $"{ExportFileName}.csv", bytes, "text/csv");
+    }
+
+    private static string EscaparCsv(string? valor)
+    {
+        valor ??= string.Empty;
+        var comilla = '"';
+        if (valor.Contains(',') || valor.Contains(comilla) || valor.Contains('\n') || valor.Contains('\r'))
+        {
+            var valorEscapado = valor.Replace(comilla.ToString(), comilla.ToString() + comilla.ToString());
+            return comilla + valorEscapado + comilla;
+        }
+
+        return valor;
+    }
+
+    private static object? ObtenerValor(TItem item, string propertyPath)
+    {
+        object? valorActual = item;
+        foreach (var parte in propertyPath.Split('.'))
+        {
+            if (valorActual is null)
+                return null;
+
+            valorActual = valorActual.GetType().GetProperty(parte)?.GetValue(valorActual);
+        }
+
+        return valorActual;
+    }
+}

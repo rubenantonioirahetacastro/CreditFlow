@@ -2,6 +2,7 @@ using CreditFlow.Web.Components;
 using CreditFlow.Web.Endpoints;
 using CreditFlow.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,8 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthApiService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoApiService>();
+
+builder.Services.AddRadzenComponents();
 
 var app = builder.Build();
 
