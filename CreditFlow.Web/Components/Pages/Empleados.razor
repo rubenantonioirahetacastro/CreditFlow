@@ -17,164 +17,138 @@
     <div class="alert alert-success" role="alert">@ExitoMensaje</div>
 }
 
-<AuthorizeView Roles="Admin">
+<AuthorizeView Roles="Admin" Context="nuevoContext">
     <Authorized>
-        @if (Modo == FormMode.None)
-        {
-            <button class="btn btn-primary mb-3" @onclick="MostrarFormularioCrearAsync">
-                Nuevo empleado
-            </button>
-        }
-        else if (Modo == FormMode.Crear)
-        {
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5>Nuevo empleado</h5>
-                    <div class="row g-2">
-                        <div class="col-md-4">
-                            <label class="form-label">Documento</label>
-                            <input class="form-control" @bind="NuevoEmpleado.Documento" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Nombres</label>
-                            <input class="form-control" @bind="NuevoEmpleado.Nombres" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Primer apellido</label>
-                            <input class="form-control" @bind="NuevoEmpleado.PrimerApellido" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Segundo apellido</label>
-                            <input class="form-control" @bind="NuevoEmpleado.SegundoApellido" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Sexo</label>
-                            <input type="number" class="form-control" @bind="NuevoEmpleado.Sexo" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Código de agencia</label>
-                            <input type="number" class="form-control" @bind="NuevoEmpleado.CodAgencia" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Correo</label>
-                            <input class="form-control" @bind="NuevoEmpleado.Correo" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Teléfono</label>
-                            <input class="form-control" @bind="NuevoEmpleado.Telefono" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" @bind="NuevoEmpleado.Password" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Rol</label>
-                            <select class="form-select" @bind="NuevoEmpleado.IdRol">
-                                <option value="0">-- Seleccionar --</option>
-                                @foreach (var rol in Roles)
-                                {
-                                    <option value="@rol.IdRol">@rol.Nombre</option>
-                                }
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <button class="btn btn-success" @onclick="GuardarCreacionAsync" disabled="@Guardando">
-                            @(Guardando ? "Guardando..." : "Guardar")
-                        </button>
-                        <button class="btn btn-secondary" @onclick="CancelarFormulario">Cancelar</button>
-                    </div>
-                </div>
-            </div>
-        }
-        else if (Modo == FormMode.Editar)
-        {
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5>Editar empleado (@EditandoDocumento)</h5>
-                    <div class="row g-2">
-                        <div class="col-md-4">
-                            <label class="form-label">Nombres</label>
-                            <input class="form-control" @bind="EditandoEmpleado.Nombres" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Primer apellido</label>
-                            <input class="form-control" @bind="EditandoEmpleado.PrimerApellido" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Segundo apellido</label>
-                            <input class="form-control" @bind="EditandoEmpleado.SegundoApellido" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Sexo</label>
-                            <input type="number" class="form-control" @bind="EditandoEmpleado.Sexo" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Código de agencia</label>
-                            <input type="number" class="form-control" @bind="EditandoEmpleado.CodAgencia" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Correo</label>
-                            <input class="form-control" @bind="EditandoEmpleado.Correo" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Teléfono</label>
-                            <input class="form-control" @bind="EditandoEmpleado.Telefono" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Rol</label>
-                            <select class="form-select" @bind="EditandoEmpleado.IdRol">
-                                <option value="0">-- Seleccionar --</option>
-                                @foreach (var rol in Roles)
-                                {
-                                    <option value="@rol.IdRol">@rol.Nombre</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Estado</label>
-                            <select class="form-select" @bind="EditandoEmpleado.Estado">
-                                <option value="1">Activo</option>
-                                <option value="0">Inactivo</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <button class="btn btn-success" @onclick="GuardarEdicionAsync" disabled="@Guardando">
-                            @(Guardando ? "Guardando..." : "Guardar")
-                        </button>
-                        <button class="btn btn-secondary" @onclick="CancelarFormulario">Cancelar</button>
-                    </div>
-                </div>
-            </div>
-        }
+        <RadzenButton Text="Nuevo empleado"
+                      Icon="add"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Size="ButtonSize.Small"
+                      Disabled="@(filaEnEdicion != null)"
+                      Click="@NuevoEmpleadoAsync"
+                      class="mb-3" />
     </Authorized>
 </AuthorizeView>
 
-<GridEstandar TItem="EmpleadoDto" Data="@ListaEmpleados" IsLoading="@Cargando" EmptyText="No hay empleados registrados." ExportFileName="empleados">
-    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Documento)" Title="Documento" />
-    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Nombres)" Title="Nombres" />
-    <RadzenDataGridColumn TItem="EmpleadoDto" Title="Apellidos" Sortable="false" Filterable="false">
-        <Template Context="e">@e.PrimerApellido @e.SegundoApellido</Template>
+<GridEstandar TItem="EmpleadoEdicionDto"
+              @ref="gridEstandar"
+              Data="@ListaEmpleados"
+              IsLoading="@Cargando"
+              EmptyText="No hay empleados registrados."
+              ExportFileName="empleados"
+              EditMode="DataGridEditMode.Single"
+              RowRender="@OnRowRender">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Documento)" Title="Documento">
+        <EditTemplate Context="empleado">
+            <RadzenTextBox @bind-Value="empleado.Documento" Disabled="@(empleado.IdEmpleado != 0)" Style="width:100%" />
+        </EditTemplate>
     </RadzenDataGridColumn>
-    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.CodAgencia)" Title="Agencia" />
-    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Correo)" Title="Correo" />
-    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Telefono)" Title="Teléfono" />
-    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Rol)" Title="Rol">
-        <Template Context="e">@(e.Rol ?? "-")</Template>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Nombres)" Title="Nombres">
+        <EditTemplate Context="empleado">
+            <RadzenTextBox @bind-Value="empleado.Nombres" Style="width:100%" />
+        </EditTemplate>
     </RadzenDataGridColumn>
-    <RadzenDataGridColumn TItem="EmpleadoDto" Property="@nameof(EmpleadoDto.Estado)" Title="Estado">
-        <Template Context="e">@(e.Estado == 1 ? "Activo" : "Inactivo")</Template>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Apellidos" Sortable="false" Filterable="false">
+        <Template Context="empleado">@empleado.PrimerApellido @empleado.SegundoApellido</Template>
+        <EditTemplate Context="empleado">
+            <div class="d-flex gap-1">
+                <RadzenTextBox @bind-Value="empleado.PrimerApellido" Placeholder="Primer apellido" Style="width:50%" />
+                <RadzenTextBox @bind-Value="empleado.SegundoApellido" Placeholder="Segundo apellido" Style="width:50%" />
+            </div>
+        </EditTemplate>
     </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Sexo)" Title="Sexo">
+        <EditTemplate Context="empleado">
+            <RadzenNumeric TValue="int" @bind-Value="empleado.Sexo" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.CodAgencia)" Title="Agencia">
+        <EditTemplate Context="empleado">
+            <RadzenNumeric TValue="int" @bind-Value="empleado.CodAgencia" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Correo)" Title="Correo">
+        <EditTemplate Context="empleado">
+            <RadzenTextBox @bind-Value="empleado.Correo" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Telefono)" Title="Teléfono">
+        <EditTemplate Context="empleado">
+            <RadzenTextBox @bind-Value="empleado.Telefono" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Contraseña" Sortable="false" Filterable="false" Width="160px">
+        <Template Context="empleado"></Template>
+        <EditTemplate Context="empleado">
+            @if (empleado.IdEmpleado == 0)
+            {
+                <RadzenPassword @bind-Value="empleado.Password" Placeholder="Contraseña" Style="width:100%" />
+            }
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Rol)" Title="Rol">
+        <Template Context="empleado">@(empleado.Rol ?? "-")</Template>
+        <EditTemplate Context="empleado">
+            <RadzenDropDown TValue="int"
+                             @bind-Value="empleado.IdRol"
+                             Data="@Roles"
+                             TextProperty="@nameof(RoleDto.Nombre)"
+                             ValueProperty="@nameof(RoleDto.IdRol)"
+                             Placeholder="-- Seleccionar --"
+                             Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Estado)" Title="Estado">
+        <Template Context="empleado">@(empleado.Estado == 1 ? "Activo" : "Inactivo")</Template>
+        <EditTemplate Context="empleado">
+            <RadzenDropDown TValue="int"
+                             @bind-Value="empleado.Estado"
+                             Data="@EstadoOpciones"
+                             TextProperty="@nameof(OpcionEstado.Texto)"
+                             ValueProperty="@nameof(OpcionEstado.Valor)"
+                             Disabled="@(empleado.IdEmpleado == 0)"
+                             Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
     <AuthorizeView Roles="Admin" Context="accionesContext">
         <Authorized>
-            <RadzenDataGridColumn TItem="EmpleadoDto" Title="Acciones" Sortable="false" Filterable="false">
-                <Template Context="e">
-                    <button class="btn btn-sm btn-outline-primary" @onclick="() => MostrarFormularioEditarAsync(e)">Editar</button>
-                    <button class="btn btn-sm btn-outline-danger" @onclick="() => EliminarAsync(e)">Eliminar</button>
+            <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Acciones" Sortable="false" Filterable="false" Width="180px">
+                <Template Context="empleado">
+                    <RadzenButton Text="Editar"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Variant="Variant.Outlined"
+                                  Size="ButtonSize.ExtraSmall"
+                                  Disabled="@(filaEnEdicion != null)"
+                                  Click="@(() => EditarAsync(empleado))" />
+                    <RadzenButton Text="Eliminar"
+                                  ButtonStyle="ButtonStyle.Danger"
+                                  Variant="Variant.Outlined"
+                                  Size="ButtonSize.ExtraSmall"
+                                  Disabled="@(filaEnEdicion != null)"
+                                  Click="@(() => EliminarAsync(empleado))" />
                 </Template>
+                <EditTemplate Context="empleado">
+                    <RadzenButton Text="Guardar"
+                                  ButtonStyle="ButtonStyle.Success"
+                                  Size="ButtonSize.ExtraSmall"
+                                  Disabled="@Guardando"
+                                  Click="@(() => GuardarAsync(empleado))" />
+                    <RadzenButton Text="Cancelar"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Variant="Variant.Outlined"
+                                  Size="ButtonSize.ExtraSmall"
+                                  Disabled="@Guardando"
+                                  Click="@(() => CancelarAsync(empleado))" />
+                </EditTemplate>
             </RadzenDataGridColumn>
         </Authorized>
     </AuthorizeView>
@@ -184,16 +158,28 @@
     [Inject] private IEmpleadoService EmpleadoService { get; set; } = default!;
     [Inject] private IAuthService AuthService { get; set; } = default!;
 
-    private enum FormMode { None, Crear, Editar }
+    private record OpcionEstado(int Valor, string Texto);
 
-    private List<EmpleadoDto> ListaEmpleados { get; set; } = new();
+    private static readonly List<OpcionEstado> EstadoOpciones = new()
+    {
+        new OpcionEstado(1, "Activo"),
+        new OpcionEstado(0, "Inactivo")
+    };
+
+    private class EmpleadoEdicionDto : EmpleadoDto
+    {
+        public int IdRol { get; set; }
+
+        public string? Password { get; set; }
+    }
+
+    private GridEstandar<EmpleadoEdicionDto> gridEstandar = default!;
+
+    private List<EmpleadoEdicionDto> ListaEmpleados { get; set; } = new();
     private List<RoleDto> Roles { get; set; } = new();
-    private CrearEmpleadoRequest NuevoEmpleado { get; set; } = new();
-    private ActualizarEmpleadoRequest EditandoEmpleado { get; set; } = new();
 
-    private FormMode Modo = FormMode.None;
-    private int EditandoId;
-    private string EditandoDocumento = string.Empty;
+    private EmpleadoEdicionDto? filaEnEdicion;
+    private EmpleadoEdicionDto? backupOriginal;
 
     private bool Cargando = true;
     private bool Guardando;
@@ -202,79 +188,136 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Roles = await AuthService.ObtenerRolesAsync();
         await CargarEmpleadosAsync();
     }
 
     private async Task CargarEmpleadosAsync()
     {
         Cargando = true;
-        ListaEmpleados = await EmpleadoService.ObtenerTodosAsync();
+        var empleados = await EmpleadoService.ObtenerTodosAsync();
+        ListaEmpleados = empleados.Select(MapearAEdicion).ToList();
         Cargando = false;
     }
 
-    private async Task AsegurarRolesCargadosAsync()
+    private EmpleadoEdicionDto MapearAEdicion(EmpleadoDto e) => new()
     {
-        if (Roles.Count == 0)
-            Roles = await AuthService.ObtenerRolesAsync();
+        IdEmpleado = e.IdEmpleado,
+        IdUsuario = e.IdUsuario,
+        Documento = e.Documento,
+        Nombres = e.Nombres,
+        PrimerApellido = e.PrimerApellido,
+        SegundoApellido = e.SegundoApellido,
+        Sexo = e.Sexo,
+        CodAgencia = e.CodAgencia,
+        Correo = e.Correo,
+        Telefono = e.Telefono,
+        Estado = e.Estado,
+        Rol = e.Rol,
+        IdRol = Roles.FirstOrDefault(r => r.Nombre == e.Rol)?.IdRol ?? 0
+    };
+
+    private void OnRowRender(RowRenderEventArgs<EmpleadoEdicionDto> args)
+    {
+        if (filaEnEdicion is not { } fila || !ReferenceEquals(args.Data, fila))
+            return;
+
+        args.Attributes["style"] = fila.IdEmpleado == 0
+            ? "background-color: #e6f7ec;"
+            : "background-color: #e7f1fd;";
     }
 
-    private async Task MostrarFormularioCrearAsync()
+    private async Task NuevoEmpleadoAsync()
     {
         ErrorMensaje = null;
         ExitoMensaje = null;
-        NuevoEmpleado = new CrearEmpleadoRequest();
-        await AsegurarRolesCargadosAsync();
-        Modo = FormMode.Crear;
+
+        var nuevo = new EmpleadoEdicionDto { Estado = 1 };
+        filaEnEdicion = nuevo;
+        await gridEstandar.Grid.InsertRow(nuevo);
     }
 
-    private async Task MostrarFormularioEditarAsync(EmpleadoDto empleado)
+    private async Task EditarAsync(EmpleadoEdicionDto empleado)
     {
         ErrorMensaje = null;
         ExitoMensaje = null;
-        await AsegurarRolesCargadosAsync();
 
-        EditandoId = empleado.IdEmpleado;
-        EditandoDocumento = empleado.Documento;
-        EditandoEmpleado = new ActualizarEmpleadoRequest
+        backupOriginal = ClonarValores(empleado);
+        filaEnEdicion = empleado;
+        await gridEstandar.Grid.EditRow(empleado);
+    }
+
+    private void CancelarAsync(EmpleadoEdicionDto empleado)
+    {
+        ErrorMensaje = null;
+        gridEstandar.Grid.CancelEditRow(empleado);
+
+        if (empleado.IdEmpleado != 0 && backupOriginal is not null)
         {
-            Nombres = empleado.Nombres,
-            PrimerApellido = empleado.PrimerApellido,
-            SegundoApellido = empleado.SegundoApellido,
-            Sexo = empleado.Sexo,
-            CodAgencia = empleado.CodAgencia,
-            Correo = empleado.Correo,
-            Telefono = empleado.Telefono,
-            Estado = empleado.Estado,
-            IdRol = Roles.FirstOrDefault(r => r.Nombre == empleado.Rol)?.IdRol ?? 0
-        };
+            CopiarValores(backupOriginal, empleado);
+        }
 
-        Modo = FormMode.Editar;
+        backupOriginal = null;
+        filaEnEdicion = null;
     }
 
-    private void CancelarFormulario()
-    {
-        Modo = FormMode.None;
-    }
-
-    private async Task GuardarCreacionAsync()
+    private async Task GuardarAsync(EmpleadoEdicionDto empleado)
     {
         ErrorMensaje = null;
         ExitoMensaje = null;
 
-        if (string.IsNullOrWhiteSpace(NuevoEmpleado.Documento) || string.IsNullOrWhiteSpace(NuevoEmpleado.Password))
+        var esNuevo = empleado.IdEmpleado == 0;
+
+        if (esNuevo && (string.IsNullOrWhiteSpace(empleado.Documento) || string.IsNullOrWhiteSpace(empleado.Password)))
         {
             ErrorMensaje = "Documento y contraseña son obligatorios.";
             return;
         }
 
-        if (NuevoEmpleado.IdRol <= 0)
+        if (empleado.IdRol <= 0)
         {
             ErrorMensaje = "Debe seleccionar un rol.";
             return;
         }
 
         Guardando = true;
-        var (exito, mensaje) = await EmpleadoService.CrearAsync(NuevoEmpleado);
+        bool exito;
+        string? mensaje;
+
+        if (esNuevo)
+        {
+            var request = new CrearEmpleadoRequest
+            {
+                Documento = empleado.Documento,
+                Nombres = empleado.Nombres,
+                PrimerApellido = empleado.PrimerApellido,
+                SegundoApellido = empleado.SegundoApellido,
+                Sexo = empleado.Sexo,
+                CodAgencia = empleado.CodAgencia,
+                Correo = empleado.Correo,
+                Telefono = empleado.Telefono,
+                Password = empleado.Password!,
+                IdRol = empleado.IdRol
+            };
+            (exito, mensaje) = await EmpleadoService.CrearAsync(request);
+        }
+        else
+        {
+            var request = new ActualizarEmpleadoRequest
+            {
+                Nombres = empleado.Nombres,
+                PrimerApellido = empleado.PrimerApellido,
+                SegundoApellido = empleado.SegundoApellido,
+                Sexo = empleado.Sexo,
+                CodAgencia = empleado.CodAgencia,
+                Correo = empleado.Correo,
+                Telefono = empleado.Telefono,
+                Estado = empleado.Estado,
+                IdRol = empleado.IdRol
+            };
+            (exito, mensaje) = await EmpleadoService.ActualizarAsync(empleado.IdEmpleado, request);
+        }
+
         Guardando = false;
 
         if (!exito)
@@ -283,38 +326,15 @@
             return;
         }
 
-        ExitoMensaje = "Empleado creado correctamente.";
-        Modo = FormMode.None;
+        await gridEstandar.Grid.UpdateRow(empleado);
+        backupOriginal = null;
+        filaEnEdicion = null;
+
+        ExitoMensaje = esNuevo ? "Empleado creado correctamente." : "Empleado actualizado correctamente.";
         await CargarEmpleadosAsync();
     }
 
-    private async Task GuardarEdicionAsync()
-    {
-        ErrorMensaje = null;
-        ExitoMensaje = null;
-
-        if (EditandoEmpleado.IdRol <= 0)
-        {
-            ErrorMensaje = "Debe seleccionar un rol.";
-            return;
-        }
-
-        Guardando = true;
-        var (exito, mensaje) = await EmpleadoService.ActualizarAsync(EditandoId, EditandoEmpleado);
-        Guardando = false;
-
-        if (!exito)
-        {
-            ErrorMensaje = mensaje;
-            return;
-        }
-
-        ExitoMensaje = "Empleado actualizado correctamente.";
-        Modo = FormMode.None;
-        await CargarEmpleadosAsync();
-    }
-
-    private async Task EliminarAsync(EmpleadoDto empleado)
+    private async Task EliminarAsync(EmpleadoEdicionDto empleado)
     {
         ErrorMensaje = null;
         ExitoMensaje = null;
@@ -333,5 +353,36 @@
 
         ExitoMensaje = "Empleado dado de baja correctamente.";
         await CargarEmpleadosAsync();
+    }
+
+    private static EmpleadoEdicionDto ClonarValores(EmpleadoEdicionDto origen) => new()
+    {
+        IdEmpleado = origen.IdEmpleado,
+        IdUsuario = origen.IdUsuario,
+        Documento = origen.Documento,
+        Nombres = origen.Nombres,
+        PrimerApellido = origen.PrimerApellido,
+        SegundoApellido = origen.SegundoApellido,
+        Sexo = origen.Sexo,
+        CodAgencia = origen.CodAgencia,
+        Correo = origen.Correo,
+        Telefono = origen.Telefono,
+        Estado = origen.Estado,
+        Rol = origen.Rol,
+        IdRol = origen.IdRol
+    };
+
+    private static void CopiarValores(EmpleadoEdicionDto origen, EmpleadoEdicionDto destino)
+    {
+        destino.Nombres = origen.Nombres;
+        destino.PrimerApellido = origen.PrimerApellido;
+        destino.SegundoApellido = origen.SegundoApellido;
+        destino.Sexo = origen.Sexo;
+        destino.CodAgencia = origen.CodAgencia;
+        destino.Correo = origen.Correo;
+        destino.Telefono = origen.Telefono;
+        destino.Estado = origen.Estado;
+        destino.Rol = origen.Rol;
+        destino.IdRol = origen.IdRol;
     }
 }

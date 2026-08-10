@@ -1,4 +1,4 @@
-<div class="top-row ps-3 navbar navbar-dark">
+<div class="top-row ps-3 navbar navbar-light">
     <div class="container-fluid">
         <a class="navbar-brand" href="">CreditFlow.Web</a>
     </div>
@@ -9,32 +9,53 @@
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <AuthorizeView>
         <Authorized>
+            <div class="nav-search px-3">
+                <RadzenIcon Icon="search" class="nav-search-icon" />
+                <input type="text" class="nav-search-input" placeholder="Buscar..." value="@busqueda" @oninput="OnBusquedaChanged" />
+            </div>
+
             <nav class="flex-column">
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-                    </NavLink>
-                </div>
+                @if (Mostrar("Home"))
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                            <RadzenIcon Icon="home" />
+                            <span>Home</span>
+                        </NavLink>
+                    </div>
+                }
 
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="counter">
-                        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-                    </NavLink>
-                </div>
+                @if (Mostrar("Counter"))
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="counter">
+                            <RadzenIcon Icon="add_box" />
+                            <span>Counter</span>
+                        </NavLink>
+                    </div>
+                }
 
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="weather">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-                    </NavLink>
-                </div>
+                @if (Mostrar("Weather"))
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="weather">
+                            <RadzenIcon Icon="cloud" />
+                            <span>Weather</span>
+                        </NavLink>
+                    </div>
+                }
 
                 <AuthorizeView Roles="Admin,Supervisor,Tecnologia" Context="empleadosContext">
                     <Authorized>
-                        <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="empleados">
-                                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Mantenimiento de Empleados
-                            </NavLink>
-                        </div>
+                        @if (Mostrar("Empleados") || Mostrar("Mantenimiento de Empleados"))
+                        {
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="empleados" title="Mantenimiento de Empleados">
+                                    <RadzenIcon Icon="badge" />
+                                    <span>Empleados</span>
+                                </NavLink>
+                            </div>
+                        }
                     </Authorized>
                 </AuthorizeView>
 
@@ -42,7 +63,8 @@
                     <form method="post" action="/logout">
                         <AntiforgeryToken />
                         <button type="submit" class="nav-link btn btn-link text-start w-100">
-                            Cerrar sesión (@context.User.Identity?.Name)
+                            <RadzenIcon Icon="logout" />
+                            <span>Cerrar sesión (@context.User.Identity?.Name)</span>
                         </button>
                     </form>
                 </div>
@@ -50,3 +72,12 @@
         </Authorized>
     </AuthorizeView>
 </div>
+
+@code {
+    private string busqueda = string.Empty;
+
+    private void OnBusquedaChanged(ChangeEventArgs e) => busqueda = e.Value?.ToString() ?? string.Empty;
+
+    private bool Mostrar(string texto) =>
+        string.IsNullOrWhiteSpace(busqueda) || texto.Contains(busqueda, StringComparison.OrdinalIgnoreCase);
+}

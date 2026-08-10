@@ -23,7 +23,12 @@
                 AllowAlternatingRows="true"
                 AllowPaging="true"
                 PageSize="20"
-                FilterMode="FilterMode.Advanced">
+                FilterMode="FilterMode.Advanced"
+                EditMode="@EditMode"
+                RowEdit="@RowEdit"
+                RowUpdate="@RowUpdate"
+                RowCreate="@RowCreate"
+                RowRender="@RowRender">
     <Columns>
         @ChildContent
     </Columns>
@@ -41,6 +46,16 @@
     public RadzenDataGrid<TItem> Grid { get; set; } = default!;
 
     [Parameter] public string ExportFileName { get; set; } = "export";
+
+    [Parameter] public DataGridEditMode EditMode { get; set; } = DataGridEditMode.Single;
+
+    [Parameter] public EventCallback<TItem> RowEdit { get; set; }
+
+    [Parameter] public EventCallback<TItem> RowUpdate { get; set; }
+
+    [Parameter] public EventCallback<TItem> RowCreate { get; set; }
+
+    [Parameter] public Action<RowRenderEventArgs<TItem>>? RowRender { get; set; }
 
     private async Task ExportarAsync()
     {
