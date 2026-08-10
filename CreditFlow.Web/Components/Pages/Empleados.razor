@@ -37,19 +37,19 @@
               ExportFileName="empleados"
               EditMode="DataGridEditMode.Single"
               RowRender="@OnRowRender">
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Documento)" Title="Documento">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Documento)" Title="Documento" Width="170px">
         <EditTemplate Context="empleado">
             <RadzenTextBox @bind-Value="empleado.Documento" Disabled="@(empleado.IdEmpleado != 0)" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Nombres)" Title="Nombres">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Nombres)" Title="Nombres" Width="180px">
         <EditTemplate Context="empleado">
             <RadzenTextBox @bind-Value="empleado.Nombres" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Apellidos" Sortable="false" Filterable="false">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Apellidos" Width="200px" Sortable="false" Filterable="false">
         <Template Context="empleado">@empleado.PrimerApellido @empleado.SegundoApellido</Template>
         <EditTemplate Context="empleado">
             <div class="d-flex gap-1">
@@ -59,31 +59,36 @@
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Sexo)" Title="Sexo">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Sexo)" Title="Sexo" Width="90px" Filterable="false">
         <EditTemplate Context="empleado">
             <RadzenNumeric TValue="int" @bind-Value="empleado.Sexo" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.CodAgencia)" Title="Agencia">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.CodAgencia)" Title="Agencia" Width="110px" Filterable="false">
         <EditTemplate Context="empleado">
             <RadzenNumeric TValue="int" @bind-Value="empleado.CodAgencia" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Correo)" Title="Correo">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Correo)" Title="Correo" Width="280px" Filterable="false">
         <EditTemplate Context="empleado">
             <RadzenTextBox @bind-Value="empleado.Correo" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Telefono)" Title="Teléfono">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Telefono)" Title="Teléfono" Width="140px" Filterable="false">
         <EditTemplate Context="empleado">
             <RadzenTextBox @bind-Value="empleado.Telefono" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Contraseña" Sortable="false" Filterable="false" Width="160px">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto"
+                           Title="Contraseña"
+                           Width="160px"
+                           Sortable="false"
+                           Filterable="false"
+                           Visible="@(filaEnEdicion?.IdEmpleado == 0)">
         <Template Context="empleado"></Template>
         <EditTemplate Context="empleado">
             @if (empleado.IdEmpleado == 0)
@@ -93,7 +98,7 @@
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Rol)" Title="Rol">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Rol)" Title="Rol" Width="150px" Filterable="false">
         <Template Context="empleado">@(empleado.Rol ?? "-")</Template>
         <EditTemplate Context="empleado">
             <RadzenDropDown TValue="int"
@@ -106,7 +111,7 @@
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Estado)" Title="Estado">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Estado)" Title="Estado" Width="110px" Filterable="false">
         <Template Context="empleado">@(empleado.Estado == 1 ? "Activo" : "Inactivo")</Template>
         <EditTemplate Context="empleado">
             <RadzenDropDown TValue="int"
@@ -124,8 +129,8 @@
             <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Acciones" Sortable="false" Filterable="false" Width="180px">
                 <Template Context="empleado">
                     <RadzenButton Text="Editar"
-                                  ButtonStyle="ButtonStyle.Light"
-                                  Variant="Variant.Outlined"
+                                  ButtonStyle="ButtonStyle.Primary"
+                                  Variant="Variant.Flat"
                                   Size="ButtonSize.ExtraSmall"
                                   Disabled="@(filaEnEdicion != null)"
                                   Click="@(() => EditarAsync(empleado))" />

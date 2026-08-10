@@ -2,6 +2,17 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+/* Reemplaza el acento morado/indigo por defecto del tema Material de Radzen (--rz-primary: #4340D2)
+   por el azul corporativo del proyecto. Afecta a todos los componentes Radzen con ButtonStyle.Primary,
+   bordes de foco, seleccion en dropdowns, icono de filtro activo, etc. */
+:root {
+    --rz-primary: #2563eb;
+    --rz-primary-light: #60a5fa;
+    --rz-primary-lighter: rgba(37, 99, 235, 0.12);
+    --rz-primary-dark: #1d4ed8;
+    --rz-primary-darker: #1e40af;
+}
+
 a, .btn-link {
     color: #006bb7;
 }
