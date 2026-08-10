@@ -4,10 +4,11 @@
 @inject IJSRuntime JS
 
 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="mb-2">
-    <RadzenButton Text="Exportar a Excel"
+    <RadzenButton Text="Exportar"
                   Icon="file_download"
-                  ButtonStyle="ButtonStyle.Success"
-                  Size="ButtonSize.Small"
+                  ButtonStyle="ButtonStyle.Light"
+                  Variant="Variant.Outlined"
+                  Size="ButtonSize.ExtraSmall"
                   Click="@ExportarAsync" />
 </RadzenStack>
 
@@ -18,10 +19,11 @@
                 EmptyText="@EmptyText"
                 AllowFiltering="true"
                 AllowSorting="true"
-                AllowGrouping="true"
+                AllowGrouping="false"
+                AllowAlternatingRows="true"
                 AllowPaging="true"
                 PageSize="20"
-                FilterMode="FilterMode.Simple">
+                FilterMode="FilterMode.Advanced">
     <Columns>
         @ChildContent
     </Columns>
