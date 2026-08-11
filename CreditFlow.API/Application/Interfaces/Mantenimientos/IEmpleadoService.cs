@@ -12,5 +12,7 @@ namespace CreditFlow.API.Application.Interfaces.Mantenimientos
         Task<EmpleadoDto?> ActualizarAsync(int id, ActualizarEmpleadoRequest request);
 
         Task<bool> EliminarAsync(int id);
+
+        Task<(Stream Stream, string ContentType)?> ObtenerFotoAsync(int id);
     }
 }

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace CreditFlow.API.Application.Requests.Mantenimientos
 {
     public class CrearEmpleadoRequest
@@ -21,5 +23,7 @@ namespace CreditFlow.API.Application.Requests.Mantenimientos
         public string Password { get; set; } = string.Empty;
 
         public int IdRol { get; set; }
+
+        public IFormFile? Foto { get; set; }
     }
 }

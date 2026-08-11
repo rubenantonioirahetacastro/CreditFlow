@@ -1,0 +1,42 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/CreditFlow.API/bin/Debug/net8.0/CreditFlow.API.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/CreditFlow.API",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7293;http://localhost:5006"
+      }
+    },
+    {
+      "name": "Web",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-web",
+      "program": "${workspaceFolder}/CreditFlow.Web/bin/Debug/net8.0/CreditFlow.Web.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/CreditFlow.Web",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7128;http://localhost:5174"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "API + Web",
+      "configurations": ["API", "Web"],
+      "stopAll": true
+    }
+  ]
+}

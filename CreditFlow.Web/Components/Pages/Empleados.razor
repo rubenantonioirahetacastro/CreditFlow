@@ -1,33 +1,9 @@
 @page "/empleados"
-@rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
-@inject IJSRuntime JS
 
 <PageTitle>Mantenimiento de Empleados</PageTitle>
 
 <h3>Empleados</h3>
-
-@if (!string.IsNullOrEmpty(ErrorMensaje))
-{
-    <div class="alert alert-danger" role="alert">@ErrorMensaje</div>
-}
-
-@if (!string.IsNullOrEmpty(ExitoMensaje))
-{
-    <div class="alert alert-success" role="alert">@ExitoMensaje</div>
-}
-
-<AuthorizeView Roles="Admin" Context="nuevoContext">
-    <Authorized>
-        <RadzenButton Text="Nuevo empleado"
-                      Icon="add"
-                      ButtonStyle="ButtonStyle.Primary"
-                      Size="ButtonSize.Small"
-                      Disabled="@(filaEnEdicion != null)"
-                      Click="@NuevoEmpleadoAsync"
-                      class="mb-3" />
-    </Authorized>
-</AuthorizeView>
 
 <GridEstandar TItem="EmpleadoEdicionDto"
               @ref="gridEstandar"
@@ -36,20 +12,77 @@
               EmptyText="No hay empleados registrados."
               ExportFileName="empleados"
               EditMode="DataGridEditMode.Single"
-              RowRender="@OnRowRender">
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Documento)" Title="Documento" Width="170px">
+              RowRender="@OnRowRender"
+              ShowAddButton="@esAdmin"
+              AddDisabled="@(filaEnEdicion != null)"
+              AddButtonTitle="Nuevo empleado"
+              OnAdd="@NuevoEmpleadoAsync">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="" Sortable="false" Filterable="false" Width="60px" CssClass="celda-accion" Visible="@esAdmin" Frozen="true">
+        <Template Context="empleado">
+            <RadzenButton Icon="edit"
+                          ButtonStyle="ButtonStyle.Primary"
+                          Variant="Variant.Outlined"
+                          Size="ButtonSize.ExtraSmall"
+                          Disabled="@(filaEnEdicion != null)"
+                          title="Editar empleado"
+                          Click="@(() => EditarAsync(empleado))" />
+        </Template>
+        <EditTemplate Context="empleado">
+            <div class="d-flex gap-1">
+                <RadzenButton Icon="save"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Variant="Variant.Outlined"
+                              Size="ButtonSize.ExtraSmall"
+                              Disabled="@Guardando"
+                              title="Guardar cambios"
+                              Click="@(() => GuardarAsync(empleado))" />
+                <RadzenButton Icon="close"
+                              ButtonStyle="ButtonStyle.Secondary"
+                              Variant="Variant.Outlined"
+                              Size="ButtonSize.ExtraSmall"
+                              Disabled="@Guardando"
+                              title="Cancelar edición"
+                              Click="@(() => CancelarAsync(empleado))" />
+            </div>
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="" Sortable="false" Filterable="false" Width="80px" Frozen="true">
+        <Template Context="empleado">
+            <AvatarEmpleado IdEmpleado="@empleado.IdEmpleado"
+                            TieneFoto="@(!string.IsNullOrEmpty(empleado.FotoUrl))"
+                            Iniciales="@ObtenerIniciales(empleado)"
+                            Color="@ObtenerColorAvatar(empleado)" />
+        </Template>
+        <EditTemplate Context="empleado">
+            <AvatarEmpleado IdEmpleado="@empleado.IdEmpleado"
+                            TieneFoto="@(!string.IsNullOrEmpty(empleado.FotoUrl))"
+                            PreviewUrl="@empleado.FotoPreviewUrl"
+                            Iniciales="@ObtenerIniciales(empleado)"
+                            Color="@ObtenerColorAvatar(empleado)"
+                            Editable="true"
+                            OnFotoSeleccionada="@(e => OnFotoSeleccionadaAsync(empleado, e))" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.CodigoUsuario)" Title="Usuario" Width="130px" Frozen="true">
+        <Template Context="empleado">@(string.IsNullOrEmpty(empleado.CodigoUsuario) ? "-" : empleado.CodigoUsuario)</Template>
+        <EditTemplate Context="empleado">@(string.IsNullOrEmpty(empleado.CodigoUsuario) ? "-" : empleado.CodigoUsuario)</EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Documento)" Title="Documento" Width="150px">
         <EditTemplate Context="empleado">
             <RadzenTextBox @bind-Value="empleado.Documento" Disabled="@(empleado.IdEmpleado != 0)" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Nombres)" Title="Nombres" Width="180px">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Nombres)" Title="Nombres" Width="160px">
         <EditTemplate Context="empleado">
             <RadzenTextBox @bind-Value="empleado.Nombres" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Apellidos" Width="200px" Sortable="false" Filterable="false">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Apellidos" Width="170px" Sortable="false" Filterable="false">
         <Template Context="empleado">@empleado.PrimerApellido @empleado.SegundoApellido</Template>
         <EditTemplate Context="empleado">
             <div class="d-flex gap-1">
@@ -59,25 +92,28 @@
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Sexo)" Title="Sexo" Width="90px" Filterable="false">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Sexo)" Title="Sexo" Width="70px" Filterable="false">
         <EditTemplate Context="empleado">
             <RadzenNumeric TValue="int" @bind-Value="empleado.Sexo" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.CodAgencia)" Title="Agencia" Width="110px" Filterable="false">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.CodAgencia)" Title="Agencia" Width="90px">
         <EditTemplate Context="empleado">
             <RadzenNumeric TValue="int" @bind-Value="empleado.CodAgencia" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Correo)" Title="Correo" Width="280px" Filterable="false">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Correo)" Title="Correo" Width="220px" Filterable="false">
+        <Template Context="empleado">
+            <span title="@empleado.Correo" style="display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">@empleado.Correo</span>
+        </Template>
         <EditTemplate Context="empleado">
             <RadzenTextBox @bind-Value="empleado.Correo" Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Telefono)" Title="Teléfono" Width="140px" Filterable="false">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Telefono)" Title="Teléfono" Width="130px" Filterable="false">
         <EditTemplate Context="empleado">
             <RadzenTextBox @bind-Value="empleado.Telefono" Style="width:100%" />
         </EditTemplate>
@@ -98,7 +134,7 @@
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Rol)" Title="Rol" Width="150px" Filterable="false">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Rol)" Title="Rol" Width="130px" Filterable="false">
         <Template Context="empleado">@(empleado.Rol ?? "-")</Template>
         <EditTemplate Context="empleado">
             <RadzenDropDown TValue="int"
@@ -111,7 +147,7 @@
         </EditTemplate>
     </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Estado)" Title="Estado" Width="110px" Filterable="false">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Estado)" Title="Estado" Width="100px" Filterable="false">
         <Template Context="empleado">@(empleado.Estado == 1 ? "Activo" : "Inactivo")</Template>
         <EditTemplate Context="empleado">
             <RadzenDropDown TValue="int"
@@ -123,45 +159,13 @@
                              Style="width:100%" />
         </EditTemplate>
     </RadzenDataGridColumn>
-
-    <AuthorizeView Roles="Admin" Context="accionesContext">
-        <Authorized>
-            <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Acciones" Sortable="false" Filterable="false" Width="180px">
-                <Template Context="empleado">
-                    <RadzenButton Text="Editar"
-                                  ButtonStyle="ButtonStyle.Primary"
-                                  Variant="Variant.Flat"
-                                  Size="ButtonSize.ExtraSmall"
-                                  Disabled="@(filaEnEdicion != null)"
-                                  Click="@(() => EditarAsync(empleado))" />
-                    <RadzenButton Text="Eliminar"
-                                  ButtonStyle="ButtonStyle.Danger"
-                                  Variant="Variant.Outlined"
-                                  Size="ButtonSize.ExtraSmall"
-                                  Disabled="@(filaEnEdicion != null)"
-                                  Click="@(() => EliminarAsync(empleado))" />
-                </Template>
-                <EditTemplate Context="empleado">
-                    <RadzenButton Text="Guardar"
-                                  ButtonStyle="ButtonStyle.Success"
-                                  Size="ButtonSize.ExtraSmall"
-                                  Disabled="@Guardando"
-                                  Click="@(() => GuardarAsync(empleado))" />
-                    <RadzenButton Text="Cancelar"
-                                  ButtonStyle="ButtonStyle.Light"
-                                  Variant="Variant.Outlined"
-                                  Size="ButtonSize.ExtraSmall"
-                                  Disabled="@Guardando"
-                                  Click="@(() => CancelarAsync(empleado))" />
-                </EditTemplate>
-            </RadzenDataGridColumn>
-        </Authorized>
-    </AuthorizeView>
 </GridEstandar>
 
 @code {
     [Inject] private IEmpleadoService EmpleadoService { get; set; } = default!;
     [Inject] private IAuthService AuthService { get; set; } = default!;
+    [Inject] private DialogService DialogService { get; set; } = default!;
+    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
 
     private record OpcionEstado(int Valor, string Texto);
 
@@ -176,6 +180,10 @@
         public int IdRol { get; set; }
 
         public string? Password { get; set; }
+
+        public IBrowserFile? FotoSeleccionada { get; set; }
+
+        public string? FotoPreviewUrl { get; set; }
     }
 
     private GridEstandar<EmpleadoEdicionDto> gridEstandar = default!;
@@ -188,11 +196,16 @@
 
     private bool Cargando = true;
     private bool Guardando;
-    private string? ErrorMensaje;
-    private string? ExitoMensaje;
+    private bool esAdmin;
 
     protected override async Task OnInitializedAsync()
     {
+        if (AuthStateTask is not null)
+        {
+            var authState = await AuthStateTask;
+            esAdmin = authState.User.IsInRole("Admin");
+        }
+
         Roles = await AuthService.ObtenerRolesAsync();
         await CargarEmpleadosAsync();
     }
@@ -210,6 +223,8 @@
         IdEmpleado = e.IdEmpleado,
         IdUsuario = e.IdUsuario,
         Documento = e.Documento,
+        CodigoUsuario = e.CodigoUsuario,
+        FotoUrl = e.FotoUrl,
         Nombres = e.Nombres,
         PrimerApellido = e.PrimerApellido,
         SegundoApellido = e.SegundoApellido,
@@ -221,6 +236,25 @@
         Rol = e.Rol,
         IdRol = Roles.FirstOrDefault(r => r.Nombre == e.Rol)?.IdRol ?? 0
     };
+
+    private static readonly string[] ColoresAvatar =
+    {
+        "#142143", "#1a5d94", "#2c3f6b", "#0f3a5e", "#0f1a35"
+    };
+
+    private static string ObtenerIniciales(EmpleadoEdicionDto empleado)
+    {
+        var inicialNombre = string.IsNullOrWhiteSpace(empleado.Nombres) ? "" : empleado.Nombres.Trim()[0].ToString();
+        var inicialApellido = string.IsNullOrWhiteSpace(empleado.PrimerApellido) ? "" : empleado.PrimerApellido.Trim()[0].ToString();
+        return (inicialNombre + inicialApellido).ToUpperInvariant();
+    }
+
+    private static string ObtenerColorAvatar(EmpleadoEdicionDto empleado)
+    {
+        var clave = $"{empleado.Nombres}{empleado.PrimerApellido}";
+        var indice = Math.Abs(clave.GetHashCode()) % ColoresAvatar.Length;
+        return ColoresAvatar[indice];
+    }
 
     private void OnRowRender(RowRenderEventArgs<EmpleadoEdicionDto> args)
     {
@@ -234,19 +268,33 @@
 
     private async Task NuevoEmpleadoAsync()
     {
-        ErrorMensaje = null;
-        ExitoMensaje = null;
-
         var nuevo = new EmpleadoEdicionDto { Estado = 1 };
         filaEnEdicion = nuevo;
         await gridEstandar.Grid.InsertRow(nuevo);
     }
 
+    private const long TamanoMaximoFotoBytes = 5 * 1024 * 1024; // 5MB
+
+    private async Task OnFotoSeleccionadaAsync(EmpleadoEdicionDto empleado, InputFileChangeEventArgs e)
+    {
+        var archivo = e.File;
+
+        if (archivo.Size > TamanoMaximoFotoBytes)
+        {
+            await DialogService.Alert("La foto no puede superar los 5MB.", "Error");
+            return;
+        }
+
+        using var stream = archivo.OpenReadStream(TamanoMaximoFotoBytes);
+        using var memoria = new MemoryStream();
+        await stream.CopyToAsync(memoria);
+
+        empleado.FotoSeleccionada = archivo;
+        empleado.FotoPreviewUrl = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(memoria.ToArray())}";
+    }
+
     private async Task EditarAsync(EmpleadoEdicionDto empleado)
     {
-        ErrorMensaje = null;
-        ExitoMensaje = null;
-
         backupOriginal = ClonarValores(empleado);
         filaEnEdicion = empleado;
         await gridEstandar.Grid.EditRow(empleado);
@@ -254,7 +302,6 @@
 
     private void CancelarAsync(EmpleadoEdicionDto empleado)
     {
-        ErrorMensaje = null;
         gridEstandar.Grid.CancelEditRow(empleado);
 
         if (empleado.IdEmpleado != 0 && backupOriginal is not null)
@@ -262,26 +309,26 @@
             CopiarValores(backupOriginal, empleado);
         }
 
+        empleado.FotoSeleccionada = null;
+        empleado.FotoPreviewUrl = null;
+
         backupOriginal = null;
         filaEnEdicion = null;
     }
 
     private async Task GuardarAsync(EmpleadoEdicionDto empleado)
     {
-        ErrorMensaje = null;
-        ExitoMensaje = null;
-
         var esNuevo = empleado.IdEmpleado == 0;
 
         if (esNuevo && (string.IsNullOrWhiteSpace(empleado.Documento) || string.IsNullOrWhiteSpace(empleado.Password)))
         {
-            ErrorMensaje = "Documento y contraseña son obligatorios.";
+            await DialogService.Alert("Documento y contraseña son obligatorios.", "Error");
             return;
         }
 
         if (empleado.IdRol <= 0)
         {
-            ErrorMensaje = "Debe seleccionar un rol.";
+            await DialogService.Alert("Debe seleccionar un rol.", "Error");
             return;
         }
 
@@ -302,7 +349,8 @@
                 Correo = empleado.Correo,
                 Telefono = empleado.Telefono,
                 Password = empleado.Password!,
-                IdRol = empleado.IdRol
+                IdRol = empleado.IdRol,
+                Foto = empleado.FotoSeleccionada
             };
             (exito, mensaje) = await EmpleadoService.CrearAsync(request);
         }
@@ -318,7 +366,8 @@
                 Correo = empleado.Correo,
                 Telefono = empleado.Telefono,
                 Estado = empleado.Estado,
-                IdRol = empleado.IdRol
+                IdRol = empleado.IdRol,
+                Foto = empleado.FotoSeleccionada
             };
             (exito, mensaje) = await EmpleadoService.ActualizarAsync(empleado.IdEmpleado, request);
         }
@@ -327,7 +376,7 @@
 
         if (!exito)
         {
-            ErrorMensaje = mensaje;
+            await DialogService.Alert(mensaje ?? "Ocurrió un error al guardar.", "Error");
             return;
         }
 
@@ -335,28 +384,7 @@
         backupOriginal = null;
         filaEnEdicion = null;
 
-        ExitoMensaje = esNuevo ? "Empleado creado correctamente." : "Empleado actualizado correctamente.";
-        await CargarEmpleadosAsync();
-    }
-
-    private async Task EliminarAsync(EmpleadoEdicionDto empleado)
-    {
-        ErrorMensaje = null;
-        ExitoMensaje = null;
-
-        var confirmado = await JS.InvokeAsync<bool>("confirm", $"¿Dar de baja a {empleado.Nombres} {empleado.PrimerApellido}?");
-        if (!confirmado)
-            return;
-
-        var (exito, mensaje) = await EmpleadoService.EliminarAsync(empleado.IdEmpleado);
-
-        if (!exito)
-        {
-            ErrorMensaje = mensaje;
-            return;
-        }
-
-        ExitoMensaje = "Empleado dado de baja correctamente.";
+        await DialogService.Alert(esNuevo ? "Empleado creado correctamente." : "Empleado actualizado correctamente.", "Éxito");
         await CargarEmpleadosAsync();
     }
 

@@ -845,6 +845,10 @@ public partial class DbNegocioContext : DbContext
             entity.ToTable("UsuarioLogin");
 
             entity.Property(e => e.BContrasenaTemporal).HasColumnName("bContrasenaTemporal");
+            entity.Property(e => e.CCodUsu)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cCodUsu");
             entity.Property(e => e.CCorreo)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -861,6 +865,9 @@ public partial class DbNegocioContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.TokenTime).HasColumnType("datetime");
             entity.Property(e => e.UltimoLogin).HasColumnType("datetime");
+            entity.Property(e => e.VFoto)
+                .IsUnicode(false)
+                .HasColumnName("vFoto");
         });
 
         modelBuilder.Entity<UsuarioRole>(entity =>

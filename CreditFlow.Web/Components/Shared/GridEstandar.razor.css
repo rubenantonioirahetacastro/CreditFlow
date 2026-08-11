@@ -1,0 +1,24 @@
+/* Boton flotante "Agregar": dorado de acento en vez del azul primario de Radzen,
+   con el icono en azul marino oscuro para que contraste sobre el fondo claro. */
+::deep .fab-add-btn.rz-primary,
+::deep .fab-add-btn {
+    background-color: #ffaf00 !important;
+    border-color: #ffaf00 !important;
+    color: #142143 !important;
+}
+
+::deep .fab-add-btn .rzi {
+    color: #142143 !important;
+}
+
+::deep .fab-add-btn:hover,
+::deep .fab-add-btn:focus {
+    background-color: #e69d00 !important;
+    border-color: #e69d00 !important;
+}
+
+/* Sombra que separa las columnas fijas (congeladas) del resto de la grid,
+   coloreada con el azul marino de la paleta en vez del gris por defecto de Radzen. */
+::deep .rz-frozen-cell-left-end {
+    box-shadow: 6px 0 6px -4px rgba(20, 33, 67, 0.35) !important;
+}

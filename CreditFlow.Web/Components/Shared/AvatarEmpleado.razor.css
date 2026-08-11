@@ -1,0 +1,65 @@
+.avatar-contenedor {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    margin: 0 auto;
+}
+
+.avatar-foto {
+    box-sizing: border-box !important;
+    flex: 0 0 46px !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
+    border-radius: 50% !important;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+}
+
+.avatar-iniciales {
+    box-sizing: border-box !important;
+    flex: 0 0 46px !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
+    border-radius: 50% !important;
+    overflow: hidden;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    color: #f5f5f5 !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    line-height: 1;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.avatar-upload-overlay {
+    position: absolute;
+    inset: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.avatar-upload-icono {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.avatar-upload-input {
+    display: none;
+}

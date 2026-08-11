@@ -11,6 +11,8 @@ public partial class UsuarioLogin
 
     public string Password { get; set; } = null!;
 
+    public string CCodUsu { get; set; } = null!;
+
     public string CCorreo { get; set; } = null!;
 
     public int? Token { get; set; }
@@ -32,6 +34,8 @@ public partial class UsuarioLogin
     public bool? BContrasenaTemporal { get; set; }
 
     public DateTime? DFechaContrasenaTemporal { get; set; }
+
+    public string? VFoto { get; set; }
 
     public virtual ICollection<UsuarioRole> UsuarioRoles { get; set; } = new List<UsuarioRole>();
 }

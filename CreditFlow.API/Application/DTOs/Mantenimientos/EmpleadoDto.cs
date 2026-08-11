@@ -8,6 +8,10 @@ namespace CreditFlow.API.Application.DTOs.Mantenimientos
 
         public string Documento { get; set; } = string.Empty;
 
+        public string CodigoUsuario { get; set; } = string.Empty;
+
+        public string? FotoUrl { get; set; }
+
         public string Nombres { get; set; } = string.Empty;
 
         public string PrimerApellido { get; set; } = string.Empty;

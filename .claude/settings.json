@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tasklist //FI \"PID eq 22268\")",
+      "Bash(wmic process *)",
+      "Bash(powershell -NoProfile -Command \"Get-CimInstance Win32_Process -Filter 'ProcessId=22268' | Select-Object CommandLine, ExecutablePath, ParentProcessId | Format-List\")"
+    ]
+  }
+}

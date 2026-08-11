@@ -1,77 +1,67 @@
-<div class="top-row ps-3 navbar navbar-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">CreditFlow.Web</a>
-    </div>
-</div>
+<AuthorizeView>
+    <Authorized>
+        <div class="nav-search px-3">
+            <RadzenIcon Icon="search" class="nav-search-icon" />
+            <input type="text" class="nav-search-input" placeholder="Buscar..." value="@busqueda" @oninput="OnBusquedaChanged" />
+        </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <AuthorizeView>
-        <Authorized>
-            <div class="nav-search px-3">
-                <RadzenIcon Icon="search" class="nav-search-icon" />
-                <input type="text" class="nav-search-input" placeholder="Buscar..." value="@busqueda" @oninput="OnBusquedaChanged" />
-            </div>
-
-            <nav class="flex-column">
-                @if (Mostrar("Home"))
-                {
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                            <RadzenIcon Icon="home" />
-                            <span>Home</span>
-                        </NavLink>
-                    </div>
-                }
-
-                @if (Mostrar("Counter"))
-                {
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="counter">
-                            <RadzenIcon Icon="add_box" />
-                            <span>Counter</span>
-                        </NavLink>
-                    </div>
-                }
-
-                @if (Mostrar("Weather"))
-                {
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="weather">
-                            <RadzenIcon Icon="cloud" />
-                            <span>Weather</span>
-                        </NavLink>
-                    </div>
-                }
-
-                <AuthorizeView Roles="Admin,Supervisor,Tecnologia" Context="empleadosContext">
-                    <Authorized>
-                        @if (Mostrar("Empleados") || Mostrar("Mantenimiento de Empleados"))
-                        {
-                            <div class="nav-item px-3">
-                                <NavLink class="nav-link" href="empleados" title="Mantenimiento de Empleados">
-                                    <RadzenIcon Icon="badge" />
-                                    <span>Empleados</span>
-                                </NavLink>
-                            </div>
-                        }
-                    </Authorized>
-                </AuthorizeView>
-
+        <nav class="flex-column">
+            @if (Mostrar("Home"))
+            {
                 <div class="nav-item px-3">
-                    <form method="post" action="/logout">
-                        <AntiforgeryToken />
-                        <button type="submit" class="nav-link btn btn-link text-start w-100">
-                            <RadzenIcon Icon="logout" />
-                            <span>Cerrar sesión (@context.User.Identity?.Name)</span>
-                        </button>
-                    </form>
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <RadzenIcon Icon="home" />
+                        <span>Home</span>
+                    </NavLink>
                 </div>
-            </nav>
-        </Authorized>
-    </AuthorizeView>
-</div>
+            }
+
+            @if (Mostrar("Counter"))
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="counter">
+                        <RadzenIcon Icon="add_box" />
+                        <span>Counter</span>
+                    </NavLink>
+                </div>
+            }
+
+            @if (Mostrar("Weather"))
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="weather">
+                        <RadzenIcon Icon="cloud" />
+                        <span>Weather</span>
+                    </NavLink>
+                </div>
+            }
+
+            <AuthorizeView Roles="Admin,Supervisor,Tecnologia" Context="empleadosContext">
+                <Authorized>
+                    @if (Mostrar("Empleados") || Mostrar("Mantenimiento de Empleados"))
+                    {
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="empleados" title="Mantenimiento de Empleados">
+                                <RadzenIcon Icon="badge" />
+                                <span>Empleados</span>
+                            </NavLink>
+                        </div>
+                    }
+                </Authorized>
+            </AuthorizeView>
+
+            <div class="nav-item px-3">
+                <form method="post" action="/logout">
+                    <AntiforgeryToken />
+                    <button type="submit" class="nav-link btn btn-link text-start w-100">
+                        <RadzenIcon Icon="logout" />
+                        <span>Cerrar sesión (@context.User.Identity?.Name)</span>
+                    </button>
+                </form>
+            </div>
+        </nav>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     private string busqueda = string.Empty;

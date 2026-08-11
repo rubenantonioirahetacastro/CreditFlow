@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.Forms;
+
 namespace CreditFlow.Web.Models;
 
 public class CrearEmpleadoRequest
@@ -21,4 +23,6 @@ public class CrearEmpleadoRequest
     public string Password { get; set; } = string.Empty;
 
     public int IdRol { get; set; }
+
+    public IBrowserFile? Foto { get; set; }
 }

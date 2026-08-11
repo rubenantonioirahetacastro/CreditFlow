@@ -42,5 +42,16 @@ namespace CreditFlow.API.Infrastructure.Services
 
             return blobName;
         }
+
+        public async Task<Stream?> DownloadImageAsync(string blobPath)
+        {
+            if (string.IsNullOrWhiteSpace(blobPath)) return null;
+
+            var blobClient = _containerClient.GetBlobClient(blobPath);
+            if (!await blobClient.ExistsAsync())
+                return null;
+
+            return await blobClient.OpenReadAsync();
+        }
     }
 }

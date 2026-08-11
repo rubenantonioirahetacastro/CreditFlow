@@ -24,9 +24,21 @@ namespace CreditFlow.API.Controllers.Mantenimientos
             return Ok(empleados);
         }
 
+        [HttpGet("{id}/foto")]
+        [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+        public async Task<IActionResult> ObtenerFoto(int id)
+        {
+            var foto = await _empleadoService.ObtenerFotoAsync(id);
+            if (foto == null)
+                return NotFound();
+
+            return File(foto.Value.Stream, foto.Value.ContentType);
+        }
+
         [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Crear([FromBody] CrearEmpleadoRequest request)
+        [Authorize(Roles = "Admin,Tecnologia")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Crear([FromForm] CrearEmpleadoRequest request)
         {
             try
             {
@@ -44,8 +56,9 @@ namespace CreditFlow.API.Controllers.Mantenimientos
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Actualizar(int id, [FromBody] ActualizarEmpleadoRequest request)
+        [Authorize(Roles = "Admin,Tecnologia")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Actualizar(int id, [FromForm] ActualizarEmpleadoRequest request)
         {
             try
             {
@@ -54,6 +67,10 @@ namespace CreditFlow.API.Controllers.Mantenimientos
                     return NotFound(new { Mensaje = "El empleado no existe." });
 
                 return Ok(empleado);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
             }
             catch (InvalidOperationException ex)
             {

@@ -1,0 +1,47 @@
+@inject IEmpleadoService EmpleadoService
+
+<div class="avatar-contenedor">
+    @if (UrlMostrada is not null)
+    {
+        <img src="@UrlMostrada" alt="Foto de @Iniciales" class="avatar-foto" />
+    }
+    else
+    {
+        <span class="avatar-iniciales" style="background-color:@Color">@Iniciales</span>
+    }
+
+    @if (Editable)
+    {
+        <label class="avatar-upload-overlay">
+            <span class="avatar-upload-icono">📷</span>
+            <InputFile OnChange="OnFotoSeleccionada" accept="image/png,image/jpeg,image/webp" class="avatar-upload-input" />
+        </label>
+    }
+</div>
+
+@code {
+    [Parameter] public int IdEmpleado { get; set; }
+    [Parameter] public bool TieneFoto { get; set; }
+    [Parameter] public string? PreviewUrl { get; set; }
+    [Parameter] public string Iniciales { get; set; } = string.Empty;
+    [Parameter] public string Color { get; set; } = "#142143";
+    [Parameter] public bool Editable { get; set; }
+    [Parameter] public EventCallback<InputFileChangeEventArgs> OnFotoSeleccionada { get; set; }
+
+    private string? fotoUrl;
+    private int idEmpleadoCargado = -1;
+
+    private string? UrlMostrada => PreviewUrl ?? fotoUrl;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!TieneFoto || PreviewUrl is not null || IdEmpleado == 0)
+            return;
+
+        if (idEmpleadoCargado == IdEmpleado)
+            return;
+
+        idEmpleadoCargado = IdEmpleado;
+        fotoUrl = await EmpleadoService.ObtenerFotoDataUrlAsync(IdEmpleado);
+    }
+}

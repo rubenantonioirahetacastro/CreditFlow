@@ -46,5 +46,24 @@ namespace CreditFlow.API.Infrastructure.Services
             var relative = Path.Combine("uploads", folder ?? string.Empty, fileName).Replace('\\', '/');
             return relative;
         }
+
+        public Task<Stream?> DownloadImageAsync(string blobPath)
+        {
+            if (string.IsNullOrWhiteSpace(blobPath))
+                return Task.FromResult<Stream?>(null);
+
+            var webRoot = _env.WebRootPath;
+            if (string.IsNullOrEmpty(webRoot))
+            {
+                webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            }
+
+            var fullPath = Path.Combine(webRoot, blobPath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(fullPath))
+                return Task.FromResult<Stream?>(null);
+
+            Stream stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return Task.FromResult<Stream?>(stream);
+        }
     }
 }

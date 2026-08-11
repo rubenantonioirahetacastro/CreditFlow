@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.Forms;
+
 namespace CreditFlow.Web.Models;
 
 public class ActualizarEmpleadoRequest
@@ -19,4 +21,6 @@ public class ActualizarEmpleadoRequest
     public int Estado { get; set; }
 
     public int IdRol { get; set; }
+
+    public IBrowserFile? Foto { get; set; }
 }

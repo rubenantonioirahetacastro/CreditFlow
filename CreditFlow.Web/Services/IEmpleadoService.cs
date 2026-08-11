@@ -11,4 +11,6 @@ public interface IEmpleadoService
     Task<(bool Exito, string? Mensaje)> ActualizarAsync(int id, ActualizarEmpleadoRequest request);
 
     Task<(bool Exito, string? Mensaje)> EliminarAsync(int id);
+
+    Task<string?> ObtenerFotoDataUrlAsync(int idEmpleado);
 }
