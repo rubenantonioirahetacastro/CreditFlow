@@ -17,7 +17,7 @@
               AddDisabled="@(filaEnEdicion != null)"
               AddButtonTitle="Nuevo empleado"
               OnAdd="@NuevoEmpleadoAsync">
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="" Sortable="false" Filterable="false" Width="60px" CssClass="celda-accion" Visible="@esAdmin" Frozen="true">
+    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="" Sortable="false" Filterable="false" Width="90px" CssClass="celda-accion" Visible="@esAdmin" Frozen="true">
         <Template Context="empleado">
             <RadzenButton Icon="edit"
                           ButtonStyle="ButtonStyle.Primary"

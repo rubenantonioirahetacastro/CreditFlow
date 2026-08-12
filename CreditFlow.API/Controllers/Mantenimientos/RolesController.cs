@@ -24,6 +24,18 @@ namespace CreditFlow.API.Controllers.Mantenimientos
             return Ok(roles);
         }
 
+        // Ruta separada de la anterior porque esa es AllowAnonymous y la usa el
+        // flujo de login (debe seguir devolviendo solo activos, sin romper eso).
+        // Esta expone el catálogo completo (activos e inactivos) para la
+        // pantalla de mantenimiento de Roles.
+        [HttpGet("todos")]
+        [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+        public async Task<IActionResult> ObtenerTodos()
+        {
+            var roles = await _roleService.ObtenerTodosAsync();
+            return Ok(roles);
+        }
+
         [HttpPost]
         [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
         public async Task<IActionResult> Crear([FromBody] CreateRoleRequest request)

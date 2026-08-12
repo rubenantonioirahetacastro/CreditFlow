@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace CreditFlow.Web.Models;
+namespace CreditFlow.Web.Models.Mantenimientos;
 
 public class ActualizarEmpleadoRequest
 {

@@ -16,36 +16,238 @@
                 </div>
             }
 
-            @if (Mostrar("Counter"))
+            @if (MostrarOtorgamiento())
             {
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="counter">
-                        <RadzenIcon Icon="add_box" />
-                        <span>Counter</span>
-                    </NavLink>
+                    <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleOtorgamiento">
+                        <RadzenIcon Icon="credit_score" />
+                        <span>Otorgamiento</span>
+                        <RadzenIcon Icon="@(OtorgamientoAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
+                    </button>
                 </div>
+
+                @if (OtorgamientoAbierto)
+                {
+                    <div class="nav-subgroup">
+                        @if (MostrarProcesamientoDatos())
+                        {
+                            <div class="nav-item nav-item-sub px-3">
+                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleProcesamientoDatos">
+                                    <RadzenIcon Icon="fact_check" />
+                                    <span>Procesamiento de Datos</span>
+                                    <RadzenIcon Icon="@(ProcesamientoDatosAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
+                                </button>
+                            </div>
+
+                            @if (ProcesamientoDatosAbierto)
+                            {
+                                <div class="nav-subgroup nav-subgroup-nivel2">
+                                    @if (Mostrar("Bandeja de verificación") || Mostrar("Bandeja de verificacion"))
+                                    {
+                                        <div class="nav-item nav-item-sub2 px-3">
+                                            <NavLink class="nav-link" href="otorgamiento/procesamiento-datos/bandeja-verificacion">
+                                                <RadzenIcon Icon="inbox" />
+                                                <span>Bandeja de verificación</span>
+                                            </NavLink>
+                                        </div>
+                                    }
+
+                                    @if (Mostrar("Bandeja de crédito readecuación") || Mostrar("Bandeja de credito readecuacion"))
+                                    {
+                                        <div class="nav-item nav-item-sub2 px-3">
+                                            <NavLink class="nav-link" href="otorgamiento/procesamiento-datos/bandeja-credito-readecuacion">
+                                                <RadzenIcon Icon="restart_alt" />
+                                                <span>Bandeja de crédito readecuación</span>
+                                            </NavLink>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
+
+                        @if (MostrarNivelesAutorizacion())
+                        {
+                            <div class="nav-item nav-item-sub px-3">
+                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleNivelesAutorizacion">
+                                    <RadzenIcon Icon="verified_user" />
+                                    <span>Niveles de Autorización</span>
+                                    <RadzenIcon Icon="@(NivelesAutorizacionAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
+                                </button>
+                            </div>
+
+                            @if (NivelesAutorizacionAbierto)
+                            {
+                                <div class="nav-subgroup nav-subgroup-nivel2">
+                                    @if (Mostrar("Autorizar crédito") || Mostrar("Autorizar credito"))
+                                    {
+                                        <div class="nav-item nav-item-sub2 px-3">
+                                            <NavLink class="nav-link" href="otorgamiento/niveles-autorizacion/autorizar-credito">
+                                                <RadzenIcon Icon="task_alt" />
+                                                <span>Autorizar crédito</span>
+                                            </NavLink>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
+
+                        @if (MostrarTesoreria())
+                        {
+                            <div class="nav-item nav-item-sub px-3">
+                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleTesoreria">
+                                    <RadzenIcon Icon="account_balance" />
+                                    <span>Tesorería</span>
+                                    <RadzenIcon Icon="@(TesoreriaAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
+                                </button>
+                            </div>
+
+                            @if (TesoreriaAbierto)
+                            {
+                                <div class="nav-subgroup nav-subgroup-nivel2">
+                                    @if (Mostrar("Bandeja de créditos a Abonar") || Mostrar("Bandeja de creditos a Abonar"))
+                                    {
+                                        <div class="nav-item nav-item-sub2 px-3">
+                                            <NavLink class="nav-link" href="otorgamiento/tesoreria/bandeja-creditos-abonar">
+                                                <RadzenIcon Icon="payments" />
+                                                <span>Bandeja de créditos a Abonar</span>
+                                            </NavLink>
+                                        </div>
+                                    }
+
+                                    @if (Mostrar("Bandeja de créditos a abonar en agencia") || Mostrar("Bandeja de creditos a abonar en agencia"))
+                                    {
+                                        <div class="nav-item nav-item-sub2 px-3">
+                                            <NavLink class="nav-link" href="otorgamiento/tesoreria/bandeja-creditos-abonar-agencia">
+                                                <RadzenIcon Icon="store" />
+                                                <span>Bandeja de créditos a abonar en agencia</span>
+                                            </NavLink>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
+
+                        @if (MostrarAgenciaSucursal())
+                        {
+                            <div class="nav-item nav-item-sub px-3">
+                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleAgenciaSucursal">
+                                    <RadzenIcon Icon="storefront" />
+                                    <span>Agencia Sucursal</span>
+                                    <RadzenIcon Icon="@(AgenciaSucursalAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
+                                </button>
+                            </div>
+
+                            @if (AgenciaSucursalAbierto)
+                            {
+                                <div class="nav-subgroup nav-subgroup-nivel2">
+                                    @if (Mostrar("Registrar créditos a oficiales") || Mostrar("Registrar creditos a oficiales"))
+                                    {
+                                        <div class="nav-item nav-item-sub2 px-3">
+                                            <NavLink class="nav-link" href="otorgamiento/agencia-sucursal/registrar-creditos-oficiales">
+                                                <RadzenIcon Icon="person_add" />
+                                                <span>Registrar créditos a oficiales</span>
+                                            </NavLink>
+                                        </div>
+                                    }
+
+                                    @if (Mostrar("Abono a oficial de desembolso"))
+                                    {
+                                        <div class="nav-item nav-item-sub2 px-3">
+                                            <NavLink class="nav-link" href="otorgamiento/agencia-sucursal/abono-oficial-desembolso">
+                                                <RadzenIcon Icon="paid" />
+                                                <span>Abono a oficial de desembolso</span>
+                                            </NavLink>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
+
+                        @if (MostrarDesembolso())
+                        {
+                            <div class="nav-item nav-item-sub px-3">
+                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleDesembolso">
+                                    <RadzenIcon Icon="local_atm" />
+                                    <span>Desembolso</span>
+                                    <RadzenIcon Icon="@(DesembolsoAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
+                                </button>
+                            </div>
+
+                            @if (DesembolsoAbierto)
+                            {
+                                <div class="nav-subgroup nav-subgroup-nivel2">
+                                    @if (Mostrar("Bandeja de créditos por desembolsar") || Mostrar("Bandeja de creditos por desembolsar"))
+                                    {
+                                        <div class="nav-item nav-item-sub2 px-3">
+                                            <NavLink class="nav-link" href="otorgamiento/desembolso/bandeja-creditos-desembolsar">
+                                                <RadzenIcon Icon="outbox" />
+                                                <span>Bandeja de créditos por desembolsar</span>
+                                            </NavLink>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                }
             }
 
-            @if (Mostrar("Weather"))
-            {
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="weather">
-                        <RadzenIcon Icon="cloud" />
-                        <span>Weather</span>
-                    </NavLink>
-                </div>
-            }
-
-            <AuthorizeView Roles="Admin,Supervisor,Tecnologia" Context="empleadosContext">
+            <AuthorizeView Roles="Admin,Supervisor,Tecnologia" Context="mantenimientosContext">
                 <Authorized>
-                    @if (Mostrar("Empleados") || Mostrar("Mantenimiento de Empleados"))
+                    @if (MostrarMantenimientos())
                     {
                         <div class="nav-item px-3">
-                            <NavLink class="nav-link" href="empleados" title="Mantenimiento de Empleados">
-                                <RadzenIcon Icon="badge" />
-                                <span>Empleados</span>
-                            </NavLink>
+                            <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleMantenimientos">
+                                <RadzenIcon Icon="build" />
+                                <span>Mantenimientos</span>
+                                <RadzenIcon Icon="@(MantenimientosAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
+                            </button>
                         </div>
+
+                        @if (MantenimientosAbierto)
+                        {
+                            <div class="nav-subgroup">
+                                @if (Mostrar("Empleados") || Mostrar("Mantenimiento de Empleados"))
+                                {
+                                    <div class="nav-item nav-item-sub px-3">
+                                        <NavLink class="nav-link" href="empleados" title="Mantenimiento de Empleados">
+                                            <RadzenIcon Icon="badge" />
+                                            <span>Empleados</span>
+                                        </NavLink>
+                                    </div>
+                                }
+
+                                @if (Mostrar("Roles") || Mostrar("Mantenimiento de Roles"))
+                                {
+                                    <div class="nav-item nav-item-sub px-3">
+                                        <NavLink class="nav-link" href="roles" title="Mantenimiento de Roles">
+                                            <RadzenIcon Icon="admin_panel_settings" />
+                                            <span>Roles</span>
+                                        </NavLink>
+                                    </div>
+                                }
+
+                                @if (Mostrar("Agencias") || Mostrar("Mantenimiento de Agencias"))
+                                {
+                                    <div class="nav-item nav-item-sub px-3">
+                                        <NavLink class="nav-link" href="agencias" title="Mantenimiento de Agencias">
+                                            <RadzenIcon Icon="storefront" />
+                                            <span>Agencias</span>
+                                        </NavLink>
+                                    </div>
+                                }
+
+                                @if (Mostrar("Catálogos") || Mostrar("Catalogos") || Mostrar("Mantenimiento de Catálogos"))
+                                {
+                                    <div class="nav-item nav-item-sub px-3">
+                                        <NavLink class="nav-link" href="catalogos-codigos" title="Mantenimiento de Catálogos de Códigos">
+                                            <RadzenIcon Icon="list_alt" />
+                                            <span>Catálogos</span>
+                                        </NavLink>
+                                    </div>
+                                }
+                            </div>
+                        }
                     }
                 </Authorized>
             </AuthorizeView>
@@ -65,9 +267,70 @@
 
 @code {
     private string busqueda = string.Empty;
+    private bool mantenimientosExpandido;
+    private bool otorgamientoExpandido;
+    private bool procesamientoDatosExpandido;
+    private bool nivelesAutorizacionExpandido;
+    private bool tesoreriaExpandido;
+    private bool agenciaSucursalExpandido;
+    private bool desembolsoExpandido;
+
+    private bool MantenimientosAbierto => mantenimientosExpandido || !string.IsNullOrWhiteSpace(busqueda);
+    private bool OtorgamientoAbierto => otorgamientoExpandido || !string.IsNullOrWhiteSpace(busqueda);
+    private bool ProcesamientoDatosAbierto => procesamientoDatosExpandido || !string.IsNullOrWhiteSpace(busqueda);
+    private bool NivelesAutorizacionAbierto => nivelesAutorizacionExpandido || !string.IsNullOrWhiteSpace(busqueda);
+    private bool TesoreriaAbierto => tesoreriaExpandido || !string.IsNullOrWhiteSpace(busqueda);
+    private bool AgenciaSucursalAbierto => agenciaSucursalExpandido || !string.IsNullOrWhiteSpace(busqueda);
+    private bool DesembolsoAbierto => desembolsoExpandido || !string.IsNullOrWhiteSpace(busqueda);
 
     private void OnBusquedaChanged(ChangeEventArgs e) => busqueda = e.Value?.ToString() ?? string.Empty;
 
+    private void ToggleMantenimientos() => mantenimientosExpandido = !mantenimientosExpandido;
+    private void ToggleOtorgamiento() => otorgamientoExpandido = !otorgamientoExpandido;
+    private void ToggleProcesamientoDatos() => procesamientoDatosExpandido = !procesamientoDatosExpandido;
+    private void ToggleNivelesAutorizacion() => nivelesAutorizacionExpandido = !nivelesAutorizacionExpandido;
+    private void ToggleTesoreria() => tesoreriaExpandido = !tesoreriaExpandido;
+    private void ToggleAgenciaSucursal() => agenciaSucursalExpandido = !agenciaSucursalExpandido;
+    private void ToggleDesembolso() => desembolsoExpandido = !desembolsoExpandido;
+
     private bool Mostrar(string texto) =>
         string.IsNullOrWhiteSpace(busqueda) || texto.Contains(busqueda, StringComparison.OrdinalIgnoreCase);
+
+    private bool MostrarMantenimientos() =>
+        Mostrar("Mantenimientos")
+        || Mostrar("Empleados") || Mostrar("Mantenimiento de Empleados")
+        || Mostrar("Roles") || Mostrar("Mantenimiento de Roles")
+        || Mostrar("Agencias") || Mostrar("Mantenimiento de Agencias")
+        || Mostrar("Catálogos") || Mostrar("Catalogos") || Mostrar("Mantenimiento de Catálogos");
+
+    private bool MostrarProcesamientoDatos() =>
+        Mostrar("Procesamiento de Datos")
+        || Mostrar("Bandeja de verificación") || Mostrar("Bandeja de verificacion")
+        || Mostrar("Bandeja de crédito readecuación") || Mostrar("Bandeja de credito readecuacion");
+
+    private bool MostrarNivelesAutorizacion() =>
+        Mostrar("Niveles de Autorización") || Mostrar("Niveles de Autorizacion")
+        || Mostrar("Autorizar crédito") || Mostrar("Autorizar credito");
+
+    private bool MostrarTesoreria() =>
+        Mostrar("Tesorería") || Mostrar("Tesoreria")
+        || Mostrar("Bandeja de créditos a Abonar") || Mostrar("Bandeja de creditos a Abonar")
+        || Mostrar("Bandeja de créditos a abonar en agencia") || Mostrar("Bandeja de creditos a abonar en agencia");
+
+    private bool MostrarAgenciaSucursal() =>
+        Mostrar("Agencia Sucursal")
+        || Mostrar("Registrar créditos a oficiales") || Mostrar("Registrar creditos a oficiales")
+        || Mostrar("Abono a oficial de desembolso");
+
+    private bool MostrarDesembolso() =>
+        Mostrar("Desembolso")
+        || Mostrar("Bandeja de créditos por desembolsar") || Mostrar("Bandeja de creditos por desembolsar");
+
+    private bool MostrarOtorgamiento() =>
+        Mostrar("Otorgamiento")
+        || MostrarProcesamientoDatos()
+        || MostrarNivelesAutorizacion()
+        || MostrarTesoreria()
+        || MostrarAgenciaSucursal()
+        || MostrarDesembolso();
 }

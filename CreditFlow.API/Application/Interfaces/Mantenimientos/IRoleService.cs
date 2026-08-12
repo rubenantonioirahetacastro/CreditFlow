@@ -7,6 +7,8 @@ namespace CreditFlow.API.Application.Interfaces.Mantenimientos
     {
         Task<List<RoleDto>> ObtenerActivosAsync();
 
+        Task<List<RoleDto>> ObtenerTodosAsync();
+
         Task<RoleDto> CrearAsync(CreateRoleRequest request);
 
         Task<RoleDto?> ActualizarAsync(int idRol, UpdateRoleRequest request);

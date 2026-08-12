@@ -92,3 +92,23 @@
     .nav-item ::deep .nav-link:hover .rzi {
         color: #0f172a;
     }
+
+.nav-item ::deep .nav-toggle-icon {
+    margin-left: auto;
+    font-size: 1.1rem;
+    color: #6b7280;
+}
+
+.nav-subgroup .nav-item {
+    padding-top: 0;
+}
+
+    .nav-subgroup .nav-item.nav-item-sub ::deep .nav-link {
+        padding-left: 2.5rem;
+        font-size: 0.85rem;
+    }
+
+    .nav-subgroup-nivel2 .nav-item.nav-item-sub2 ::deep .nav-link {
+        padding-left: 3.75rem;
+        font-size: 0.8rem;
+    }

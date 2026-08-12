@@ -3,9 +3,11 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using CreditFlow.Web.Models;
+using CreditFlow.Web.Models.Mantenimientos;
+using CreditFlow.Web.Services;
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace CreditFlow.Web.Services;
+namespace CreditFlow.Web.Services.Mantenimientos;
 
 public class EmpleadoApiService : IEmpleadoService
 {

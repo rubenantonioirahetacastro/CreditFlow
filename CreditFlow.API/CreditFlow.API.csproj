@@ -7,6 +7,8 @@
     <UserSecretsId>ef8e0da6-8e3d-471d-9bd9-f004bd5a2d02</UserSecretsId>
     <AssemblyName>CreditFlow.API</AssemblyName>
     <RootNamespace>CreditFlow.API</RootNamespace>
+    <CopyRetryCount>30</CopyRetryCount>
+    <CopyRetryDelayMilliseconds>2000</CopyRetryDelayMilliseconds>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +27,7 @@
     <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
   </ItemGroup>
 
 </Project>

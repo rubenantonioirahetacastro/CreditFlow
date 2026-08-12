@@ -1,5 +1,6 @@
 ﻿using CreditFlow.API.Application.Interfaces;
 using CreditFlow.API.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,7 @@ namespace CreditFlow.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
     public class CatalogoCodigoController : ControllerBase
     {
         private readonly ICatalogoCodigoService _catalogoCodigoService;
@@ -31,7 +33,7 @@ namespace CreditFlow.API.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(ex.Message);
+                return Conflict(new { Mensaje = ex.Message });
             }
         }
 
@@ -48,7 +50,7 @@ namespace CreditFlow.API.Controllers
             var catalogos = await _catalogoCodigoService.GetCatalogoById(codigo);
 
             if (catalogos == null || !catalogos.Any())
-                return NotFound("No existen valores para este catálogo");
+                return NotFound(new { Mensaje = "No existen valores para este catálogo." });
 
             return Ok(catalogos);
         }
@@ -59,7 +61,7 @@ namespace CreditFlow.API.Controllers
             var updated = await _catalogoCodigoService.UpdateCatalogo(catalogo);
 
             if (!updated)
-                return NotFound("El catálogo no existe");
+                return NotFound(new { Mensaje = "El catálogo no existe." });
 
             return NoContent(); // 204
         }
@@ -70,7 +72,7 @@ namespace CreditFlow.API.Controllers
             var deleted = await _catalogoCodigoService.DeleteCatalogo(codigo, valor);
 
             if (!deleted)
-                return NotFound();
+                return NotFound(new { Mensaje = "El catálogo no existe." });
 
             return NoContent();
         }

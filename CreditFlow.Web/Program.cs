@@ -1,6 +1,7 @@
 using CreditFlow.Web.Components;
 using CreditFlow.Web.Endpoints;
 using CreditFlow.Web.Services;
+using CreditFlow.Web.Services.Mantenimientos;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Radzen;
 
@@ -31,6 +32,9 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthApiService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoApiService>();
+builder.Services.AddScoped<IRoleService, RoleApiService>();
+builder.Services.AddScoped<IAgenciaService, AgenciaApiService>();
+builder.Services.AddScoped<ICatalogoCodigoService, CatalogoCodigoApiService>();
 
 builder.Services.AddRadzenComponents();
 

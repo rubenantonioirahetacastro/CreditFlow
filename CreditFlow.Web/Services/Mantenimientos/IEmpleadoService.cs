@@ -1,6 +1,6 @@
-using CreditFlow.Web.Models;
+using CreditFlow.Web.Models.Mantenimientos;
 
-namespace CreditFlow.Web.Services;
+namespace CreditFlow.Web.Services.Mantenimientos;
 
 public interface IEmpleadoService
 {

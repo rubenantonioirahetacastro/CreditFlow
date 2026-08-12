@@ -1,0 +1,7 @@
+/* Columna de acciones (editar/eliminar/guardar/cancelar): se reduce el padding de
+   la celda para que el ancho de la columna solo cubra el espacio de los botones. */
+::deep .celda-accion {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    text-align: center;
+}

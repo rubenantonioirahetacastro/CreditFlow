@@ -24,7 +24,23 @@ namespace CreditFlow.API.Application.Services.Mantenimientos
                 .Select(r => new RoleDto
                 {
                     IdRol = r.IdRol,
-                    Nombre = r.Nombre
+                    Nombre = r.Nombre,
+                    Descripcion = r.Descripcion,
+                    Activo = r.Activo
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<RoleDto>> ObtenerTodosAsync()
+        {
+            return await _context.Roles
+                .OrderBy(r => r.Nombre)
+                .Select(r => new RoleDto
+                {
+                    IdRol = r.IdRol,
+                    Nombre = r.Nombre,
+                    Descripcion = r.Descripcion,
+                    Activo = r.Activo
                 })
                 .ToListAsync();
         }
@@ -53,7 +69,7 @@ namespace CreditFlow.API.Application.Services.Mantenimientos
             await _context.Roles.AddAsync(role);
             await _context.SaveChangesAsync();
 
-            return new RoleDto { IdRol = role.IdRol, Nombre = role.Nombre };
+            return new RoleDto { IdRol = role.IdRol, Nombre = role.Nombre, Descripcion = role.Descripcion, Activo = role.Activo };
         }
 
         public async Task<RoleDto?> ActualizarAsync(int idRol, UpdateRoleRequest request)
@@ -79,7 +95,7 @@ namespace CreditFlow.API.Application.Services.Mantenimientos
 
             await _context.SaveChangesAsync();
 
-            return new RoleDto { IdRol = role.IdRol, Nombre = role.Nombre };
+            return new RoleDto { IdRol = role.IdRol, Nombre = role.Nombre, Descripcion = role.Descripcion, Activo = role.Activo };
         }
     }
 }

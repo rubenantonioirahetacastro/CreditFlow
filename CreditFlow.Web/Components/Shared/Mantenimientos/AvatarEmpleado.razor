@@ -13,7 +13,9 @@
     @if (Editable)
     {
         <label class="avatar-upload-overlay">
-            <span class="avatar-upload-icono">📷</span>
+            <span class="avatar-upload-icono">
+                <RadzenIcon Icon="photo_camera" />
+            </span>
             <InputFile OnChange="OnFotoSeleccionada" accept="image/png,image/jpeg,image/webp" class="avatar-upload-input" />
         </label>
     }

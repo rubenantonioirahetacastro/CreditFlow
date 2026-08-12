@@ -48,18 +48,50 @@
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, .45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
 }
 
+    /* Tinte sutil de toda la foto solo al pasar el mouse, en vez de un overlay
+       oscuro permanente que ensuciaba la imagen todo el tiempo. */
+    .avatar-upload-overlay:hover::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, .15);
+    }
+
 .avatar-upload-icono {
-    font-size: 16px;
-    line-height: 1;
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #142143;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .35);
+    transition: transform 0.15s ease;
 }
 
-.avatar-upload-input {
+    /* RadzenIcon es un componente: su <i> renderizado no hereda el scope de
+       este archivo, necesita ::deep para poder ajustarle tamaño y color. */
+    .avatar-upload-icono ::deep .rzi {
+        font-size: 12px;
+        color: #ffffff;
+        line-height: 1;
+    }
+
+.avatar-upload-overlay:hover .avatar-upload-icono {
+    transform: scale(1.12);
+}
+
+/* InputFile es un componente, no una etiqueta HTML directa de este archivo:
+   su <input> renderizado no hereda el atributo de scope automáticamente,
+   por eso necesita ::deep para que display:none realmente le aplique. */
+::deep .avatar-upload-input {
     display: none;
 }

@@ -32,7 +32,7 @@ namespace CreditFlow.API.Controllers
             const long maxSizeBytes = 5 * 1024 * 1024; // 5MB
 
             // Helper to validate and upload a single file
-            async Task<string> ValidateAndUploadAsync(IFormFile? file, string folder)
+            async Task<string?> ValidateAndUploadAsync(IFormFile? file, string folder)
             {
                 if (file == null)
                     return null;

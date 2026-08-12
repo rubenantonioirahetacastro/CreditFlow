@@ -1,0 +1,211 @@
+@page "/roles"
+@attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+
+<PageTitle>Mantenimiento de Roles</PageTitle>
+
+<h3>Roles</h3>
+
+<GridEstandar TItem="RoleDto"
+              @ref="gridEstandar"
+              Data="@ListaRoles"
+              IsLoading="@Cargando"
+              EmptyText="No hay roles registrados."
+              ExportFileName="roles"
+              EditMode="DataGridEditMode.Single"
+              RowRender="@OnRowRender"
+              AddDisabled="@(filaEnEdicion != null)"
+              AddButtonTitle="Nuevo rol"
+              OnAdd="@NuevoRoleAsync">
+    <RadzenDataGridColumn TItem="RoleDto" Title="" Sortable="false" Filterable="false" Width="90px" CssClass="celda-accion" Frozen="true">
+        <Template Context="rol">
+            <RadzenButton Icon="edit"
+                          ButtonStyle="ButtonStyle.Primary"
+                          Variant="Variant.Outlined"
+                          Size="ButtonSize.ExtraSmall"
+                          Disabled="@(filaEnEdicion != null)"
+                          title="Editar rol"
+                          Click="@(() => EditarAsync(rol))" />
+        </Template>
+        <EditTemplate Context="rol">
+            <div class="d-flex gap-1">
+                <RadzenButton Icon="save"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Variant="Variant.Outlined"
+                              Size="ButtonSize.ExtraSmall"
+                              Disabled="@Guardando"
+                              title="Guardar cambios"
+                              Click="@(() => GuardarAsync(rol))" />
+                <RadzenButton Icon="close"
+                              ButtonStyle="ButtonStyle.Secondary"
+                              Variant="Variant.Outlined"
+                              Size="ButtonSize.ExtraSmall"
+                              Disabled="@Guardando"
+                              title="Cancelar edición"
+                              Click="@(() => CancelarAsync(rol))" />
+            </div>
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="RoleDto" Property="@nameof(RoleDto.Nombre)" Title="Nombre" Width="200px">
+        <EditTemplate Context="rol">
+            <RadzenTextBox @bind-Value="rol.Nombre" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="RoleDto" Property="@nameof(RoleDto.Descripcion)" Title="Descripción" Sortable="false" Filterable="false">
+        <Template Context="rol">@(string.IsNullOrEmpty(rol.Descripcion) ? "-" : rol.Descripcion)</Template>
+        <EditTemplate Context="rol">
+            <RadzenTextBox @bind-Value="rol.Descripcion" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="RoleDto" Property="@nameof(RoleDto.Activo)" Title="Estado" Width="120px" Filterable="false">
+        <Template Context="rol">@(rol.Activo ? "Activo" : "Inactivo")</Template>
+        <EditTemplate Context="rol">
+            <RadzenDropDown TValue="bool"
+                             @bind-Value="rol.Activo"
+                             Data="@EstadoOpciones"
+                             TextProperty="@nameof(OpcionEstado.Texto)"
+                             ValueProperty="@nameof(OpcionEstado.Valor)"
+                             Disabled="@(rol.IdRol == 0)"
+                             Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+</GridEstandar>
+
+@code {
+    [Inject] private IRoleService RoleService { get; set; } = default!;
+    [Inject] private DialogService DialogService { get; set; } = default!;
+
+    private record OpcionEstado(bool Valor, string Texto);
+
+    private static readonly List<OpcionEstado> EstadoOpciones = new()
+    {
+        new OpcionEstado(true, "Activo"),
+        new OpcionEstado(false, "Inactivo")
+    };
+
+    private GridEstandar<RoleDto> gridEstandar = default!;
+
+    private List<RoleDto> ListaRoles { get; set; } = new();
+
+    private RoleDto? filaEnEdicion;
+    private RoleDto? backupOriginal;
+
+    private bool Cargando = true;
+    private bool Guardando;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarRolesAsync();
+    }
+
+    private async Task CargarRolesAsync()
+    {
+        Cargando = true;
+        ListaRoles = await RoleService.ObtenerTodosAsync();
+        Cargando = false;
+    }
+
+    private void OnRowRender(RowRenderEventArgs<RoleDto> args)
+    {
+        if (filaEnEdicion is not { } fila || !ReferenceEquals(args.Data, fila))
+            return;
+
+        args.Attributes["style"] = fila.IdRol == 0
+            ? "background-color: #e6f7ec;"
+            : "background-color: #e7f1fd;";
+    }
+
+    private async Task NuevoRoleAsync()
+    {
+        var nuevo = new RoleDto { Activo = true };
+        filaEnEdicion = nuevo;
+        await gridEstandar.Grid.InsertRow(nuevo);
+    }
+
+    private async Task EditarAsync(RoleDto rol)
+    {
+        backupOriginal = ClonarValores(rol);
+        filaEnEdicion = rol;
+        await gridEstandar.Grid.EditRow(rol);
+    }
+
+    private void CancelarAsync(RoleDto rol)
+    {
+        gridEstandar.Grid.CancelEditRow(rol);
+
+        if (rol.IdRol != 0 && backupOriginal is not null)
+        {
+            CopiarValores(backupOriginal, rol);
+        }
+
+        backupOriginal = null;
+        filaEnEdicion = null;
+    }
+
+    private async Task GuardarAsync(RoleDto rol)
+    {
+        var esNuevo = rol.IdRol == 0;
+
+        if (string.IsNullOrWhiteSpace(rol.Nombre))
+        {
+            await DialogService.Alert("El nombre es obligatorio.", "Error");
+            return;
+        }
+
+        Guardando = true;
+        bool exito;
+        string? mensaje;
+
+        if (esNuevo)
+        {
+            var request = new CrearRoleRequest
+            {
+                Nombre = rol.Nombre,
+                Descripcion = rol.Descripcion
+            };
+            (exito, mensaje) = await RoleService.CrearAsync(request);
+        }
+        else
+        {
+            var request = new ActualizarRoleRequest
+            {
+                Nombre = rol.Nombre,
+                Descripcion = rol.Descripcion,
+                Activo = rol.Activo
+            };
+            (exito, mensaje) = await RoleService.ActualizarAsync(rol.IdRol, request);
+        }
+
+        Guardando = false;
+
+        if (!exito)
+        {
+            await DialogService.Alert(mensaje ?? "Ocurrió un error al guardar.", "Error");
+            return;
+        }
+
+        await gridEstandar.Grid.UpdateRow(rol);
+        backupOriginal = null;
+        filaEnEdicion = null;
+
+        await DialogService.Alert(esNuevo ? "Rol creado correctamente." : "Rol actualizado correctamente.", "Éxito");
+        await CargarRolesAsync();
+    }
+
+    private static RoleDto ClonarValores(RoleDto origen) => new()
+    {
+        IdRol = origen.IdRol,
+        Nombre = origen.Nombre,
+        Descripcion = origen.Descripcion,
+        Activo = origen.Activo
+    };
+
+    private static void CopiarValores(RoleDto origen, RoleDto destino)
+    {
+        destino.Nombre = origen.Nombre;
+        destino.Descripcion = origen.Descripcion;
+        destino.Activo = origen.Activo;
+    }
+}

@@ -1,9 +1,7 @@
-namespace CreditFlow.Web.Models;
+namespace CreditFlow.Web.Models.Mantenimientos;
 
-public class RoleDto
+public class ActualizarRoleRequest
 {
-    public int IdRol { get; set; }
-
     public string Nombre { get; set; } = string.Empty;
 
     public string? Descripcion { get; set; }
