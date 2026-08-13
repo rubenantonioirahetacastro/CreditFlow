@@ -1,5 +1,9 @@
 using CreditFlow.Web.Components;
+using CreditFlow.Web.Core.Http;
 using CreditFlow.Web.Endpoints;
+using CreditFlow.Web.Features.BandejaVerificacion.Services;
+using CreditFlow.Web.Features.EvaluacionCredito.Services;
+using CreditFlow.Web.Shared.CatalogoCodigos.Services;
 using CreditFlow.Web.Services;
 using CreditFlow.Web.Services.Mantenimientos;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -30,12 +34,16 @@ builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddScoped<IApiClient, ApiClient>();
 builder.Services.AddScoped<IAuthService, AuthApiService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoApiService>();
 builder.Services.AddScoped<IRoleService, RoleApiService>();
 builder.Services.AddScoped<IAgenciaService, AgenciaApiService>();
 builder.Services.AddScoped<ILineaCreditoService, LineaCreditoApiService>();
 builder.Services.AddScoped<ICatalogoCodigoService, CatalogoCodigoApiService>();
+builder.Services.AddScoped<IVerificacionService, VerificacionApiService>();
+builder.Services.AddScoped<ObtenerCatalogoCodigos, ObtenerCatalogoCodigosApi>();
+builder.Services.AddScoped<IEvaluacionCreditoService, EvaluacionCreditoApiService>();
 
 builder.Services.AddRadzenComponents();
 

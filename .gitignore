@@ -400,3 +400,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /CreditFlow.API/wwwroot/uploads/solicitudes
+.idea/.idea.CreditFlow/.idea/indexLayout.xml
+.idea/.idea.CreditFlow/.idea/workspace.xml
+.idea/.idea.CreditFlow/.idea/vcs.xml

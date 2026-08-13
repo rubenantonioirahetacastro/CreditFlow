@@ -40,7 +40,12 @@
                 RowEdit="@RowEdit"
                 RowUpdate="@RowUpdate"
                 RowCreate="@RowCreate"
-                RowRender="@RowRender">
+                RowRender="@RowRender"
+                SelectionMode="@(SelectionMode ?? DataGridSelectionMode.Single)"
+                Value="@seleccionados"
+                ValueChanged="@ValueChangedCallback"
+                RowSelect="@RowSelect"
+                RowDeselect="@RowDeselect">
     <Columns>
         @ChildContent
     </Columns>
@@ -88,6 +93,21 @@
     [Parameter] public string AddButtonTitle { get; set; } = "Agregar";
 
     [Parameter] public EventCallback OnAdd { get; set; }
+
+    // Nullable a propósito: si la pantalla que llama a GridEstandar no pasa SelectionMode,
+    // ValueChangedCallback queda sin delegate y Radzen no resalta filas al hacer clic
+    // (evita romper pantallas como Agencias/Empleados que no usan selección).
+    [Parameter] public DataGridSelectionMode? SelectionMode { get; set; }
+
+    [Parameter] public EventCallback<TItem> RowSelect { get; set; }
+
+    [Parameter] public EventCallback<TItem> RowDeselect { get; set; }
+
+    private IList<TItem> seleccionados = new List<TItem>();
+
+    private EventCallback<IList<TItem>> ValueChangedCallback => SelectionMode.HasValue
+        ? EventCallback.Factory.Create<IList<TItem>>(this, valor => seleccionados = valor)
+        : default;
 
     private async Task ExportarAsync()
     {

@@ -1,0 +1,43 @@
+@page "/otorgamiento/procesamiento-datos/bandeja-verificacion"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using CreditFlow.Web.Features.BandejaVerificacion.Models
+@using CreditFlow.Web.Features.BandejaVerificacion.Services
+
+<PageTitle>Bandeja de verificación</PageTitle>
+<h3>Bandeja de verificación</h3>
+
+<GridEstandar TItem="VerificacionListItem"
+              Data="@Creditos"
+              IsLoading="@Cargando"
+              EmptyText="No hay créditos pendientes en la bandeja."
+              ExportFileName="bandeja-verificacion"
+              ShowAddButton="false"
+              SelectionMode="DataGridSelectionMode.Single"
+              RowSelect="@AbrirEvaluacion">
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.NombreCliente)" Title="Nombre" Width="240px" />
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.Agencia)" Title="Agencia" Width="160px" />
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.SubProducto)" Title="Subproducto" Width="180px" />
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.Estado)" Title="Estado" Width="150px" />
+</GridEstandar>
+
+@code {
+    [Inject] private IVerificacionService VerificacionService { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+
+    private List<VerificacionListItem> Creditos { get; set; } = new();
+    private bool Cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Creditos = await VerificacionService.ObtenerBandejaAsync();
+        Cargando = false;
+    }
+
+    // Al seleccionar un crédito se abre su pantalla de Evaluación (NCodAge + NCodCred
+    // identifican al crédito; el endpoint actual no trae IdPersona).
+    private void AbrirEvaluacion(VerificacionListItem credito)
+    {
+        NavigationManager.NavigateTo($"/otorgamiento/evaluacion/{credito.NCodAge}/{credito.NCodCred}");
+    }
+}

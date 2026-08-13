@@ -1,0 +1,68 @@
+@page "/otorgamiento/evaluacion/{NCodAge:int}/{NCodCred:int}"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using CreditFlow.Web.Features.EvaluacionCredito.Services
+@using CreditFlow.Web.Shared.CatalogoCodigos.Models
+@using CreditFlow.Web.Shared.CatalogoCodigos.Services
+
+<PageTitle>Evaluación de crédito</PageTitle>
+<h3>Evaluación de crédito</h3>
+<p class="text-muted">Crédito @NCodAge-@NCodCred</p>
+
+@* Catálogo 123: por ahora es lo único que trae esta pantalla. El resto (tabs, score,
+   referencias, etc.) se agrega cuando se defina qué endpoints los van a alimentar. *@
+<RadzenDropDown TValue="int?"
+                Data="@OpcionesCatalogo"
+                TextProperty="@nameof(CatalogoCodigoDto.CNomCod)"
+                ValueProperty="@nameof(CatalogoCodigoDto.NValor)"
+                @bind-Value="@EstadoSeleccionado"
+                Placeholder="Seleccione..."
+                Disabled="@Cargando"
+                Style="width: 320px;" />
+
+<RadzenButton Text="Guardar"
+              Icon="save"
+              ButtonStyle="ButtonStyle.Primary"
+              class="mt-3"
+              Disabled="@(EstadoSeleccionado is null || Guardando)"
+              Click="@GuardarAsync" />
+
+@code {
+    [Parameter] public int NCodAge { get; set; }
+    [Parameter] public int NCodCred { get; set; }
+
+    [Inject] private ObtenerCatalogoCodigos ObtenerCatalogoCodigos { get; set; } = default!;
+    [Inject] private IEvaluacionCreditoService EvaluacionCreditoService { get; set; } = default!;
+    [Inject] private DialogService DialogService { get; set; } = default!;
+
+    private const int CodigoCatalogoEvaluacion = 123;
+
+    private List<CatalogoCodigoDto> OpcionesCatalogo { get; set; } = new();
+    private int? EstadoSeleccionado;
+    private bool Cargando = true;
+    private bool Guardando;
+
+    protected override async Task OnInitializedAsync()
+    {
+        OpcionesCatalogo = await ObtenerCatalogoCodigos.ObtenerCatalogoCodigo(CodigoCatalogoEvaluacion);
+        Cargando = false;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (EstadoSeleccionado is null)
+            return;
+
+        Guardando = true;
+        var (exito, mensaje) = await EvaluacionCreditoService.ActualizarEvaluacionAsync(NCodAge, NCodCred, EstadoSeleccionado.Value);
+        Guardando = false;
+
+        if (!exito)
+        {
+            await DialogService.Alert(mensaje ?? "Ocurrió un error al guardar la evaluación.", "Error");
+            return;
+        }
+
+        await DialogService.Alert("Evaluación actualizada correctamente.", "Éxito");
+    }
+}
