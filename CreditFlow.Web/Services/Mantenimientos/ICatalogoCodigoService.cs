@@ -1,4 +1,4 @@
-using CreditFlow.Web.Models.Mantenimientos;
+using CreditFlow.Web.Shared.CatalogoCodigos.Models;
 
 namespace CreditFlow.Web.Services.Mantenimientos;
 

@@ -3,6 +3,7 @@ using CreditFlow.API.Infrastructure.Data;
 using CreditFlow.API.Application.Requests;
 using CreditFlow.API.Application.DTOs;
 using CreditFlow.API.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,6 +64,29 @@ namespace CreditFlow.API.Controllers
                                    }).ToListAsync();
 
                 return Ok(lista);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Mensaje = $"Error interno del servidor: {ex.Message}" });
+            }
+        }
+
+        [HttpPut("actualizar-evaluacion")]
+        [Authorize]
+        public async Task<IActionResult> ActualizarEvaluacion([FromBody] ActualizarEvaluacionRequest request)
+        {
+            try
+            {
+                var credito = await _context.Creditos
+                    .FirstOrDefaultAsync(c => c.NCodAge == request.NCodAge && c.NCodCred == request.NCodCred);
+
+                if (credito == null)
+                    return NotFound(new { Mensaje = "No se encontró el crédito indicado." });
+
+                credito.NEstado = request.NEstado;
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
             catch (Exception ex)
             {

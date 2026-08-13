@@ -8,7 +8,7 @@ namespace CreditFlow.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+    [Authorize] 
     public class CatalogoCodigoController : ControllerBase
     {
         private readonly ICatalogoCodigoService _catalogoCodigoService;
@@ -19,6 +19,7 @@ namespace CreditFlow.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Supervisor,Tecnologia")] 
         public async Task<IActionResult> AddCatalogo([FromBody] CatalogoCodigo catalogo)
         {
             try
@@ -56,6 +57,7 @@ namespace CreditFlow.API.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
         public async Task<IActionResult> UpdateCatalogo([FromBody] CatalogoCodigo catalogo)
         {
             var updated = await _catalogoCodigoService.UpdateCatalogo(catalogo);
@@ -67,6 +69,7 @@ namespace CreditFlow.API.Controllers
         }
 
         [HttpDelete("{codigo}/{valor}")]
+        [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
         public async Task<IActionResult> DeleteCatalogo(int codigo, int valor)
         {
             var deleted = await _catalogoCodigoService.DeleteCatalogo(codigo, valor);
