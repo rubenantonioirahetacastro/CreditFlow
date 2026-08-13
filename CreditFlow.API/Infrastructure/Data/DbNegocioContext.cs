@@ -403,26 +403,26 @@ public partial class DbNegocioContext : DbContext
             entity.ToTable("CredLineaCredito");
 
             entity.Property(e => e.NCodLinea).HasColumnName("nCodLinea");
-            entity.Property(e => e.BAplicaSegmentacionUsura)
-                .HasDefaultValue(true)
-                .HasColumnName("bAplicaSegmentacionUsura");
             entity.Property(e => e.BEstado)
                 .HasDefaultValue(true)
                 .HasColumnName("bEstado");
+            entity.Property(e => e.BRefinan).HasColumnName("bRefinan");
             entity.Property(e => e.CDescripcion)
-                .HasMaxLength(400)
-                .IsUnicode(false)
-                .HasColumnName("cDescripcion");
-            entity.Property(e => e.CLinea)
                 .HasMaxLength(150)
                 .IsUnicode(false)
-                .HasColumnName("cLinea");
+                .HasColumnName("cDescripcion");
+            entity.Property(e => e.CUser)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cUser");
             entity.Property(e => e.NMontoMax)
                 .HasColumnType("money")
                 .HasColumnName("nMontoMax");
             entity.Property(e => e.NMontoMin)
                 .HasColumnType("money")
                 .HasColumnName("nMontoMin");
+            entity.Property(e => e.NNumPresMax).HasColumnName("nNumPresMax");
+            entity.Property(e => e.NNumPresMin).HasColumnName("nNumPresMin");
             entity.Property(e => e.NPlazoMax).HasColumnName("nPlazoMax");
             entity.Property(e => e.NPlazoMin).HasColumnName("nPlazoMin");
             entity.Property(e => e.NProd).HasColumnName("nProd");

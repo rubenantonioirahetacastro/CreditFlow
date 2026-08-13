@@ -34,6 +34,7 @@ builder.Services.AddScoped<IAuthService, AuthApiService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoApiService>();
 builder.Services.AddScoped<IRoleService, RoleApiService>();
 builder.Services.AddScoped<IAgenciaService, AgenciaApiService>();
+builder.Services.AddScoped<ILineaCreditoService, LineaCreditoApiService>();
 builder.Services.AddScoped<ICatalogoCodigoService, CatalogoCodigoApiService>();
 
 builder.Services.AddRadzenComponents();

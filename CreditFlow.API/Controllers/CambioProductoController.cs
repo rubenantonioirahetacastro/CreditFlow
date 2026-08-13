@@ -40,19 +40,12 @@ namespace CreditFlow.API.Controllers
                     PlazoMin = cl.NPlazoMin,
                     PlazoMax = cl.NPlazoMax,
                     NumeroCatalogo = lca.NCatalogoCodigo,
-                    LineaCredito = cl.NCodLinea,
-                    Periodicidad = cl.Periodicidad
+                    LineaCredito = cl.NCodLinea
                 })
                 .ToListAsync();
 
             if (opciones == null || opciones.Count == 0)
                 return NotFound("No se encontraron opciones de cambio de producto para el subproducto proporcionado.");
-
-            //Meses → Cuotas
-            //Cuotas = PlazoMeses * Periodicidad
-
-            //Cuotas → Meses
-            //PlazoMeses = Cuotas / Periodicidad
 
             return Ok(opciones);
         }

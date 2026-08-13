@@ -35,7 +35,7 @@ namespace CreditFlow.API.Application.Services
                 throw new InvalidOperationException($"La línea de crédito encontrada para el subproducto {request.NSubProd} corresponde al producto {linea.NProd}, no al producto {request.NProd}.");
 
             if (request.NPlazo < linea.NPlazoMin || request.NPlazo > linea.NPlazoMax)
-                throw new InvalidOperationException($"El plazo {request.NPlazo} está fuera del rango permitido para la línea {linea.CLinea} ({linea.NPlazoMin} - {linea.NPlazoMax}).");
+                throw new InvalidOperationException($"El plazo {request.NPlazo} está fuera del rango permitido para la línea {linea.CDescripcion} ({linea.NPlazoMin} - {linea.NPlazoMax}).");
 
             DateTime fechaInicio = request.FechaInicio ?? DateTime.Today;
             decimal tasaNominalMensual = request.TasaOverride ?? linea.NTasaCom;
@@ -96,7 +96,7 @@ namespace CreditFlow.API.Application.Services
 
             return new SimularCalendarioResponse
             {
-                LineaUsada = string.IsNullOrWhiteSpace(linea.CDescripcion) ? linea.CLinea : $"{linea.CLinea} - {linea.CDescripcion}",
+                LineaUsada = linea.CDescripcion,
                 TasaNominalMensual = tasaNominalMensual,
                 MontoSolicitado = request.Monto,
                 Plazo = request.NPlazo,

@@ -1,0 +1,346 @@
+@page "/lineas-credito"
+@attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+
+<PageTitle>Mantenimiento de Líneas de Crédito</PageTitle>
+
+<h3>Líneas de Crédito</h3>
+
+<GridEstandar TItem="LineaCreditoDto"
+              @ref="gridEstandar"
+              Data="@ListaLineas"
+              IsLoading="@Cargando"
+              EmptyText="No hay líneas de crédito registradas."
+              ExportFileName="lineas-credito"
+              EditMode="DataGridEditMode.Single"
+              RowRender="@OnRowRender"
+              ShowAddButton="@puedeEditar"
+              AddDisabled="@(filaEnEdicion != null)"
+              AddButtonTitle="Nueva línea de crédito"
+              OnAdd="@NuevaLineaAsync">
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Title="" Sortable="false" Filterable="false" Width="90px" CssClass="celda-accion" Visible="@puedeEditar" Frozen="true">
+        <Template Context="linea">
+            <RadzenButton Icon="edit"
+                          ButtonStyle="ButtonStyle.Primary"
+                          Variant="Variant.Outlined"
+                          Size="ButtonSize.ExtraSmall"
+                          Disabled="@(filaEnEdicion != null)"
+                          title="Editar línea de crédito"
+                          Click="@(() => EditarAsync(linea))" />
+        </Template>
+        <EditTemplate Context="linea">
+            <div class="d-flex gap-1">
+                <RadzenButton Icon="save"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Variant="Variant.Outlined"
+                              Size="ButtonSize.ExtraSmall"
+                              Disabled="@Guardando"
+                              title="Guardar cambios"
+                              Click="@(() => GuardarAsync(linea))" />
+                <RadzenButton Icon="close"
+                              ButtonStyle="ButtonStyle.Secondary"
+                              Variant="Variant.Outlined"
+                              Size="ButtonSize.ExtraSmall"
+                              Disabled="@Guardando"
+                              title="Cancelar edición"
+                              Click="@(() => CancelarAsync(linea))" />
+            </div>
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.Descripcion)" Title="Descripción" Width="200px" Frozen="true" Filterable="false">
+        <EditTemplate Context="linea">
+            <RadzenTextBox @bind-Value="linea.Descripcion" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.Producto)" Title="Producto" Width="110px">
+        <EditTemplate Context="linea">
+            <RadzenNumeric TValue="int" @bind-Value="linea.Producto" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.SubProducto)" Title="Subproducto" Width="120px">
+        <EditTemplate Context="linea">
+            <RadzenNumeric TValue="int" @bind-Value="linea.SubProducto" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.TasaComision)" Title="Tasa Comisión" Width="130px" Filterable="false">
+        <Template Context="linea">@linea.TasaComision.ToString("N2")</Template>
+        <EditTemplate Context="linea">
+            <RadzenNumeric TValue="decimal" @bind-Value="linea.TasaComision" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.PlazoMinimo)" Title="Plazo Mín." Width="110px">
+        <EditTemplate Context="linea">
+            <RadzenNumeric TValue="int" @bind-Value="linea.PlazoMinimo" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.PlazoMaximo)" Title="Plazo Máx." Width="110px">
+        <EditTemplate Context="linea">
+            <RadzenNumeric TValue="int" @bind-Value="linea.PlazoMaximo" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.MontoMinimo)" Title="Monto Mín." Width="130px">
+        <Template Context="linea">@linea.MontoMinimo.ToString("N2")</Template>
+        <EditTemplate Context="linea">
+            <RadzenNumeric TValue="decimal" @bind-Value="linea.MontoMinimo" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.MontoMaximo)" Title="Monto Máx." Width="130px">
+        <Template Context="linea">@linea.MontoMaximo.ToString("N2")</Template>
+        <EditTemplate Context="linea">
+            <RadzenNumeric TValue="decimal" @bind-Value="linea.MontoMaximo" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.NumeroPrestamosMinimo)" Title="Núm. Préstamos Mín." Width="150px" Filterable="false">
+        <Template Context="linea">@(linea.NumeroPrestamosMinimo?.ToString() ?? "-")</Template>
+        <EditTemplate Context="linea">
+            <RadzenNumeric TValue="int?" @bind-Value="linea.NumeroPrestamosMinimo" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.NumeroPrestamosMaximo)" Title="Núm. Préstamos Máx." Width="150px" Filterable="false">
+        <Template Context="linea">@(linea.NumeroPrestamosMaximo?.ToString() ?? "-")</Template>
+        <EditTemplate Context="linea">
+            <RadzenNumeric TValue="int?" @bind-Value="linea.NumeroPrestamosMaximo" Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.AplicaRefinanciamiento)" Title="Refinancia" Width="110px" Filterable="false">
+        <Template Context="linea">@(linea.AplicaRefinanciamiento == true ? "Sí" : "No")</Template>
+        <EditTemplate Context="linea">
+            <RadzenDropDown TValue="bool?"
+                             @bind-Value="linea.AplicaRefinanciamiento"
+                             Data="@RefinanOpciones"
+                             TextProperty="@nameof(OpcionRefinan.Texto)"
+                             ValueProperty="@nameof(OpcionRefinan.Valor)"
+                             Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.Activa)" Title="Estado" Width="110px" Filterable="false">
+        <Template Context="linea">@(linea.Activa ? "Activa" : "Inactiva")</Template>
+        <EditTemplate Context="linea">
+            <RadzenDropDown TValue="bool"
+                             @bind-Value="linea.Activa"
+                             Data="@EstadoOpciones"
+                             TextProperty="@nameof(OpcionEstado.Texto)"
+                             ValueProperty="@nameof(OpcionEstado.Valor)"
+                             Disabled="@(linea.NCodLinea == 0)"
+                             Style="width:100%" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="LineaCreditoDto" Property="@nameof(LineaCreditoDto.Usuario)" Title="Usuario" Width="140px" Sortable="false" Filterable="false">
+        <Template Context="linea">@(string.IsNullOrEmpty(linea.Usuario) ? "-" : linea.Usuario)</Template>
+    </RadzenDataGridColumn>
+</GridEstandar>
+
+@code {
+    [Inject] private ILineaCreditoService LineaCreditoService { get; set; } = default!;
+    [Inject] private DialogService DialogService { get; set; } = default!;
+    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    // La API solo permite crear/editar líneas de crédito a Admin y Tecnologia
+    // (Supervisor puede ver el listado, GET, pero no mutarlo).
+    private record OpcionEstado(bool Valor, string Texto);
+    private record OpcionRefinan(bool? Valor, string Texto);
+
+    private static readonly List<OpcionEstado> EstadoOpciones = new()
+    {
+        new OpcionEstado(true, "Activa"),
+        new OpcionEstado(false, "Inactiva")
+    };
+
+    private static readonly List<OpcionRefinan> RefinanOpciones = new()
+    {
+        new OpcionRefinan(true, "Sí"),
+        new OpcionRefinan(false, "No")
+    };
+
+    private GridEstandar<LineaCreditoDto> gridEstandar = default!;
+
+    private List<LineaCreditoDto> ListaLineas { get; set; } = new();
+
+    private LineaCreditoDto? filaEnEdicion;
+    private LineaCreditoDto? backupOriginal;
+
+    private bool Cargando = true;
+    private bool Guardando;
+    private bool puedeEditar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthStateTask is not null)
+        {
+            var authState = await AuthStateTask;
+            puedeEditar = authState.User.IsInRole("Admin") || authState.User.IsInRole("Tecnologia");
+        }
+
+        await CargarLineasAsync();
+    }
+
+    private async Task CargarLineasAsync()
+    {
+        Cargando = true;
+        ListaLineas = await LineaCreditoService.ObtenerTodasAsync();
+        Cargando = false;
+    }
+
+    private void OnRowRender(RowRenderEventArgs<LineaCreditoDto> args)
+    {
+        if (filaEnEdicion is not { } fila || !ReferenceEquals(args.Data, fila))
+            return;
+
+        args.Attributes["style"] = fila.NCodLinea == 0
+            ? "background-color: #e6f7ec;"
+            : "background-color: #e7f1fd;";
+    }
+
+    private async Task NuevaLineaAsync()
+    {
+        var nueva = new LineaCreditoDto { Activa = true };
+        filaEnEdicion = nueva;
+        await gridEstandar.Grid.InsertRow(nueva);
+    }
+
+    private async Task EditarAsync(LineaCreditoDto linea)
+    {
+        backupOriginal = ClonarValores(linea);
+        filaEnEdicion = linea;
+        await gridEstandar.Grid.EditRow(linea);
+    }
+
+    private void CancelarAsync(LineaCreditoDto linea)
+    {
+        gridEstandar.Grid.CancelEditRow(linea);
+
+        if (linea.NCodLinea != 0 && backupOriginal is not null)
+        {
+            CopiarValores(backupOriginal, linea);
+        }
+
+        backupOriginal = null;
+        filaEnEdicion = null;
+    }
+
+    private async Task GuardarAsync(LineaCreditoDto linea)
+    {
+        var esNueva = linea.NCodLinea == 0;
+
+        if (string.IsNullOrWhiteSpace(linea.Descripcion))
+        {
+            await DialogService.Alert("La descripción es obligatoria.", "Error");
+            return;
+        }
+
+        if (linea.PlazoMinimo > linea.PlazoMaximo)
+        {
+            await DialogService.Alert("El plazo mínimo no puede ser mayor al plazo máximo.", "Error");
+            return;
+        }
+
+        if (linea.MontoMinimo > linea.MontoMaximo)
+        {
+            await DialogService.Alert("El monto mínimo no puede ser mayor al monto máximo.", "Error");
+            return;
+        }
+
+        Guardando = true;
+        bool exito;
+        string? mensaje;
+
+        if (esNueva)
+        {
+            var request = new CrearLineaCreditoRequest
+            {
+                Descripcion = linea.Descripcion,
+                TasaComision = linea.TasaComision,
+                Producto = linea.Producto,
+                SubProducto = linea.SubProducto,
+                PlazoMinimo = linea.PlazoMinimo,
+                PlazoMaximo = linea.PlazoMaximo,
+                MontoMinimo = linea.MontoMinimo,
+                MontoMaximo = linea.MontoMaximo,
+                NumeroPrestamosMinimo = linea.NumeroPrestamosMinimo,
+                NumeroPrestamosMaximo = linea.NumeroPrestamosMaximo,
+                AplicaRefinanciamiento = linea.AplicaRefinanciamiento
+            };
+            (exito, mensaje) = await LineaCreditoService.CrearAsync(request);
+        }
+        else
+        {
+            var request = new ActualizarLineaCreditoRequest
+            {
+                Descripcion = linea.Descripcion,
+                TasaComision = linea.TasaComision,
+                Producto = linea.Producto,
+                SubProducto = linea.SubProducto,
+                PlazoMinimo = linea.PlazoMinimo,
+                PlazoMaximo = linea.PlazoMaximo,
+                MontoMinimo = linea.MontoMinimo,
+                MontoMaximo = linea.MontoMaximo,
+                NumeroPrestamosMinimo = linea.NumeroPrestamosMinimo,
+                NumeroPrestamosMaximo = linea.NumeroPrestamosMaximo,
+                AplicaRefinanciamiento = linea.AplicaRefinanciamiento,
+                Activa = linea.Activa
+            };
+            (exito, mensaje) = await LineaCreditoService.ActualizarAsync(linea.NCodLinea, request);
+        }
+
+        Guardando = false;
+
+        if (!exito)
+        {
+            await DialogService.Alert(mensaje ?? "Ocurrió un error al guardar.", "Error");
+            return;
+        }
+
+        await gridEstandar.Grid.UpdateRow(linea);
+        backupOriginal = null;
+        filaEnEdicion = null;
+
+        await DialogService.Alert(esNueva ? "Línea de crédito creada correctamente." : "Línea de crédito actualizada correctamente.", "Éxito");
+        await CargarLineasAsync();
+    }
+
+    private static LineaCreditoDto ClonarValores(LineaCreditoDto origen) => new()
+    {
+        NCodLinea = origen.NCodLinea,
+        Descripcion = origen.Descripcion,
+        TasaComision = origen.TasaComision,
+        Producto = origen.Producto,
+        SubProducto = origen.SubProducto,
+        PlazoMinimo = origen.PlazoMinimo,
+        PlazoMaximo = origen.PlazoMaximo,
+        MontoMinimo = origen.MontoMinimo,
+        MontoMaximo = origen.MontoMaximo,
+        NumeroPrestamosMinimo = origen.NumeroPrestamosMinimo,
+        NumeroPrestamosMaximo = origen.NumeroPrestamosMaximo,
+        AplicaRefinanciamiento = origen.AplicaRefinanciamiento,
+        Usuario = origen.Usuario,
+        Activa = origen.Activa
+    };
+
+    private static void CopiarValores(LineaCreditoDto origen, LineaCreditoDto destino)
+    {
+        destino.Descripcion = origen.Descripcion;
+        destino.TasaComision = origen.TasaComision;
+        destino.Producto = origen.Producto;
+        destino.SubProducto = origen.SubProducto;
+        destino.PlazoMinimo = origen.PlazoMinimo;
+        destino.PlazoMaximo = origen.PlazoMaximo;
+        destino.MontoMinimo = origen.MontoMinimo;
+        destino.MontoMaximo = origen.MontoMaximo;
+        destino.NumeroPrestamosMinimo = origen.NumeroPrestamosMinimo;
+        destino.NumeroPrestamosMaximo = origen.NumeroPrestamosMaximo;
+        destino.AplicaRefinanciamiento = origen.AplicaRefinanciamiento;
+        destino.Activa = origen.Activa;
+    }
+}
