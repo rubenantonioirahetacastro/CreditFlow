@@ -1,10 +1,10 @@
-using CreditFlow.API.Application.DTOs.Mantenimientos;
-using CreditFlow.API.Application.Requests.Mantenimientos;
+using CreditFlow.API.Features.Mantenimientos.LineasCredito.DTOs;
+using CreditFlow.API.Features.Mantenimientos.LineasCredito.Requests;
 
-namespace CreditFlow.API.Application.Interfaces.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.LineasCredito.Services
 {
-    // "Admin" para no chocar con CreditFlow.API.Application.Services.ILineaCreditoService,
-    // que resuelve la línea aplicable a un subproducto/monto durante el otorgamiento.
+    // "Admin" para no chocar con ILineaCreditoService (mismo namespace), que resuelve
+    // la línea aplicable a un subproducto/monto durante el otorgamiento.
     public interface ILineaCreditoAdminService
     {
         Task<List<LineaCreditoDto>> ObtenerTodasAsync();

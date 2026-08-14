@@ -1,8 +1,8 @@
 ﻿using System;
 using CreditFlow.API.Domain.Entities;
-using CreditFlow.API.Application.Requests;
+using CreditFlow.API.Features.Calendario.Requests;
 
-namespace CreditFlow.API.Mappings
+namespace CreditFlow.API.Features.Calendario.Mappings
 {
     public static class CreditoExtensions
     {

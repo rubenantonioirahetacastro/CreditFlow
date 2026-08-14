@@ -1,4 +1,4 @@
-namespace CreditFlow.Web.Models;
+namespace CreditFlow.Web.Shared.Models;
 
 public class RoleDto
 {

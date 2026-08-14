@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace CreditFlow.API.Application.DTOs
+namespace CreditFlow.API.Features.Creditos.DTOs
 {
     public class UltimoCreditoPersonaResponse
     {

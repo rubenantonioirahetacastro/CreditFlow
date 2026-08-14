@@ -1,6 +1,6 @@
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
-using CreditFlow.API.Application.Requests;
+using CreditFlow.API.Features.Auth.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using CreditFlow.API.Application.Interfaces;
@@ -12,7 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Security.Cryptography;
 
-namespace CreditFlow.API.Controllers;
+namespace CreditFlow.API.Features.Auth.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

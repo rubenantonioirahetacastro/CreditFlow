@@ -1,10 +1,10 @@
 using System.Security.Claims;
-using CreditFlow.Web.Services;
+using CreditFlow.Web.Features.Auth.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CreditFlow.Web.Endpoints;
+namespace CreditFlow.Web.Features.Auth.Endpoints;
 
 public static class AuthEndpoints
 {

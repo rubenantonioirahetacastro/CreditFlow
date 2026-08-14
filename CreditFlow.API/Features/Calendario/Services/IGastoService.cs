@@ -1,6 +1,6 @@
-﻿using CreditFlow.API.Application.Requests;
+﻿using CreditFlow.API.Features.Calendario.Requests;
 
-namespace CreditFlow.API.Application.Interfaces
+namespace CreditFlow.API.Features.Calendario.Services
 {
     public interface IGastoService
     {

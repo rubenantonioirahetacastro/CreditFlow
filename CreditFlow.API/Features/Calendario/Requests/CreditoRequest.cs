@@ -1,4 +1,4 @@
-﻿namespace CreditFlow.API.Application.Requests
+﻿namespace CreditFlow.API.Features.Calendario.Requests
 {
     public class CreditoRequest
     {

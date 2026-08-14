@@ -10,4 +10,6 @@ public interface IApiClient
     Task<(bool Exito, string? Mensaje)> PutAsync(string url, object? body = null);
 
     Task<(bool Exito, string? Mensaje)> PostAsync(string url, object? body = null);
+
+    Task<(bool Exito, string? Mensaje)> DeleteAsync(string url);
 }

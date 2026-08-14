@@ -1,16 +1,16 @@
 using System.Globalization;
 using System.Text;
-using CreditFlow.API.Application.DTOs.Mantenimientos;
+using CreditFlow.API.Features.Mantenimientos.Empleados.DTOs;
 using CreditFlow.API.Application.Interfaces;
-using CreditFlow.API.Application.Interfaces.Mantenimientos;
-using CreditFlow.API.Application.Requests.Mantenimientos;
+using CreditFlow.API.Features.Mantenimientos.Empleados.Services;
+using CreditFlow.API.Features.Mantenimientos.Empleados.Requests;
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
 using CreditFlow.API.Shared.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.API.Application.Services.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.Empleados.Services
 {
     public class EmpleadoService : IEmpleadoService
     {

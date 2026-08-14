@@ -1,11 +1,16 @@
 using CreditFlow.Web.Components;
 using CreditFlow.Web.Core.Http;
-using CreditFlow.Web.Endpoints;
+using CreditFlow.Web.Features.Auth.Endpoints;
+using CreditFlow.Web.Features.Auth.Services;
+using CreditFlow.Web.Features.Mantenimientos.Agencias.Services;
+using CreditFlow.Web.Features.Mantenimientos.Empleados.Services;
+using CreditFlow.Web.Features.Mantenimientos.Roles.Services;
+using CreditFlow.Web.Features.Mantenimientos.LineasCredito.Services;
+using CreditFlow.Web.Features.Mantenimientos.CatalogosCodigos.Services;
 using CreditFlow.Web.Features.BandejaVerificacion.Services;
 using CreditFlow.Web.Features.EvaluacionCredito.Services;
 using CreditFlow.Web.Shared.CatalogoCodigos.Services;
 using CreditFlow.Web.Services;
-using CreditFlow.Web.Services.Mantenimientos;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Radzen;
 

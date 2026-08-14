@@ -5,7 +5,8 @@
       "Bash(wmic process *)",
       "Bash(powershell -NoProfile -Command \"Get-CimInstance Win32_Process -Filter 'ProcessId=22268' | Select-Object CommandLine, ExecutablePath, ParentProcessId | Format-List\")",
       "PowerShell(Get-CimInstance Win32_Process -Filter \"Name='dotnet.exe'\")",
-      "Bash(ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=\"https://localhost:7293;http://localhost:5006\" dotnet watch run --project \"c:\\\\Users\\\\RUBEN\\\\Desktop\\\\CreditFlow\\\\CreditFlow.API\\\\CreditFlow.API.csproj\" --non-interactive)"
+      "Bash(ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=\"https://localhost:7293;http://localhost:5006\" dotnet watch run --project \"c:\\\\Users\\\\RUBEN\\\\Desktop\\\\CreditFlow\\\\CreditFlow.API\\\\CreditFlow.API.csproj\" --non-interactive)",
+      "Bash(dotnet build *)"
     ]
   }
 }

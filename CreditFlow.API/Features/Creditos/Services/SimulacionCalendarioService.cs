@@ -1,12 +1,13 @@
-using CreditFlow.API.Application.Interfaces;
+using CreditFlow.API.Features.Creditos.Services;
 using CreditFlow.API.Shared.Helpers;
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
-using CreditFlow.API.Application.Requests;
-using CreditFlow.API.Application.DTOs;
+using CreditFlow.API.Features.Creditos.Requests;
+using CreditFlow.API.Features.Creditos.DTOs;
+using CreditFlow.API.Features.Mantenimientos.LineasCredito.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.API.Application.Services
+namespace CreditFlow.API.Features.Creditos.Services
 {
     public class SimulacionCalendarioService : ISimulacionCalendarioService
     {

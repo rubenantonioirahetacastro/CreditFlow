@@ -1,4 +1,4 @@
-﻿namespace CreditFlow.API.Application.Interfaces
+﻿namespace CreditFlow.API.Features.Calendario.Services
 {
     public interface IFeriadoService
     {

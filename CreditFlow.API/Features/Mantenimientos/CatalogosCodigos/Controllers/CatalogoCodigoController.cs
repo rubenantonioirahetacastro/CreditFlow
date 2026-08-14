@@ -1,10 +1,10 @@
-﻿using CreditFlow.API.Application.Interfaces;
+﻿using CreditFlow.API.Features.Mantenimientos.CatalogosCodigos.Services;
 using CreditFlow.API.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CreditFlow.API.Controllers
+namespace CreditFlow.API.Features.Mantenimientos.CatalogosCodigos.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

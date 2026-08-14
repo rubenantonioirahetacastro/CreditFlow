@@ -3,7 +3,7 @@ using CreditFlow.API.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.API.Controllers;
+namespace CreditFlow.API.Features.Personas.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

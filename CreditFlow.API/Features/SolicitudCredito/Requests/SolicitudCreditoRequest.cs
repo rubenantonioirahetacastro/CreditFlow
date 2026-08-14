@@ -1,7 +1,7 @@
 ﻿using CreditFlow.API.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 
-namespace CreditFlow.API.Application.Requests
+namespace CreditFlow.API.Features.SolicitudCredito.Requests
 {
     // Request DTO that uses per-photo request objects which may include uploaded files
     public class SolicitudCreditoRequest

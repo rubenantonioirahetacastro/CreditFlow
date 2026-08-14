@@ -1,4 +1,4 @@
-﻿namespace CreditFlow.API.Shared.Helpers
+﻿namespace CreditFlow.API.Features.SolicitudCredito.Helpers
 {
     public static class EmailTemplates
     {

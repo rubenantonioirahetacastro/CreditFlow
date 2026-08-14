@@ -1,10 +1,10 @@
 ﻿using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
-using CreditFlow.API.Application.Interfaces;
-using CreditFlow.API.Application.Requests;
+using CreditFlow.API.Features.Calendario.Services;
+using CreditFlow.API.Features.Calendario.Requests;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.API.Application.Services
+namespace CreditFlow.API.Features.Calendario.Services
 {
     public class GastoService : IGastoService
     {

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using CreditFlow.API.Domain.Entities;
 
-namespace CreditFlow.API.Application.Interfaces
+namespace CreditFlow.API.Features.Calendario.Services
 {
     public interface ICalendarioService
     {

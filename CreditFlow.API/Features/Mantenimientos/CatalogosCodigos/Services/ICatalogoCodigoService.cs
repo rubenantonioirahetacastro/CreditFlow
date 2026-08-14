@@ -1,6 +1,6 @@
 ﻿using CreditFlow.API.Domain.Entities;
 
-namespace CreditFlow.API.Application.Interfaces
+namespace CreditFlow.API.Features.Mantenimientos.CatalogosCodigos.Services
 {
     public interface ICatalogoCodigoService
     {

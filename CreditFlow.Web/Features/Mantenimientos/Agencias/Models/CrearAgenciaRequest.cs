@@ -1,4 +1,4 @@
-namespace CreditFlow.Web.Models.Mantenimientos;
+namespace CreditFlow.Web.Features.Mantenimientos.Agencias.Models;
 
 // NCodAge se ingresa manualmente: en la API no es autogenerado por la base de datos.
 public class CrearAgenciaRequest

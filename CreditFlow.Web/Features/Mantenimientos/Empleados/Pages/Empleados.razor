@@ -1,5 +1,9 @@
 @page "/empleados"
 @attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+@using CreditFlow.Web.Features.Auth.Services
+@using CreditFlow.Web.Features.Mantenimientos.Empleados.Models
+@using CreditFlow.Web.Features.Mantenimientos.Empleados.Services
+@using CreditFlow.Web.Features.Mantenimientos.Empleados.Components
 
 <PageTitle>Mantenimiento de Empleados</PageTitle>
 

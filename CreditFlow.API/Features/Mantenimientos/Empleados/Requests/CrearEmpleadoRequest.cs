@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace CreditFlow.API.Application.Requests.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.Empleados.Requests
 {
     public class CrearEmpleadoRequest
     {

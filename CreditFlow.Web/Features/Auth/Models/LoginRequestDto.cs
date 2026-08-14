@@ -1,4 +1,4 @@
-namespace CreditFlow.Web.Models;
+namespace CreditFlow.Web.Features.Auth.Models;
 
 public class LoginRequestDto
 {

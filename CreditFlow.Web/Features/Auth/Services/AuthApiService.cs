@@ -1,8 +1,9 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using CreditFlow.Web.Models;
+using CreditFlow.Web.Shared.Models;
+using CreditFlow.Web.Features.Auth.Models;
 
-namespace CreditFlow.Web.Services;
+namespace CreditFlow.Web.Features.Auth.Services;
 
 public class AuthApiService : IAuthService
 {

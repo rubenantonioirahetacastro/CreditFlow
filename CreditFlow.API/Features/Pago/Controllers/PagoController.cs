@@ -1,10 +1,10 @@
-using CreditFlow.API.Application.Requests;
-using CreditFlow.API.Application.Interfaces;
+using CreditFlow.API.Features.Pago.Requests;
+using CreditFlow.API.Features.Pago.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 
-namespace CreditFlow.API.Controllers
+namespace CreditFlow.API.Features.Pago.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -1,7 +1,7 @@
-using CreditFlow.API.Application.DTOs.Mantenimientos;
-using CreditFlow.API.Application.Requests.Mantenimientos;
+using CreditFlow.API.Features.Mantenimientos.Empleados.DTOs;
+using CreditFlow.API.Features.Mantenimientos.Empleados.Requests;
 
-namespace CreditFlow.API.Application.Interfaces.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.Empleados.Services
 {
     public interface IEmpleadoService
     {

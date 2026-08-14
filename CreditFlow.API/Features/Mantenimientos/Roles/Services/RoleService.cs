@@ -1,11 +1,11 @@
-using CreditFlow.API.Application.DTOs.Mantenimientos;
-using CreditFlow.API.Application.Interfaces.Mantenimientos;
-using CreditFlow.API.Application.Requests.Mantenimientos;
+using CreditFlow.API.Features.Mantenimientos.Roles.DTOs;
+using CreditFlow.API.Features.Mantenimientos.Roles.Services;
+using CreditFlow.API.Features.Mantenimientos.Roles.Requests;
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.API.Application.Services.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.Roles.Services
 {
     public class RoleService : IRoleService
     {

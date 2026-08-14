@@ -1,7 +1,7 @@
-using CreditFlow.API.Application.Interfaces;
+using CreditFlow.API.Features.Pago.Services;
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
-using CreditFlow.API.Application.Requests;
+using CreditFlow.API.Features.Pago.Requests;
 using CreditFlow.API.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CreditFlow.API.Application.Services
+namespace CreditFlow.API.Features.Pago.Services
 {
     public class PagoService : IPagoService
     {

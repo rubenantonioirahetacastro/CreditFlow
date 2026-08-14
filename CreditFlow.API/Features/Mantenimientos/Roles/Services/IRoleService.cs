@@ -1,7 +1,7 @@
-using CreditFlow.API.Application.DTOs.Mantenimientos;
-using CreditFlow.API.Application.Requests.Mantenimientos;
+using CreditFlow.API.Features.Mantenimientos.Roles.DTOs;
+using CreditFlow.API.Features.Mantenimientos.Roles.Requests;
 
-namespace CreditFlow.API.Application.Interfaces.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.Roles.Services
 {
     public interface IRoleService
     {

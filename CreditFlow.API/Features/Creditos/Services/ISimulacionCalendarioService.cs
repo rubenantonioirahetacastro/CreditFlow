@@ -1,7 +1,7 @@
-using CreditFlow.API.Application.Requests;
-using CreditFlow.API.Application.DTOs;
+using CreditFlow.API.Features.Creditos.Requests;
+using CreditFlow.API.Features.Creditos.DTOs;
 
-namespace CreditFlow.API.Application.Interfaces
+namespace CreditFlow.API.Features.Creditos.Services
 {
     public interface ISimulacionCalendarioService
     {

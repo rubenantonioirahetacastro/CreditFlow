@@ -1,11 +1,11 @@
-using CreditFlow.API.Application.DTOs.Mantenimientos;
-using CreditFlow.API.Application.Interfaces.Mantenimientos;
-using CreditFlow.API.Application.Requests.Mantenimientos;
+using CreditFlow.API.Features.Mantenimientos.Agencias.DTOs;
+using CreditFlow.API.Features.Mantenimientos.Agencias.Services;
+using CreditFlow.API.Features.Mantenimientos.Agencias.Requests;
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.API.Application.Services.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.Agencias.Services
 {
     public class AgenciaService : IAgenciaService
     {

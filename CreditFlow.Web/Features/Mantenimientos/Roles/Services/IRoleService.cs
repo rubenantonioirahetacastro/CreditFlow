@@ -1,7 +1,7 @@
-using CreditFlow.Web.Models;
-using CreditFlow.Web.Models.Mantenimientos;
+using CreditFlow.Web.Shared.Models;
+using CreditFlow.Web.Features.Mantenimientos.Roles.Models;
 
-namespace CreditFlow.Web.Services.Mantenimientos;
+namespace CreditFlow.Web.Features.Mantenimientos.Roles.Services;
 
 public interface IRoleService
 {

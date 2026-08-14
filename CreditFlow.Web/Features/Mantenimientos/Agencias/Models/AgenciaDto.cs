@@ -1,4 +1,4 @@
-namespace CreditFlow.Web.Models.Mantenimientos;
+namespace CreditFlow.Web.Features.Mantenimientos.Agencias.Models;
 
 public class AgenciaDto
 {

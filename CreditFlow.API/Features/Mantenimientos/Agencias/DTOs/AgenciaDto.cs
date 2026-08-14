@@ -1,4 +1,4 @@
-namespace CreditFlow.API.Application.DTOs.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.Agencias.DTOs
 {
     public class AgenciaDto
     {

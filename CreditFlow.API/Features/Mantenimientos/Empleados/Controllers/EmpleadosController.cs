@@ -1,9 +1,9 @@
-using CreditFlow.API.Application.Interfaces.Mantenimientos;
-using CreditFlow.API.Application.Requests.Mantenimientos;
+using CreditFlow.API.Features.Mantenimientos.Empleados.Services;
+using CreditFlow.API.Features.Mantenimientos.Empleados.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CreditFlow.API.Controllers.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.Empleados.Controllers
 {
     [Route("api/mantenimientos/empleados")]
     [ApiController]

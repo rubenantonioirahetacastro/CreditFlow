@@ -1,5 +1,6 @@
 ﻿using CreditFlow.API.Domain.Entities;
-using CreditFlow.API.Application.Requests;
+using CreditFlow.API.Features.SolicitudCredito.Requests;
+using CreditFlow.API.Features.SolicitudCredito.Services;
 using CreditFlow.API.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ using System.Linq;
 using System;
 
 
-namespace CreditFlow.API.Controllers
+namespace CreditFlow.API.Features.SolicitudCredito.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

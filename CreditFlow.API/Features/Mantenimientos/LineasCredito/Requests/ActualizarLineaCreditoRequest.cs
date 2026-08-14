@@ -1,4 +1,4 @@
-namespace CreditFlow.API.Application.Requests.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.LineasCredito.Requests
 {
     public class ActualizarLineaCreditoRequest
     {

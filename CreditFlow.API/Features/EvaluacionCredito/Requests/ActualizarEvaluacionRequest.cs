@@ -1,4 +1,4 @@
-namespace CreditFlow.API.Application.Requests;
+namespace CreditFlow.API.Features.EvaluacionCredito.Requests;
 
 /// <summary>
 /// Actualiza el estado (Creditos.NEstado) de un crédito puntual desde la pantalla

@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using CreditFlow.Web.Models;
+using CreditFlow.Web.Shared.Models;
 using CreditFlow.Web.Services;
 
 namespace CreditFlow.Web.Core.Http;
@@ -42,6 +42,9 @@ public class ApiClient : IApiClient
 
     public Task<(bool Exito, string? Mensaje)> PostAsync(string url, object? body = null)
         => EnviarAsync(HttpMethod.Post, url, body);
+
+    public Task<(bool Exito, string? Mensaje)> DeleteAsync(string url)
+        => EnviarAsync(HttpMethod.Delete, url, null);
 
     private async Task<(bool Exito, string? Mensaje)> EnviarAsync(HttpMethod metodo, string url, object? body)
     {

@@ -1,4 +1,4 @@
-namespace CreditFlow.API.Application.Requests.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.LineasCredito.Requests
 {
     // NCodLinea no se incluye: es autogenerado por la base de datos (identity).
     // CUser no se incluye: se asigna en el servidor con el usuario autenticado.

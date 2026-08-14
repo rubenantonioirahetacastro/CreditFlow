@@ -1,12 +1,12 @@
-﻿using CreditFlow.API.Mappings;
-using CreditFlow.API.Application.Interfaces;
+﻿using CreditFlow.API.Features.Calendario.Mappings;
+using CreditFlow.API.Features.Calendario.Services;
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 using CreditFlow.API.Shared.Helpers;
 
-namespace CreditFlow.API.Application.Services
+namespace CreditFlow.API.Features.Calendario.Services
 {
     public class CalendarioService : ICalendarioService
     {

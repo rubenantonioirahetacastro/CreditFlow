@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace CreditFlow.API.Application.DTOs
+namespace CreditFlow.API.Features.Creditos.DTOs
 {
     public class SimularCalendarioResponse
     {

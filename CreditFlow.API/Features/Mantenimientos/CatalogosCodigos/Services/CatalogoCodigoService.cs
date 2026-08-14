@@ -1,9 +1,9 @@
 ﻿using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
-using CreditFlow.API.Application.Interfaces;
+using CreditFlow.API.Features.Mantenimientos.CatalogosCodigos.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.API.Application.Services
+namespace CreditFlow.API.Features.Mantenimientos.CatalogosCodigos.Services
 {
     public class CatalogoCodigoService : ICatalogoCodigoService
     {

@@ -1,8 +1,8 @@
-using CreditFlow.API.Application.Interfaces;
+using CreditFlow.API.Features.Calendario.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
-namespace CreditFlow.API.Controllers
+namespace CreditFlow.API.Features.Calendario.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

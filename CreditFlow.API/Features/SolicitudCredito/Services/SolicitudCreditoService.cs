@@ -1,12 +1,16 @@
 ﻿using CreditFlow.API.Shared.Helpers;
+using CreditFlow.API.Features.Calendario.Services;
+using CreditFlow.API.Features.SolicitudCredito.Helpers;
 using CreditFlow.API.Application.Interfaces;
+using CreditFlow.API.Features.SolicitudCredito.Services;
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Crypto.Generators;
 using BCrypt.Net;
+using CreditFlow.API.Features.Mantenimientos.LineasCredito.Services;
 
-namespace CreditFlow.API.Application.Services
+namespace CreditFlow.API.Features.SolicitudCredito.Services
 {
     public class SolicitudCreditoService(
         DbNegocioContext context,

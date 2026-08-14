@@ -6,10 +6,10 @@ using System.Text;
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using CreditFlow.API.Application.Requests;
+using CreditFlow.API.Features.Auth.Requests;
 using Microsoft.AspNetCore.Authorization;
 
-namespace CreditFlow.API.Controllers;
+namespace CreditFlow.API.Features.Auth.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

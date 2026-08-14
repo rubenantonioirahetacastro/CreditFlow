@@ -1,140 +1,29 @@
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text.Json;
-using CreditFlow.Web.Models;
-using CreditFlow.Web.Models.Mantenimientos;
-using CreditFlow.Web.Services;
+using CreditFlow.Web.Core.Http;
+using CreditFlow.Web.Features.Mantenimientos.LineasCredito.Models;
 
-namespace CreditFlow.Web.Services.Mantenimientos;
+namespace CreditFlow.Web.Features.Mantenimientos.LineasCredito.Services;
 
 public class LineaCreditoApiService : ILineaCreditoService
 {
-    private readonly HttpClient _httpClient;
-    private readonly CustomAuthStateProvider _authStateProvider;
+    private readonly IApiClient _apiClient;
 
-    public LineaCreditoApiService(IHttpClientFactory httpClientFactory, CustomAuthStateProvider authStateProvider)
+    public LineaCreditoApiService(IApiClient apiClient)
     {
-        _httpClient = httpClientFactory.CreateClient("CreditFlowApi");
-        _authStateProvider = authStateProvider;
+        _apiClient = apiClient;
     }
 
     public async Task<List<LineaCreditoDto>> ObtenerTodasAsync()
     {
-        try
-        {
-            var httpRequest = new HttpRequestMessage(HttpMethod.Get, "api/mantenimientos/lineas-credito");
-            await AttachTokenAsync(httpRequest);
-
-            var response = await _httpClient.SendAsync(httpRequest);
-            if (!response.IsSuccessStatusCode)
-                return new List<LineaCreditoDto>();
-
-            var lineas = await response.Content.ReadFromJsonAsync<List<LineaCreditoDto>>();
-            return lineas ?? new List<LineaCreditoDto>();
-        }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException)
-        {
-            return new List<LineaCreditoDto>();
-        }
+        var lineas = await _apiClient.GetAsync<List<LineaCreditoDto>>("api/mantenimientos/lineas-credito");
+        return lineas ?? new List<LineaCreditoDto>();
     }
 
-    public async Task<(bool Exito, string? Mensaje)> CrearAsync(CrearLineaCreditoRequest request)
-    {
-        try
-        {
-            var httpRequest = new HttpRequestMessage(HttpMethod.Post, "api/mantenimientos/lineas-credito")
-            {
-                Content = JsonContent.Create(request)
-            };
-            await AttachTokenAsync(httpRequest);
+    public Task<(bool Exito, string? Mensaje)> CrearAsync(CrearLineaCreditoRequest request)
+        => _apiClient.PostAsync("api/mantenimientos/lineas-credito", request);
 
-            var response = await _httpClient.SendAsync(httpRequest);
-            if (response.IsSuccessStatusCode)
-                return (true, null);
+    public Task<(bool Exito, string? Mensaje)> ActualizarAsync(int id, ActualizarLineaCreditoRequest request)
+        => _apiClient.PutAsync($"api/mantenimientos/lineas-credito/{id}", request);
 
-            return (false, await ExtraerMensajeErrorAsync(response, "No se pudo crear la línea de crédito."));
-        }
-        catch (HttpRequestException)
-        {
-            return (false, "No se pudo conectar con el servidor. Intente nuevamente más tarde.");
-        }
-        catch (JsonException)
-        {
-            return (false, "El servidor respondió de forma inesperada. Intente nuevamente más tarde.");
-        }
-    }
-
-    public async Task<(bool Exito, string? Mensaje)> ActualizarAsync(int id, ActualizarLineaCreditoRequest request)
-    {
-        try
-        {
-            var httpRequest = new HttpRequestMessage(HttpMethod.Put, $"api/mantenimientos/lineas-credito/{id}")
-            {
-                Content = JsonContent.Create(request)
-            };
-            await AttachTokenAsync(httpRequest);
-
-            var response = await _httpClient.SendAsync(httpRequest);
-            if (response.IsSuccessStatusCode)
-                return (true, null);
-
-            return (false, await ExtraerMensajeErrorAsync(response, "No se pudo actualizar la línea de crédito."));
-        }
-        catch (HttpRequestException)
-        {
-            return (false, "No se pudo conectar con el servidor. Intente nuevamente más tarde.");
-        }
-        catch (JsonException)
-        {
-            return (false, "El servidor respondió de forma inesperada. Intente nuevamente más tarde.");
-        }
-    }
-
-    public async Task<(bool Exito, string? Mensaje)> EliminarAsync(int id)
-    {
-        try
-        {
-            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, $"api/mantenimientos/lineas-credito/{id}");
-            await AttachTokenAsync(httpRequest);
-
-            var response = await _httpClient.SendAsync(httpRequest);
-            if (response.IsSuccessStatusCode)
-                return (true, null);
-
-            return (false, await ExtraerMensajeErrorAsync(response, "No se pudo eliminar la línea de crédito."));
-        }
-        catch (HttpRequestException)
-        {
-            return (false, "No se pudo conectar con el servidor. Intente nuevamente más tarde.");
-        }
-        catch (JsonException)
-        {
-            return (false, "El servidor respondió de forma inesperada. Intente nuevamente más tarde.");
-        }
-    }
-
-    private static async Task<string> ExtraerMensajeErrorAsync(HttpResponseMessage response, string mensajePorDefecto)
-    {
-        try
-        {
-            var error = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
-            if (!string.IsNullOrWhiteSpace(error?.Mensaje))
-                return error.Mensaje;
-        }
-        catch (JsonException)
-        {
-        }
-
-        return response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
-            ? "No tenés permiso para realizar esta acción."
-            : mensajePorDefecto;
-    }
-
-    private async Task AttachTokenAsync(HttpRequestMessage request)
-    {
-        var token = await _authStateProvider.ObtenerAccessTokenAsync();
-        if (!string.IsNullOrEmpty(token))
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-    }
+    public Task<(bool Exito, string? Mensaje)> EliminarAsync(int id)
+        => _apiClient.DeleteAsync($"api/mantenimientos/lineas-credito/{id}");
 }

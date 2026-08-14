@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using CreditFlow.API.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.API.Controllers
+namespace CreditFlow.API.Features.BuscarCliente.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

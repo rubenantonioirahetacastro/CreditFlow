@@ -1,4 +1,4 @@
-namespace CreditFlow.API.Application.Requests.Mantenimientos
+namespace CreditFlow.API.Features.Mantenimientos.Agencias.Requests
 {
     // NCodAge se asigna manualmente (Agencia.NCodAge usa ValueGeneratedNever() en
     // DbNegocioContext), no es autogenerado por la base de datos.

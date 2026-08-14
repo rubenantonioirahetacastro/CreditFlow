@@ -1,6 +1,6 @@
 using CreditFlow.Web.Shared.CatalogoCodigos.Models;
 
-namespace CreditFlow.Web.Services.Mantenimientos;
+namespace CreditFlow.Web.Features.Mantenimientos.CatalogosCodigos.Services;
 
 public interface ICatalogoCodigoService
 {

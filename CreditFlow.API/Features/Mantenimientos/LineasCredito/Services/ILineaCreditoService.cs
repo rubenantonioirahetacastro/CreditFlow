@@ -2,7 +2,7 @@
 using CreditFlow.API.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.API.Application.Services
+namespace CreditFlow.API.Features.Mantenimientos.LineasCredito.Services
 {
     public interface ILineaCreditoService
     {
