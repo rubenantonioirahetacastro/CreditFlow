@@ -40,7 +40,8 @@ namespace CreditFlow.API.Controllers
                     PlazoMin = cl.NPlazoMin,
                     PlazoMax = cl.NPlazoMax,
                     NumeroCatalogo = lca.NCatalogoCodigo,
-                    LineaCredito = cl.NCodLinea
+                    LineaCredito = cl.NCodLinea,
+                    Periodicidad = lca.NPeriodicidad
                 })
                 .ToListAsync();
 
