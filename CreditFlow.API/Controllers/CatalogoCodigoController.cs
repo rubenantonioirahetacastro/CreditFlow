@@ -8,7 +8,6 @@ namespace CreditFlow.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] 
     public class CatalogoCodigoController : ControllerBase
     {
         private readonly ICatalogoCodigoService _catalogoCodigoService;
