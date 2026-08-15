@@ -594,6 +594,7 @@ public partial class DbNegocioContext : DbContext
             entity.Property(e => e.NCatalogoCodigo).HasColumnName("nCatalogoCodigo");
             entity.Property(e => e.NProd).HasColumnName("nProd");
             entity.Property(e => e.NSubProd).HasColumnName("nSubProd");
+            entity.Property(e => e.NPeriodicidad).HasColumnName("nPeriodicidad");
         });
 
         modelBuilder.Entity<LogErrore>(entity =>

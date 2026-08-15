@@ -14,4 +14,6 @@ public partial class LineaCatalogoAuxiliar
     public int? NProd { get; set; }
 
     public int? NSubProd { get; set; }
+
+    public int? NPeriodicidad { get; set; }
 }
