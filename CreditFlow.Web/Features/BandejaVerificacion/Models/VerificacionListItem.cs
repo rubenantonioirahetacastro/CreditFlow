@@ -16,6 +16,15 @@ public class VerificacionListItem
     [JsonPropertyName("nombreCliente")]
     public string? NombreCliente { get; set; }
 
+    [JsonPropertyName("idPersona")]
+    public int? IdPersona { get; set; }
+
+    [JsonPropertyName("fotoUrl")]
+    public string? FotoUrl { get; set; }
+
+    [JsonPropertyName("usuarioGestion")]
+    public string? UsuarioGestion { get; set; }
+
     [JsonPropertyName("montoSolicitado")]
     public decimal MontoSolicitado { get; set; }
 

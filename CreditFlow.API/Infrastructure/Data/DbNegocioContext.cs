@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using CreditFlow.API.Domain.Entities;
+using CreditFlow.API.Features.SolicitudCredito.Domain.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace CreditFlow.API.Infrastructure.Data;
@@ -759,6 +760,13 @@ public partial class DbNegocioContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("cTelefono");
+            entity.Property(e => e.CUsuarioGestion)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cUsuarioGestion");
+            entity.Property(e => e.VFotoPerfil)
+                .IsUnicode(false)
+                .HasColumnName("vFotoPerfil");
             entity.Property(e => e.DFechaExpedicion).HasColumnName("dFechaExpedicion");
             entity.Property(e => e.DFechaNacimiento).HasColumnName("dFechaNacimiento");
             entity.Property(e => e.DFechaVencimiento).HasColumnName("dFechaVencimiento");

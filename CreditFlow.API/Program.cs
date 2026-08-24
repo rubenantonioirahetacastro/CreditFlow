@@ -6,6 +6,7 @@ using CreditFlow.API.Application.Interfaces.Mantenimientos;
 using CreditFlow.API.Application.Services;
 using CreditFlow.API.Application.Services.Mantenimientos;
 using CreditFlow.API.Infrastructure.Services;
+using CreditFlow.API.Features.SolicitudCredito;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
@@ -31,7 +32,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
-builder.Services.AddScoped<ISolicitudCreditoService, SolicitudCreditoService>();
+builder.Services.AddScoped<ICrearSolicitudCreditoHandler, CrearSolicitudCreditoHandler>();
 builder.Services.AddScoped<ICatalogoCodigoService, CatalogoCodigoService>();
 builder.Services.AddScoped<ICalendarioService, CalendarioService>();
 builder.Services.AddScoped<IFeriadoService, FeriadoService>();
@@ -133,7 +134,10 @@ var app = builder.Build();
     });
 //}
 
-app.UseHttpsRedirection();
+   if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
 
 app.UseSerilogRequestLogging();
 

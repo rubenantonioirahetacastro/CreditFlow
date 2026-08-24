@@ -60,7 +60,10 @@ namespace CreditFlow.API.Controllers
                                        Estado = cat == null ? null : cat.CNomCod,
                                        NSubProd = c.NSubProd,
                                        SubProducto = catsub == null ? null : catsub.CNomCod,
-                                       NombreCliente = p == null ? null : (p.CNombres + " " + p.CPrimerApellido + " " + (p.CSegundoApellido ?? "")).Trim()
+                                       NombreCliente = p == null ? null : (p.CNombres + " " + p.CPrimerApellido + " " + (p.CSegundoApellido ?? "")).Trim(),
+                                       IdPersona = p == null ? (int?)null : p.IdPersona,
+                                       FotoUrl = p == null ? null : p.VFotoPerfil,
+                                       UsuarioGestion = p == null ? null : p.CUsuarioGestion
                                    }).ToListAsync();
 
                 return Ok(lista);

@@ -48,4 +48,6 @@ public partial class Persona
     public string CTelefono { get; set; } = null!;
 
     public string CCelular { get; set; } = null!;
+    public string? CUsuarioGestion { get; set; }
+    public string? VFotoPerfil { get; set; }
 }

@@ -49,19 +49,21 @@
 
     <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="" Sortable="false" Filterable="false" Width="80px" Frozen="true">
         <Template Context="empleado">
-            <AvatarEmpleado IdEmpleado="@empleado.IdEmpleado"
-                            TieneFoto="@(!string.IsNullOrEmpty(empleado.FotoUrl))"
-                            Iniciales="@ObtenerIniciales(empleado)"
-                            Color="@ObtenerColorAvatar(empleado)" />
+            <Avatar Id="@empleado.IdEmpleado"
+                    TieneFoto="@(!string.IsNullOrEmpty(empleado.FotoUrl))"
+                    Iniciales="@ObtenerIniciales(empleado)"
+                    Color="@ObtenerColorAvatar(empleado)"
+                    ObtenerFotoDataUrl="@EmpleadoService.ObtenerFotoDataUrlAsync" />
         </Template>
         <EditTemplate Context="empleado">
-            <AvatarEmpleado IdEmpleado="@empleado.IdEmpleado"
-                            TieneFoto="@(!string.IsNullOrEmpty(empleado.FotoUrl))"
-                            PreviewUrl="@empleado.FotoPreviewUrl"
-                            Iniciales="@ObtenerIniciales(empleado)"
-                            Color="@ObtenerColorAvatar(empleado)"
-                            Editable="true"
-                            OnFotoSeleccionada="@(e => OnFotoSeleccionadaAsync(empleado, e))" />
+            <Avatar Id="@empleado.IdEmpleado"
+                    TieneFoto="@(!string.IsNullOrEmpty(empleado.FotoUrl))"
+                    PreviewUrl="@empleado.FotoPreviewUrl"
+                    Iniciales="@ObtenerIniciales(empleado)"
+                    Color="@ObtenerColorAvatar(empleado)"
+                    Editable="true"
+                    OnFotoSeleccionada="@(e => OnFotoSeleccionadaAsync(empleado, e))"
+                    ObtenerFotoDataUrl="@EmpleadoService.ObtenerFotoDataUrlAsync" />
         </EditTemplate>
     </RadzenDataGridColumn>
 

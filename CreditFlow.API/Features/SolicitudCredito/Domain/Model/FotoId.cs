@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CreditFlow.API.Domain.Entities;
+namespace CreditFlow.API.Features.SolicitudCredito.Domain.Model;
 
 public partial class FotoId
 {

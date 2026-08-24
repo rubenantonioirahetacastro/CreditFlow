@@ -37,6 +37,27 @@ public class ApiClient : IApiClient
         }
     }
 
+    public async Task<string?> GetImageDataUrlAsync(string url)
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            await AttachTokenAsync(request);
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            var contentType = response.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
+            return $"data:{contentType};base64,{Convert.ToBase64String(bytes)}";
+        }
+        catch (HttpRequestException)
+        {
+            return null;
+        }
+    }
+
     public Task<(bool Exito, string? Mensaje)> PutAsync(string url, object? body = null)
         => EnviarAsync(HttpMethod.Put, url, body);
 

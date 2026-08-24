@@ -9,8 +9,6 @@
 <h3>Evaluación de crédito</h3>
 <p class="text-muted">Crédito @NCodAge-@NCodCred</p>
 
-@* Catálogo 123: por ahora es lo único que trae esta pantalla. El resto (tabs, score,
-   referencias, etc.) se agrega cuando se defina qué endpoints los van a alimentar. *@
 <RadzenDropDown TValue="int?"
                 Data="@OpcionesCatalogo"
                 TextProperty="@nameof(CatalogoCodigoDto.CNomCod)"
@@ -34,8 +32,10 @@
     [Inject] private ObtenerCatalogoCodigos ObtenerCatalogoCodigos { get; set; } = default!;
     [Inject] private IEvaluacionCreditoService EvaluacionCreditoService { get; set; } = default!;
     [Inject] private DialogService DialogService { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
-    private const int CodigoCatalogoEvaluacion = 123;
+    private const string RutaBandejaVerificacion = "/otorgamiento/procesamiento-datos/bandeja-verificacion";
+    private const int CodigoCatalogoEvaluacion = 116; // Estados del Credito
 
     private List<CatalogoCodigoDto> OpcionesCatalogo { get; set; } = new();
     private int? EstadoSeleccionado;
@@ -44,7 +44,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        OpcionesCatalogo = await ObtenerCatalogoCodigos.ObtenerCatalogoCodigo(CodigoCatalogoEvaluacion);
+        var catalogoTask = ObtenerCatalogoCodigos.ObtenerCatalogoCodigo(CodigoCatalogoEvaluacion);
+        var datosCreditoTask = EvaluacionCreditoService.ObtenerDatosCreditoAsync(NCodAge, NCodCred);
+
+        OpcionesCatalogo = await catalogoTask;
+        var datosCredito = await datosCreditoTask;
+        EstadoSeleccionado = datosCredito?.NEstado;
+
         Cargando = false;
     }
 
@@ -64,5 +70,7 @@
         }
 
         await DialogService.Alert("Evaluación actualizada correctamente.", "Éxito");
+
+        NavigationManager.NavigateTo(RutaBandejaVerificacion);
     }
 }

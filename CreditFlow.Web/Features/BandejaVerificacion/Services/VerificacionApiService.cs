@@ -21,4 +21,7 @@ public class VerificacionApiService : IVerificacionService
         var creditos = await _apiClient.GetAsync<List<VerificacionListItem>>(url);
         return creditos ?? new List<VerificacionListItem>();
     }
+
+    public Task<string?> ObtenerFotoDataUrlAsync(int idPersona)
+        => _apiClient.GetImageDataUrlAsync($"api/BuscarSolicitudCredito/{idPersona}/foto");
 }

@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CreditFlow.API.Domain.Entities;
+namespace CreditFlow.API.Features.SolicitudCredito.Domain.Model;
 
-public partial class Fiador
+public partial class Conyuge
 {
-    public int IdFiador { get; set; }
+    public int IdConyuge { get; set; }
 
     public string CNombres { get; set; } = null!;
 
     public string CPrimerApellido { get; set; } = null!;
 
-    public string CSegundoApellido { get; set; } = null!;
+    public string? CSegundoApellido { get; set; }
 
     public int NTipoDocumento { get; set; }
 
     public string CDocumento { get; set; } = null!;
-
-    public string CDireccion { get; set; } = null!;
 
     public string? CTelefono { get; set; }
 

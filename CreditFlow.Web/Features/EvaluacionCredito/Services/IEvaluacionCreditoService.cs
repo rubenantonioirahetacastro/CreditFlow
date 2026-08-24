@@ -1,7 +1,12 @@
+using CreditFlow.Web.Features.EvaluacionCredito.Models;
+
 namespace CreditFlow.Web.Features.EvaluacionCredito.Services;
 
 public interface IEvaluacionCreditoService
 {
-    /// <summary>Actualiza Creditos.NEstado con el valor elegido en el Select de evaluación (catálogo 123).</summary>
+    /// <summary>Actualiza Creditos.NEstado con el valor elegido en el Select de evaluación (catálogo 116).</summary>
     Task<(bool Exito, string? Mensaje)> ActualizarEvaluacionAsync(int nCodAge, int nCodCred, int nEstado);
+
+    /// <summary>Datos del crédito (monto, estado actual) para precargar la pantalla de Evaluación.</summary>
+    Task<DatosCreditoGestionDto?> ObtenerDatosCreditoAsync(int nCodAge, int nCodCred);
 }
