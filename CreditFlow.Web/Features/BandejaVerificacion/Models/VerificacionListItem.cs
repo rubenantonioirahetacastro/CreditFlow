@@ -28,6 +28,15 @@ public class VerificacionListItem
     [JsonPropertyName("montoSolicitado")]
     public decimal MontoSolicitado { get; set; }
 
+    [JsonPropertyName("dFecVig")]
+    public DateTime DFecVig { get; set; }
+
+    [JsonPropertyName("conRepretamo")]
+    public bool ConRepretamo { get; set; }
+
+    [JsonPropertyName("nEstado")]
+    public int NEstado { get; set; }
+
     [JsonPropertyName("estado")]
     public string? Estado { get; set; }
 

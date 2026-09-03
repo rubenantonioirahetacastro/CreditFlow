@@ -1,14 +1,60 @@
 @page "/otorgamiento/procesamiento-datos/bandeja-verificacion"
 @rendermode InteractiveServer
 @attribute [Authorize]
+@implements IDisposable
 @using CreditFlow.Web.Features.BandejaVerificacion.Models
 @using CreditFlow.Web.Features.BandejaVerificacion.Services
 
 <PageTitle>Bandeja de verificación</PageTitle>
-<h3>Bandeja de verificación</h3>
+
+<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:18px;">
+    <div>
+        <div style="color:#9CA3AF;font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
+            Créditos · Aprobación
+        </div>
+        <h3 style="margin:2px 0 0;font-size:1.6rem;font-weight:800;color:#111827;">Bandeja de verificación</h3>
+    </div>
+
+    <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid #E5E7EB;font-size:0.8rem;font-weight:600;color:#374151;background:#FFFFFF;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#22C55E;display:inline-block;"></span>
+        Vivo · @SegundosDesdeActualizacion s
+    </span>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px;">
+    <div style="border:1px solid #E5E7EB;border-radius:14px;padding:16px 18px;background:#FFFFFF;">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.05em;color:#9CA3AF;text-transform:uppercase;">En cola</div>
+        <div style="font-size:1.7rem;font-weight:800;color:#111827;margin-top:4px;">@Creditos.Count</div>
+        <div style="font-size:0.78rem;color:#6B7280;margin-top:2px;">@NuevosHoy nuevos hoy</div>
+    </div>
+
+    <div style="border:1px solid #E5E7EB;border-radius:14px;padding:16px 18px;background:#FFFFFF;">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.05em;color:#9CA3AF;text-transform:uppercase;">Monto solicitado</div>
+        <div style="font-size:1.7rem;font-weight:800;color:#111827;margin-top:4px;">@MontoTotal.ToString("C2")</div>
+        <div style="font-size:0.78rem;color:#6B7280;margin-top:2px;">prom. @MontoPromedio.ToString("C2")</div>
+    </div>
+
+    <div style="border:1px solid #E5E7EB;border-radius:14px;padding:16px 18px;background:#FFFFFF;">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.05em;color:#9CA3AF;text-transform:uppercase;">Nuevos</div>
+        <div style="font-size:1.7rem;font-weight:800;color:#111827;margin-top:4px;">@NuevosHoy</div>
+        <div style="font-size:0.78rem;color:#6B7280;margin-top:2px;">hoy</div>
+    </div>
+
+    <div style="border:1px solid #E5E7EB;border-radius:14px;padding:16px 18px;background:#FFFFFF;">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.05em;color:#9CA3AF;text-transform:uppercase;">Con représtamo</div>
+        <div style="font-size:1.7rem;font-weight:800;color:#111827;margin-top:4px;">@ConRepretamo</div>
+        <div style="font-size:0.78rem;color:#6B7280;margin-top:2px;">pagó ≥50% del anterior</div>
+    </div>
+</div>
+
+<EstadoFilterTabs TItem="VerificacionListItem"
+                  Items="@Creditos"
+                  EstadoSelector="@(c => c.NEstado)"
+                  Selected="@EstadoSeleccionado"
+                  SelectedChanged="@(estado => EstadoSeleccionado = estado)" />
 
 <GridEstandar TItem="VerificacionListItem"
-              Data="@Creditos"
+              Data="@CreditosFiltrados"
               IsLoading="@Cargando"
               EmptyText="No hay créditos pendientes en la bandeja."
               ExportFileName="bandeja-verificacion"
@@ -29,20 +75,68 @@
     <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.SubProducto)" Title="Subproducto" Width="180px" />
     <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.MontoSolicitado)" Title="Monto" Width="140px" FormatString="{0:C2}" />
     <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.UsuarioGestion)" Title="Gestionado por" Width="160px" />
-    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.Estado)" Title="Estado" Width="150px" />
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.Estado)" Title="Estado" Width="170px">
+        <Template Context="credito">
+            <EstadoChip EstadoId="@credito.NEstado" Nombre="@credito.Estado" />
+        </Template>
+    </RadzenDataGridColumn>
 </GridEstandar>
 
 @code {
     [Inject] private IVerificacionService VerificacionService { get; set; } = default!;
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
+    private const int SegundosEntreRefrescos = 120;
+
     private List<VerificacionListItem> Creditos { get; set; } = new();
     private bool Cargando = true;
+    private int? EstadoSeleccionado;
+
+    private System.Timers.Timer? _timerRefresco;
+    private System.Timers.Timer? _timerReloj;
+    private int SegundosDesdeActualizacion;
+
+    private IEnumerable<VerificacionListItem> CreditosFiltrados => EstadoSeleccionado is null
+        ? Creditos
+        : Creditos.Where(c => c.NEstado == EstadoSeleccionado);
+
+    private int NuevosHoy => Creditos.Count(c => c.DFecVig.Date == DateTime.Today);
+    private int ConRepretamo => Creditos.Count(c => c.ConRepretamo);
+    private decimal MontoTotal => Creditos.Sum(c => c.MontoSolicitado);
+    private decimal MontoPromedio => Creditos.Count == 0 ? 0m : MontoTotal / Creditos.Count;
 
     protected override async Task OnInitializedAsync()
     {
+        await CargarAsync();
+
+        // Cuenta los segundos para el indicador "Vivo · Xs" del encabezado.
+        _timerReloj = new System.Timers.Timer(1000);
+        _timerReloj.Elapsed += async (_, _) =>
+        {
+            SegundosDesdeActualizacion++;
+            await InvokeAsync(StateHasChanged);
+        };
+        _timerReloj.Start();
+
+        // Vuelve a pedir la bandeja cada SegundosEntreRefrescos para que se
+        // mantenga al día sin que el analista tenga que recargar la página.
+        _timerRefresco = new System.Timers.Timer(SegundosEntreRefrescos * 1000);
+        _timerRefresco.Elapsed += async (_, _) => await InvokeAsync(CargarAsync);
+        _timerRefresco.Start();
+    }
+
+    private async Task CargarAsync()
+    {
         Creditos = await VerificacionService.ObtenerBandejaAsync();
+        SegundosDesdeActualizacion = 0;
         Cargando = false;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _timerRefresco?.Dispose();
+        _timerReloj?.Dispose();
     }
 
     // Al seleccionar un crédito se abre su pantalla de Evaluación (NCodAge + NCodCred

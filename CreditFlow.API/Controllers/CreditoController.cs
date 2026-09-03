@@ -57,6 +57,8 @@ namespace CreditFlow.API.Controllers
                                        NCodAge = c.NCodAge,
                                        Agencia = a == null ? null : a.CNomAge,
                                        MontoSolicitado = c.NPrestamo,
+                                       DFecVig = c.DFecVig,
+                                       NEstado = c.NEstado,
                                        Estado = cat == null ? null : cat.CNomCod,
                                        NSubProd = c.NSubProd,
                                        SubProducto = catsub == null ? null : catsub.CNomCod,
@@ -66,12 +68,39 @@ namespace CreditFlow.API.Controllers
                                        UsuarioGestion = p == null ? null : p.CUsuarioGestion
                                    }).ToListAsync();
 
+                foreach (var item in lista.Where(x => x.IdPersona.HasValue))
+                {
+                    item.ConRepretamo = await EsRepretamoAsync(item.IdPersona!.Value, item.NCodAge, item.NCodCred);
+                }
+
                 return Ok(lista);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { Mensaje = $"Error interno del servidor: {ex.Message}" });
             }
+        }
+        
+        private async Task<bool> EsRepretamoAsync(int idPersona, int nCodAgeActual, int nCodCredActual)
+        {
+            var creditoAnterior = await _context.Creditos
+                .Where(c => c.IdPersona == idPersona && !(c.NCodAge == nCodAgeActual && c.NCodCred == nCodCredActual))
+                .OrderByDescending(c => c.DFecVig)
+                .FirstOrDefaultAsync();
+
+            if (creditoAnterior == null || creditoAnterior.NPrestamo <= 0)
+                return false;
+
+            var calendarioCond = creditoAnterior.IdCredCalendCond.HasValue
+                ? await _context.CredCalendConds.FirstOrDefaultAsync(c => c.IdCredCalendCond == creditoAnterior.IdCredCalendCond.Value)
+                : null;
+
+            var capitalPagado = await _context.CredCalendarios
+                .Where(x => x.NCodAge == creditoAnterior.NCodAge && x.NCodCred == creditoAnterior.NCodCred &&
+                            (calendarioCond == null || x.NNroCalen == calendarioCond.NNroCalen))
+                .SumAsync(x => x.NCapPag);
+
+            return (capitalPagado / creditoAnterior.NPrestamo) >= 0.5m;
         }
 
         [HttpPut("actualizar-evaluacion")]
