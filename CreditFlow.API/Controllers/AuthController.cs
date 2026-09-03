@@ -493,6 +493,8 @@ public class AuthController : ControllerBase
         foreach (var r in roles)
             claims.Add(new Claim(ClaimTypes.Role, r));
 
+        claims.Add(new Claim("IdRol", idRol.ToString()));
+
         // Only allow login for users with role 'Usuario' or 'Usuario estándar'
         var allowedRoles = new[] { "Usuario", "Usuario estándar", "Supervisor" };
 
