@@ -1,6 +1,6 @@
-namespace CreditFlow.API.Features.ClientesMovil.Dto;
+namespace CreditFlow.API.Features.ClientListVerifier.Dto;
 
-public class ClienteMovilDto
+public class ClientListVerifierDto
 {
     public int NCodAge { get; set; }
     public int NCodCred { get; set; }

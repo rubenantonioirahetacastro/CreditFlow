@@ -1,26 +1,26 @@
-using CreditFlow.API.Features.ClientesMovil.Dto;
+using CreditFlow.API.Features.ClientListVerifier.Dto;
 using CreditFlow.API.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditFlow.API.Features.ClientesMovil
+namespace CreditFlow.API.Features.ClientListVerifier
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ClientesMovilController : ControllerBase
+    public class ClientListVerifierController : ControllerBase
     {
         private const int RolVerificador = 3; // Roles.IdRol
 
         private readonly DbNegocioContext _context;
 
-        public ClientesMovilController(DbNegocioContext context)
+        public ClientListVerifierController(DbNegocioContext context)
         {
             _context = context;
         }
 
-        // GET api/ClientesMovil (el rol sale del token, no de la app)
+        // GET api/ClientListVerifier (el rol sale del token, no de la app)
         [HttpGet]
         public async Task<IActionResult> Obtener()
         {
@@ -43,7 +43,7 @@ namespace CreditFlow.API.Features.ClientesMovil
                 from p in ps.DefaultIfEmpty()
                 join n in _context.Negocios.AsNoTracking() on c.IdNegocio equals n.IdNegocio into ns
                 from n in ns.DefaultIfEmpty()
-                select new ClienteMovilDto
+                select new ClientListVerifierDto
                 {
                     NCodAge = c.NCodAge,
                     NCodCred = c.NCodCred,

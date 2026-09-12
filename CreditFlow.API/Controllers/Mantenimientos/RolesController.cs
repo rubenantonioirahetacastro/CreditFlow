@@ -23,11 +23,7 @@ namespace CreditFlow.API.Controllers.Mantenimientos
             var roles = await _roleService.ObtenerActivosAsync();
             return Ok(roles);
         }
-
-        // Ruta separada de la anterior porque esa es AllowAnonymous y la usa el
-        // flujo de login (debe seguir devolviendo solo activos, sin romper eso).
-        // Esta expone el catálogo completo (activos e inactivos) para la
-        // pantalla de mantenimiento de Roles.
+        
         [HttpGet("todos")]
         [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
         public async Task<IActionResult> ObtenerTodos()
@@ -54,12 +50,7 @@ namespace CreditFlow.API.Controllers.Mantenimientos
                 return Conflict(new { Mensaje = ex.Message });
             }
         }
-
-        // No se expone DELETE físico: los roles pueden estar referenciados en
-        // UsuarioRoles, y borrar la fila rompería esa integridad referencial.
-        // El "borrado" de este catálogo es lógico: PUT con Activo=false. No se
-        // agrega un endpoint DELETE aparte porque haría exactamente lo mismo
-        // que este PUT, solo que con otro verbo — sería una ruta redundante.
+        
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
         public async Task<IActionResult> Actualizar(int id, [FromBody] UpdateRoleRequest request)
