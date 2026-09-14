@@ -1,0 +1,227 @@
+.home-page {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 24px 28px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: #0c111d;
+}
+
+.home-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 80px 0;
+    color: #667085;
+    font: 600 13px/1 inherit;
+}
+
+.home-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e4e9f0;
+    border-top-color: #14395c;
+    border-radius: 50%;
+    animation: home-spin .7s linear infinite;
+}
+
+@keyframes home-spin {
+    to { transform: rotate(360deg); }
+}
+
+.home-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: #fef3f2;
+    border: 1px solid #f0443833;
+    color: #912018;
+    font: 500 13px/1.5 inherit;
+}
+
+.home-alert-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    margin-top: 6px;
+    border-radius: 99px;
+    background: #f04438;
+}
+
+.home-link-btn {
+    border: none;
+    background: none;
+    padding: 0;
+    color: #912018;
+    font: 700 13px/1 inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.home-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.home-title {
+    margin: 0;
+    font: 700 22px/1.3 inherit;
+    letter-spacing: -.02em;
+}
+
+.home-subtitle {
+    font: 500 12px/1.5 ui-monospace, monospace;
+    color: #98a2b3;
+}
+
+.home-btn-outline {
+    padding: 9px 14px;
+    border: 1px solid #eaeef4;
+    background: #fff;
+    border-radius: 10px;
+    font: 600 13px/1 inherit;
+    color: #344054;
+    cursor: pointer;
+}
+
+.home-btn-outline:hover {
+    background: #f7f9fc;
+}
+
+.home-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+}
+
+.home-kpi-card {
+    background: #fff;
+    border: 1px solid #eaeef4;
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.home-kpi-card.warn {
+    border-color: #f0443855;
+    background: #fffaf9;
+}
+
+.home-kpi-label {
+    font: 600 11px/1 inherit;
+    letter-spacing: .02em;
+    color: #98a2b3;
+}
+
+.home-kpi-value {
+    font: 700 24px/1.2 ui-monospace, monospace;
+    letter-spacing: -.02em;
+    color: #0c111d;
+}
+
+.home-kpi-card.warn .home-kpi-value {
+    color: #b42318;
+}
+
+.home-kpi-note {
+    font: 500 11.5px/1.4 inherit;
+    color: #667085;
+}
+
+.home-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 16px;
+}
+
+.home-card {
+    background: #fff;
+    border: 1px solid #eaeef4;
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.home-card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.home-card-title {
+    font: 700 14.5px/1.3 inherit;
+    color: #0c111d;
+}
+
+.home-card-sub {
+    font: 500 11.5px/1.4 inherit;
+    color: #98a2b3;
+}
+
+.home-top-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.home-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 10px 4px;
+    border-bottom: 1px solid #f2f4f7;
+}
+
+.home-top-row:last-child {
+    border-bottom: none;
+}
+
+.home-top-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.home-top-cliente {
+    font: 600 13px/1.3 inherit;
+    color: #0c111d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-top-meta {
+    font: 500 11px/1.4 ui-monospace, monospace;
+    color: #98a2b3;
+}
+
+.home-top-monto {
+    flex: none;
+    font: 700 14px/1 ui-monospace, monospace;
+    color: #14395c;
+}
+
+.home-empty {
+    padding: 30px 0;
+    text-align: center;
+    color: #98a2b3;
+    font: 500 12.5px/1.4 inherit;
+}

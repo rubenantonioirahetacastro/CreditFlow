@@ -1,8 +1,190 @@
-﻿@page "/"
+@page "/"
 @attribute [Authorize]
+@inject IDashboardService DashboardService
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="home-page">
 
-Welcome to your new app.
+  @if (cargando)
+  {
+    <div class="home-loading">
+      <div class="home-spinner"></div>
+      <span>Cargando panel de control...</span>
+    </div>
+  }
+  else if (resumen is null)
+  {
+    <div class="home-alert">
+      <span class="home-alert-dot"></span>
+      <div>No se pudo cargar la información del panel. <button class="home-link-btn" @onclick="CargarAsync">Reintentar</button></div>
+    </div>
+  }
+  else
+  {
+    <div class="home-head">
+      <div>
+        <h1 class="home-title">Panel de control</h1>
+        <div class="home-subtitle">Cartera de créditos · actualizado @DateTime.Now.ToString("dd MMM yyyy, HH:mm")</div>
+      </div>
+      <button class="home-btn-outline" @onclick="CargarAsync">Actualizar</button>
+    </div>
+
+    <div class="home-kpi-grid">
+      <div class="home-kpi-card">
+        <span class="home-kpi-label">Cartera vigente</span>
+        <span class="home-kpi-value">@Money(resumen.Kpis.CarteraVigente)</span>
+        <span class="home-kpi-note">@resumen.Kpis.CreditosActivos créditos activos</span>
+      </div>
+      <div class="home-kpi-card">
+        <span class="home-kpi-label">Monto colocado (histórico)</span>
+        <span class="home-kpi-value">@Money(resumen.Kpis.MontoColocadoTotal)</span>
+        <span class="home-kpi-note">@resumen.Kpis.CreditosTotales créditos totales</span>
+      </div>
+      <div class="home-kpi-card @(resumen.Kpis.PorcentajeMorosidad > 5 ? "warn" : "")">
+        <span class="home-kpi-label">Cartera en riesgo</span>
+        <span class="home-kpi-value">@Money(resumen.Kpis.CarteraEnRiesgo)</span>
+        <span class="home-kpi-note">@resumen.Kpis.PorcentajeMorosidad.ToString("0.00") % de morosidad</span>
+      </div>
+      <div class="home-kpi-card">
+        <span class="home-kpi-label">Tasa promedio ponderada</span>
+        <span class="home-kpi-value">@resumen.Kpis.TasaPromedioPonderada.ToString("0.00") %</span>
+        <span class="home-kpi-note">sobre saldo vigente</span>
+      </div>
+      <div class="home-kpi-card">
+        <span class="home-kpi-label">Nuevos últimos 30 días</span>
+        <span class="home-kpi-value">@resumen.Kpis.CreditosUltimos30Dias</span>
+        <span class="home-kpi-note">@Money(resumen.Kpis.MontoUltimos30Dias) colocados</span>
+      </div>
+    </div>
+
+    <div class="home-grid-2">
+      <div class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Colocación mensual</span>
+          <span class="home-card-sub">Últimos 12 meses</span>
+        </div>
+        <RadzenChart Style="height:300px; width:100%;">
+          <RadzenColumnSeries Data="@resumen.ColocacionMensual" CategoryProperty="Periodo" ValueProperty="Monto" Title="Monto colocado" Fill="#14395c">
+            <RadzenSeriesDataLabels Visible="false" />
+          </RadzenColumnSeries>
+          <RadzenCategoryAxis />
+          <RadzenValueAxis FormatString="{0:C0}">
+            <RadzenGridLines Visible="true" />
+          </RadzenValueAxis>
+        </RadzenChart>
+      </div>
+
+      <div class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Cartera por estado</span>
+          <span class="home-card-sub">Monto colocado</span>
+        </div>
+        <RadzenChart Style="height:300px; width:100%;">
+          <RadzenDonutSeries Data="@resumen.PorEstado" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Estado">
+            <RadzenSeriesDataLabels Visible="true" />
+          </RadzenDonutSeries>
+          <RadzenLegend Position="LegendPosition.Bottom" />
+        </RadzenChart>
+      </div>
+    </div>
+
+    <div class="home-grid-2">
+      <div class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Por subproducto</span>
+          <span class="home-card-sub">Diario / Semanal / Quincenal / Mensual</span>
+        </div>
+        <RadzenChart Style="height:300px; width:100%;">
+          <RadzenColumnSeries Data="@resumen.PorSubProducto" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Monto" Fill="#f79009">
+            <RadzenSeriesDataLabels Visible="false" />
+          </RadzenColumnSeries>
+          <RadzenCategoryAxis />
+          <RadzenValueAxis FormatString="{0:C0}">
+            <RadzenGridLines Visible="true" />
+          </RadzenValueAxis>
+        </RadzenChart>
+      </div>
+
+      <div class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Por agencia</span>
+          <span class="home-card-sub">Monto colocado</span>
+        </div>
+        <RadzenChart Style="height:300px; width:100%;">
+          <RadzenColumnSeries Data="@resumen.PorAgencia" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Monto" Fill="#7a5af8">
+            <RadzenSeriesDataLabels Visible="false" />
+          </RadzenColumnSeries>
+          <RadzenCategoryAxis />
+          <RadzenValueAxis FormatString="{0:C0}">
+            <RadzenGridLines Visible="true" />
+          </RadzenValueAxis>
+        </RadzenChart>
+      </div>
+    </div>
+
+    <div class="home-grid-2">
+      <div class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Distribución de mora</span>
+          <span class="home-card-sub">Créditos activos, por rango de días de atraso</span>
+        </div>
+        <RadzenChart Style="height:300px; width:100%;">
+          <RadzenColumnSeries Data="@resumen.DistribucionMora" CategoryProperty="Rango" ValueProperty="Cantidad" Title="Créditos" Fill="#f04438">
+            <RadzenSeriesDataLabels Visible="true" />
+          </RadzenColumnSeries>
+          <RadzenCategoryAxis />
+          <RadzenValueAxis>
+            <RadzenGridLines Visible="true" />
+          </RadzenValueAxis>
+        </RadzenChart>
+      </div>
+
+      <div class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Top créditos por monto</span>
+          <span class="home-card-sub">Los 8 más altos</span>
+        </div>
+        <div class="home-top-list">
+          @if (resumen.TopCreditos.Count == 0)
+          {
+            <div class="home-empty">Sin créditos registrados.</div>
+          }
+          else
+          {
+            @foreach (var t in resumen.TopCreditos)
+            {
+              <div class="home-top-row">
+                <div class="home-top-info">
+                  <span class="home-top-cliente">@t.Cliente</span>
+                  <span class="home-top-meta">@t.Agencia · @t.Estado · #@t.NCodAge-@t.NCodCred</span>
+                </div>
+                <span class="home-top-monto">@Money(t.Monto)</span>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+@code {
+    private DashboardResumenResponse? resumen;
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarAsync();
+    }
+
+    private async Task CargarAsync()
+    {
+        cargando = true;
+        StateHasChanged();
+        resumen = await DashboardService.ObtenerResumenAsync();
+        cargando = false;
+    }
+
+    private static string Money(decimal v) => v.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-SV"));
+}

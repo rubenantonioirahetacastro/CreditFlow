@@ -50,6 +50,7 @@ builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
 builder.Services.AddScoped<ILineaCreditoAdminService, LineaCreditoAdminService>();
 builder.Services.AddScoped<IVarNegocioService, VarNegocioService>();
 builder.Services.AddScoped<IPrimLineaCreditoService, PrimLineaCreditoService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services.AddApplicationInsightsTelemetry(options =>
 {
