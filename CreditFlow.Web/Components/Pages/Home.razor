@@ -1,6 +1,8 @@
 @page "/"
 @attribute [Authorize]
+@implements IDisposable
 @inject IDashboardService DashboardService
+@inject CreditFlow.Web.Services.PageHeaderService Header
 
 <PageTitle>Home</PageTitle>
 
@@ -22,39 +24,36 @@
   }
   else
   {
-    <div class="home-head">
-      <div>
-        <h1 class="home-title">Panel de control</h1>
-        <div class="home-subtitle">Cartera de créditos · actualizado @DateTime.Now.ToString("dd MMM yyyy, HH:mm")</div>
-      </div>
+    <div class="home-toolbar">
+      <span class="home-subtitle">Cartera de créditos · actualizado @ultimaActualizacion.ToString("dd MMM yyyy, HH:mm")</span>
       <button class="home-btn-outline" @onclick="CargarAsync">Actualizar</button>
     </div>
 
     <div class="home-kpi-grid">
-      <div class="home-kpi-card">
+      <div class="home-kpi-card" style="animation-delay:0ms">
         <span class="home-kpi-label">Cartera vigente</span>
-        <span class="home-kpi-value">@Money(resumen.Kpis.CarteraVigente)</span>
+        <span class="home-kpi-value">@Money((decimal)animCarteraVigente)</span>
         <span class="home-kpi-note">@resumen.Kpis.CreditosActivos créditos activos</span>
       </div>
-      <div class="home-kpi-card">
+      <div class="home-kpi-card" style="animation-delay:60ms">
         <span class="home-kpi-label">Monto colocado (histórico)</span>
-        <span class="home-kpi-value">@Money(resumen.Kpis.MontoColocadoTotal)</span>
+        <span class="home-kpi-value">@Money((decimal)animMontoColocado)</span>
         <span class="home-kpi-note">@resumen.Kpis.CreditosTotales créditos totales</span>
       </div>
-      <div class="home-kpi-card @(resumen.Kpis.PorcentajeMorosidad > 5 ? "warn" : "")">
+      <div class="home-kpi-card @(resumen.Kpis.PorcentajeMorosidad > 5 ? "warn" : "")" style="animation-delay:120ms">
         <span class="home-kpi-label">Cartera en riesgo</span>
-        <span class="home-kpi-value">@Money(resumen.Kpis.CarteraEnRiesgo)</span>
-        <span class="home-kpi-note">@resumen.Kpis.PorcentajeMorosidad.ToString("0.00") % de morosidad</span>
+        <span class="home-kpi-value">@Money((decimal)animCarteraRiesgo)</span>
+        <span class="home-kpi-note">@animPorcentajeMorosidad.ToString("0.00") % de morosidad</span>
       </div>
-      <div class="home-kpi-card">
+      <div class="home-kpi-card" style="animation-delay:180ms">
         <span class="home-kpi-label">Tasa promedio ponderada</span>
-        <span class="home-kpi-value">@resumen.Kpis.TasaPromedioPonderada.ToString("0.00") %</span>
+        <span class="home-kpi-value">@animTasa.ToString("0.00") %</span>
         <span class="home-kpi-note">sobre saldo vigente</span>
       </div>
-      <div class="home-kpi-card">
+      <div class="home-kpi-card" style="animation-delay:240ms">
         <span class="home-kpi-label">Nuevos últimos 30 días</span>
-        <span class="home-kpi-value">@resumen.Kpis.CreditosUltimos30Dias</span>
-        <span class="home-kpi-note">@Money(resumen.Kpis.MontoUltimos30Dias) colocados</span>
+        <span class="home-kpi-value">@((int)Math.Round(animNuevos30))</span>
+        <span class="home-kpi-note">@Money((decimal)animMonto30) colocados</span>
       </div>
     </div>
 
@@ -64,8 +63,9 @@
           <span class="home-card-title">Colocación mensual</span>
           <span class="home-card-sub">Últimos 12 meses</span>
         </div>
-        <RadzenChart Style="height:300px; width:100%;">
+        <RadzenChart Style="height:300px; width:100%;" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
           <RadzenColumnSeries Data="@resumen.ColocacionMensual" CategoryProperty="Periodo" ValueProperty="Monto" Title="Monto colocado" Fill="#14395c">
+            <RadzenColumnOptions Radius="4" />
             <RadzenSeriesDataLabels Visible="false" />
           </RadzenColumnSeries>
           <RadzenCategoryAxis />
@@ -80,8 +80,9 @@
           <span class="home-card-title">Cartera por estado</span>
           <span class="home-card-sub">Monto colocado</span>
         </div>
-        <RadzenChart Style="height:300px; width:100%;">
-          <RadzenDonutSeries Data="@resumen.PorEstado" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Estado">
+        <RadzenChart Style="height:300px; width:100%;" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
+          <RadzenDonutSeries Data="@resumen.PorEstado" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Estado"
+                             Fills="@paletaMarca" StrokeWidth="0">
             <RadzenSeriesDataLabels Visible="true" />
           </RadzenDonutSeries>
           <RadzenLegend Position="LegendPosition.Bottom" />
@@ -95,8 +96,9 @@
           <span class="home-card-title">Por subproducto</span>
           <span class="home-card-sub">Diario / Semanal / Quincenal / Mensual</span>
         </div>
-        <RadzenChart Style="height:300px; width:100%;">
+        <RadzenChart Style="height:300px; width:100%;" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
           <RadzenColumnSeries Data="@resumen.PorSubProducto" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Monto" Fill="#f79009">
+            <RadzenColumnOptions Radius="4" />
             <RadzenSeriesDataLabels Visible="false" />
           </RadzenColumnSeries>
           <RadzenCategoryAxis />
@@ -111,8 +113,9 @@
           <span class="home-card-title">Por agencia</span>
           <span class="home-card-sub">Monto colocado</span>
         </div>
-        <RadzenChart Style="height:300px; width:100%;">
+        <RadzenChart Style="height:300px; width:100%;" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
           <RadzenColumnSeries Data="@resumen.PorAgencia" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Monto" Fill="#7a5af8">
+            <RadzenColumnOptions Radius="4" />
             <RadzenSeriesDataLabels Visible="false" />
           </RadzenColumnSeries>
           <RadzenCategoryAxis />
@@ -129,8 +132,9 @@
           <span class="home-card-title">Distribución de mora</span>
           <span class="home-card-sub">Créditos activos, por rango de días de atraso</span>
         </div>
-        <RadzenChart Style="height:300px; width:100%;">
+        <RadzenChart Style="height:300px; width:100%;" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
           <RadzenColumnSeries Data="@resumen.DistribucionMora" CategoryProperty="Rango" ValueProperty="Cantidad" Title="Créditos" Fill="#f04438">
+            <RadzenColumnOptions Radius="4" />
             <RadzenSeriesDataLabels Visible="true" />
           </RadzenColumnSeries>
           <RadzenCategoryAxis />
@@ -152,9 +156,10 @@
           }
           else
           {
-            @foreach (var t in resumen.TopCreditos)
+            @for (var i = 0; i < resumen.TopCreditos.Count; i++)
             {
-              <div class="home-top-row">
+              var t = resumen.TopCreditos[i];
+              <div class="home-top-row" style="animation-delay:@(i * 45)ms">
                 <div class="home-top-info">
                   <span class="home-top-cliente">@t.Cliente</span>
                   <span class="home-top-meta">@t.Agencia · @t.Estado · #@t.NCodAge-@t.NCodCred</span>
@@ -172,18 +177,76 @@
 @code {
     private DashboardResumenResponse? resumen;
     private bool cargando = true;
+    private DateTime ultimaActualizacion;
+
+    // Paleta de marca compartida con el simulador de crédito (capital/interés/IVA/gasto)
+    // más un par de tonos adicionales para catálogos con más de 4 valores.
+    private static readonly string[] paletaMarca = { "#14395c", "#f79009", "#7a5af8", "#12b76a", "#cdd5e0", "#f04438" };
+
+    private double animCarteraVigente;
+    private double animMontoColocado;
+    private double animCarteraRiesgo;
+    private double animPorcentajeMorosidad;
+    private double animTasa;
+    private double animNuevos30;
+    private double animMonto30;
 
     protected override async Task OnInitializedAsync()
     {
+        Header.Set("Panel de control");
         await CargarAsync();
+    }
+
+    public void Dispose()
+    {
+        Header.Clear();
     }
 
     private async Task CargarAsync()
     {
         cargando = true;
         StateHasChanged();
+
         resumen = await DashboardService.ObtenerResumenAsync();
+        ultimaActualizacion = DateTime.Now;
         cargando = false;
+        StateHasChanged();
+
+        if (resumen is not null)
+        {
+            _ = AnimarKpisAsync(resumen);
+        }
+    }
+
+    private async Task AnimarKpisAsync(DashboardResumenResponse datos)
+    {
+        var kpis = datos.Kpis;
+        await Task.WhenAll(
+            AnimarAsync(v => animCarteraVigente = v, (double)kpis.CarteraVigente),
+            AnimarAsync(v => animMontoColocado = v, (double)kpis.MontoColocadoTotal),
+            AnimarAsync(v => animCarteraRiesgo = v, (double)kpis.CarteraEnRiesgo),
+            AnimarAsync(v => animPorcentajeMorosidad = v, (double)kpis.PorcentajeMorosidad),
+            AnimarAsync(v => animTasa = v, (double)kpis.TasaPromedioPonderada),
+            AnimarAsync(v => animNuevos30 = v, kpis.CreditosUltimos30Dias),
+            AnimarAsync(v => animMonto30 = v, (double)kpis.MontoUltimos30Dias)
+        );
+    }
+
+    // Anima un valor numérico desde 0 hasta el destino con una curva ease-out,
+    // dando a las tarjetas de KPI un efecto de "conteo" dinámico al cargar.
+    private async Task AnimarAsync(Action<double> setter, double destino, int pasos = 26, int delayMs = 16)
+    {
+        setter(0);
+        StateHasChanged();
+        for (var i = 1; i <= pasos; i++)
+        {
+            var t = 1 - Math.Pow(1 - (double)i / pasos, 3);
+            setter(destino * t);
+            StateHasChanged();
+            await Task.Delay(delayMs);
+        }
+        setter(destino);
+        StateHasChanged();
     }
 
     private static string Money(decimal v) => v.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-SV"));

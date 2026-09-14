@@ -1,3 +1,7 @@
+/* Misma tipografía, paleta y forma de tarjeta que el simulador de crédito
+   (SimuladorCredito.razor.css) — sin fondo propio, para que se vea el mismo
+   gris de fondo de la app (::deep .rz-body) y no haya costuras de color. */
+
 .home-page {
     max-width: 1500px;
     margin: 0 auto;
@@ -64,37 +68,53 @@
     cursor: pointer;
 }
 
-.home-head {
+.home-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
-}
-
-.home-title {
-    margin: 0;
-    font: 700 22px/1.3 inherit;
-    letter-spacing: -.02em;
+    animation: home-fade-in .4s ease both;
 }
 
 .home-subtitle {
-    font: 500 12px/1.5 ui-monospace, monospace;
+    font: 500 11.5px/1.5 ui-monospace, monospace;
     color: #98a2b3;
 }
 
 .home-btn-outline {
-    padding: 9px 14px;
+    padding: 9px 13px;
     border: 1px solid #eaeef4;
     background: #fff;
     border-radius: 10px;
     font: 600 13px/1 inherit;
     color: #344054;
     cursor: pointer;
+    transition: background .15s ease, transform .15s ease;
 }
 
 .home-btn-outline:hover {
     background: #f7f9fc;
+}
+
+.home-btn-outline:active {
+    transform: scale(.96);
+}
+
+/* ---- Efectos de entrada / movimiento ---- */
+
+@keyframes home-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.home-kpi-card,
+.home-card {
+    animation: home-fade-in .45s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.home-top-row {
+    animation: home-fade-in .35s ease both;
 }
 
 .home-kpi-grid {
@@ -111,6 +131,13 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.home-kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(12, 17, 29, .08);
+    border-color: #dfe4ea;
 }
 
 .home-kpi-card.warn {
@@ -118,16 +145,22 @@
     background: #fffaf9;
 }
 
+.home-kpi-card.warn:hover {
+    box-shadow: 0 10px 24px rgba(240, 68, 56, .12);
+}
+
 .home-kpi-label {
-    font: 600 11px/1 inherit;
+    font: 600 10.5px/1 inherit;
     letter-spacing: .02em;
     color: #98a2b3;
 }
 
 .home-kpi-value {
-    font: 700 24px/1.2 ui-monospace, monospace;
+    font: 600 24px/1.2 ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
     letter-spacing: -.02em;
     color: #0c111d;
+    transition: color .2s ease;
 }
 
 .home-kpi-card.warn .home-kpi-value {
@@ -154,6 +187,12 @@
     flex-direction: column;
     gap: 14px;
     min-width: 0;
+    transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+.home-card:hover {
+    box-shadow: 0 10px 28px rgba(12, 17, 29, .07);
+    border-color: #dfe4ea;
 }
 
 .home-card-head {
@@ -187,6 +226,12 @@
     gap: 14px;
     padding: 10px 4px;
     border-bottom: 1px solid #f2f4f7;
+    border-radius: 8px;
+    transition: background .15s ease;
+}
+
+.home-top-row:hover {
+    background: #f7f9fc;
 }
 
 .home-top-row:last-child {
@@ -216,7 +261,7 @@
 .home-top-monto {
     flex: none;
     font: 700 14px/1 ui-monospace, monospace;
-    color: #14395c;
+    color: #087443;
 }
 
 .home-empty {
@@ -224,4 +269,18 @@
     text-align: center;
     color: #98a2b3;
     font: 500 12.5px/1.4 inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-toolbar,
+    .home-kpi-card,
+    .home-card,
+    .home-top-row {
+        animation: none;
+    }
+
+    .home-kpi-card:hover,
+    .home-card:hover {
+        transform: none;
+    }
 }
