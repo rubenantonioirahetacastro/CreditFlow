@@ -1,29 +1,12 @@
 @page "/simulador-credito"
 @attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
 @using CreditFlow.Web.Models.Mantenimientos
+@implements IDisposable
+@inject CreditFlow.Web.Services.PageHeaderService Header
 
 <PageTitle>Simulador de Crédito</PageTitle>
 
-<div class="sim-page">
-
-  <header class="sim-header">
-    <div class="sim-header-inner">
-      <div>
-        <h1 class="sim-title">Simulador de cronograma de cuotas</h1>
-        <div class="sim-subtitle">Microcréditos · @PeriodicidadLabel(nSubProd) · Moneda nacional</div>
-      </div>
-      @if (resultado is not null)
-      {
-        <div class="sim-status-wrap">
-          <span class="sim-status @(EstaCuadrado ? "ok" : "bad")">
-            <span class="sim-status-dot"></span>
-            @(EstaCuadrado ? "Cronograma cuadrado" : $"Descuadre de {Money(SaldoFinal)}")
-          </span>
-          <button class="sim-btn-outline" @onclick="ExportarCsvAsync" disabled="@(resultado is null)">Exportar CSV</button>
-        </div>
-      }
-    </div>
-  </header>
+<div class="sim-page" @ref="paginaRootRef">
 
   <div class="sim-body">
 
@@ -46,54 +29,56 @@
         </div>
 
         <div class="sim-field">
-          <div class="sim-row-between"><span class="sim-label">Préstamo</span><span class="sim-num sim-num-strong">@Money(monto)</span></div>
+          <div class="sim-row-between">
+            <span class="sim-label">Préstamo</span>
+            <input type="number" class="sim-input-num" min="50" max="10000" step="50" @bind="monto" @bind:event="onchange" @bind:after="SimularAsync" />
+          </div>
           <input type="range" min="50" max="10000" step="50" class="sim-slider" @bind="monto" @bind:event="onchange" @bind:after="SimularAsync" />
         </div>
 
         <div class="sim-field">
-          <div class="sim-row-between"><span class="sim-label">Nro. de cuotas</span><span class="sim-num sim-num-strong">@cuotas</span></div>
+          <div class="sim-row-between">
+            <span class="sim-label">Nro. de cuotas</span>
+            <input type="number" class="sim-input-num" min="1" max="48" step="1" @bind="cuotas" @bind:event="onchange" @bind:after="SimularAsync" />
+          </div>
           <input type="range" min="1" max="48" step="1" class="sim-slider" @bind="cuotas" @bind:event="onchange" @bind:after="SimularAsync" />
         </div>
 
         <div class="sim-field">
-          <span class="sim-label">Periodicidad</span>
-          <div class="sim-pill-row">
+          <label class="sim-label">Subproducto</label>
+          <select class="sim-input" @bind="nSubProd" @bind:after="SimularAsync">
             @foreach (var p in Periodicidades)
             {
-              <button class="sim-pill @(nSubProd == p.NSubProd ? "on" : "")" @onclick="() => SeleccionarPeriodicidadAsync(p.NSubProd)">@p.Label</button>
+              <option value="@p.NSubProd">@p.Label</option>
             }
-          </div>
+          </select>
         </div>
 
         <div class="sim-field-grid">
           <div class="sim-field">
-            <label class="sim-label">Categoría del cliente</label>
-            <select class="sim-input" @bind="nCategoria" @bind:after="SimularAsync">
-              @for (int c = 1; c <= 16; c++)
-              {
-                <option value="@c">Categoría @c</option>
-              }
-            </select>
+            <label class="sim-label">Tasa (override)</label>
+            <input type="text" class="sim-input" placeholder="Auto" @bind="tasaOverrideStr" @bind:after="SimularAsync" />
           </div>
           <div class="sim-field">
             <label class="sim-label">Desembolso</label>
             <input type="date" class="sim-input" @bind="fechaInicio" @bind:after="SimularAsync" />
           </div>
         </div>
-        <span class="sim-note">La categoría del cliente (según su evaluación crediticia) determina qué línea de tarifario aplica — no todas las combinaciones de monto/plazo/periodicidad existen para todas las categorías.</span>
 
         <div class="sim-field">
-          <span class="sim-label">Cobrar también en</span>
+          <span class="sim-label">
+            Cobrar también en
+            <span class="sim-info" title="Los vencimientos que caen en día no habilitado se corren al siguiente día hábil.">i</span>
+          </span>
           <div class="sim-pill-row">
-            <button class="sim-pill @(permiteSabado ? "on" : "")" @onclick="() => ToggleDiaAsync(d => permiteSabado = !permiteSabado)">Sábado</button>
-            <button class="sim-pill @(permiteDomingo ? "on" : "")" @onclick="() => ToggleDiaAsync(d => permiteDomingo = !permiteDomingo)">Domingo</button>
-            <button class="sim-pill @(permiteFeriado ? "on" : "")" @onclick="() => ToggleDiaAsync(d => permiteFeriado = !permiteFeriado)">Feriados</button>
+            <button class="sim-pill @(permiteSabado ? "on" : "")" @onclick="() => ToggleDiaAsync(() => permiteSabado = !permiteSabado)">Sábado</button>
+            <button class="sim-pill @(permiteDomingo ? "on" : "")" @onclick="() => ToggleDiaAsync(() => permiteDomingo = !permiteDomingo)">Domingo</button>
+            <button class="sim-pill @(permiteFeriado ? "on" : "")" @onclick="() => ToggleDiaAsync(() => permiteFeriado = !permiteFeriado)">Feriados</button>
           </div>
-          <span class="sim-note">Los vencimientos que caen en día no habilitado se corren al siguiente día hábil.</span>
         </div>
 
-        <details class="sim-details">
-          <summary class="sim-summary">Parámetros avanzados</summary>
+        <div class="sim-section">
+          <span class="sim-label">Avanzado</span>
           <div class="sim-field-grid">
             <div class="sim-field">
               <label class="sim-label">Refinanciado</label>
@@ -103,15 +88,23 @@
               </select>
             </div>
             <div class="sim-field">
-              <label class="sim-label">Tasa mensual (override)</label>
-              <input type="text" class="sim-input" placeholder="Automática" @bind="tasaOverrideStr" @bind:after="SimularAsync" />
-            </div>
-            <div class="sim-field">
-              <label class="sim-label">Gasto por cuota (override)</label>
-              <input type="text" class="sim-input" placeholder="Automático" @bind="gastoOverrideStr" @bind:after="SimularAsync" />
+              <label class="sim-label">
+                Categoría
+                <span class="sim-info" title="Determina qué línea de tarifario aplica. No todas las combinaciones de monto, plazo y periodicidad existen para todas las categorías.">i</span>
+              </label>
+              <select class="sim-input" @bind="nCategoria" @bind:after="SimularAsync">
+                @for (int c = 1; c <= 16; c++)
+                {
+                  <option value="@c">Categoría @c</option>
+                }
+              </select>
             </div>
           </div>
-        </details>
+          <div class="sim-field">
+            <label class="sim-label">Gasto por cuota (override)</label>
+            <input type="text" class="sim-input" placeholder="Auto" @bind="gastoOverrideStr" @bind:after="SimularAsync" />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -119,9 +112,13 @@
 
       @if (cargando)
       {
-        <div class="sim-card sim-loading">Calculando cronograma...</div>
+        <div class="sim-overlay">
+          <div class="sim-spinner"></div>
+          <span>Generando cronograma...</span>
+        </div>
       }
-      else if (error is not null)
+
+      @if (error is not null)
       {
         <div class="sim-alert">
           <span class="sim-alert-dot"></span>
@@ -135,7 +132,6 @@
             <div class="sim-cuota-block">
               <div class="sim-kick">Cuota @PeriodicidadLabel(nSubProd).ToLower()</div>
               <div class="sim-cuota-num">@Money(resultado.CuotaFija)</div>
-              <div class="sim-linea-nota">@resultado.LineaUsada</div>
             </div>
             <div class="sim-summary-grid">
               @foreach (var s in ResumenItems())
@@ -168,11 +164,12 @@
               Detalle de cuotas
               <span class="sim-badge">@resultado.Cronograma.Count pagos</span>
             </div>
-            <div class="sim-pill-row">
-              @foreach (var v in new[] { "Todas", "Primeras 6", "Últimas 6" })
-              {
-                <button class="sim-pill sm @(vista == v ? "on" : "")" @onclick="() => vista = v">@v</button>
-              }
+            <div class="sim-status-wrap">
+              <span class="sim-status @(EstaCuadrado ? "ok" : "bad")">
+                <span class="sim-status-dot"></span>
+                @(EstaCuadrado ? "Cronograma cuadrado" : $"Descuadre de {Money(SaldoFinal)}")
+              </span>
+              <button class="sim-btn-outline" @onclick="ExportarCsvAsync">Exportar CSV</button>
             </div>
           </div>
 
@@ -180,42 +177,53 @@
             <div class="sim-table-grid sim-table-header">
               <div class="sim-th">Cuota</div>
               <div class="sim-th">Vencimiento</div>
-              <div class="sim-th num">Capital</div>
-              <div class="sim-th num">Interés</div>
-              <div class="sim-th num">IVA</div>
-              <div class="sim-th num">Gastos</div>
-              <div class="sim-th num">Total</div>
-              <div class="sim-th num">Saldo</div>
+              <div class="sim-th">Capital</div>
+              <div class="sim-th">Interés</div>
+              <div class="sim-th">IVA</div>
+              <div class="sim-th">Gastos</div>
+              <div class="sim-th">Total</div>
+              <div class="sim-th">Saldo</div>
             </div>
 
             @foreach (var r in FilasVisibles())
             {
               <div class="sim-table-grid sim-table-row">
                 <div class="sim-td muted">@r.NroCuota</div>
-                <div class="sim-td num">@r.FechaVencimiento.ToString("dd MMM yy")</div>
-                <div class="sim-td num strong">@Money(r.Capital)</div>
-                <div class="sim-td num">@Money(r.Interes)</div>
-                <div class="sim-td num">@Money(r.Iva)</div>
-                <div class="sim-td num">@Money(r.Gasto)</div>
-                <div class="sim-td num strong">@Money(r.TotalCuota)</div>
-                <div class="sim-td num @(r.SaldoDespues == 0 ? "verde" : "")">@Money(r.SaldoDespues)</div>
+                <div class="sim-td">@r.FechaVencimiento.ToString("dd MMM yy")</div>
+                <div class="sim-td strong">@Money(r.Capital)</div>
+                <div class="sim-td">@Money(r.Interes)</div>
+                <div class="sim-td">@Money(r.Iva)</div>
+                <div class="sim-td">@Money(r.Gasto)</div>
+                <div class="sim-td strong verde">@Money(r.TotalCuota)</div>
+                <div class="sim-td @(r.SaldoDespues == 0 ? "verde" : "")">@Money(r.SaldoDespues)</div>
               </div>
             }
 
             <div class="sim-table-grid sim-table-footer">
               <div class="sim-td strong">Total</div>
               <div></div>
-              <div class="sim-td num strong">@Money(resultado.TotalCapital)</div>
-              <div class="sim-td num strong">@Money(resultado.TotalInteres)</div>
-              <div class="sim-td num strong">@Money(resultado.TotalIva)</div>
-              <div class="sim-td num strong">@Money(resultado.TotalGasto)</div>
-              <div class="sim-td num strong">@Money(resultado.TotalPagado)</div>
+              <div class="sim-td strong">@Money(resultado.TotalCapital)</div>
+              <div class="sim-td strong">@Money(resultado.TotalInteres)</div>
+              <div class="sim-td strong">@Money(resultado.TotalIva)</div>
+              <div class="sim-td strong">@Money(resultado.TotalGasto)</div>
+              <div class="sim-td strong verde">@Money(resultado.TotalPagado)</div>
               <div></div>
             </div>
           </div>
+
+          <div class="sim-pager">
+            <RadzenPager @key="paginaKey"
+                         HorizontalAlign="HorizontalAlign.Center"
+                         Count="@resultado.Cronograma.Count"
+                         PageSize="@FilasPorPagina"
+                         PageNumbersCount="5"
+                         ShowPagingSummary="true"
+                         PagingSummaryFormat="Página {0} de {1} ({2} elementos)"
+                         PageChanged="@OnPageChanged" />
+          </div>
         </div>
       }
-      else
+      else if (!cargando)
       {
         <div class="sim-card sim-loading">Seleccione una agencia para generar el cronograma.</div>
       }
@@ -227,6 +235,8 @@
     [Inject] private CreditFlow.Web.Services.Mantenimientos.IAgenciaService AgenciaService { get; set; } = default!;
     [Inject] private CreditFlow.Web.Services.ISimulacionCalendarioService SimulacionService { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private ElementReference paginaRootRef;
 
     private List<AgenciaDto> agencias = new();
 
@@ -251,7 +261,10 @@
     private bool cargando;
     private string? error;
     private CreditFlow.Web.Models.SimularCalendarioResponse? resultado;
-    private string vista = "Todas";
+
+    private int paginaSkip = 0;
+    private int paginaKey = 0;
+    private const int FilasPorPagina = 10;
 
     private record OpcionPeriodicidad(string Label, int NSubProd);
     private static readonly List<OpcionPeriodicidad> Periodicidades = new()
@@ -264,6 +277,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        ActualizarTituloPagina();
+
         agencias = await AgenciaService.ObtenerTodasAsync();
         if (agencias.Count > 0)
         {
@@ -272,16 +287,30 @@
         }
     }
 
-    private static string PeriodicidadLabel(int nSubProd) => Periodicidades.FirstOrDefault(p => p.NSubProd == nSubProd)?.Label ?? "Mensual";
-
-    private async Task SeleccionarPeriodicidadAsync(int subProd)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        nSubProd = subProd;
-        await SimularAsync();
+        // El alto exacto disponible depende del tema/layout de Radzen (barra
+        // superior, paddings) y puede variar por zoom o DPI; se mide en el
+        // navegador en vez de asumir un valor fijo en CSS, para que la página
+        // siempre quepa exacto y nunca produzca scroll del documento.
+        await JS.InvokeVoidAsync("simuladorFitViewport", paginaRootRef);
     }
 
-    private async Task ToggleDiaAsync(Action<bool> _)
+    private void ActualizarTituloPagina()
     {
+        Header.Set("Simulador de cronograma de cuotas");
+    }
+
+    public void Dispose()
+    {
+        Header.Clear();
+    }
+
+    private static string PeriodicidadLabel(int nSubProd) => Periodicidades.FirstOrDefault(p => p.NSubProd == nSubProd)?.Label ?? "Mensual";
+
+    private async Task ToggleDiaAsync(Action toggle)
+    {
+        toggle();
         await SimularAsync();
     }
 
@@ -296,6 +325,7 @@
         bRefinanciado = false;
         tasaOverrideStr = null;
         gastoOverrideStr = null;
+        ActualizarTituloPagina();
         await SimularAsync();
     }
 
@@ -341,6 +371,8 @@
         if (exito)
         {
             resultado = data;
+            paginaSkip = 0;
+            paginaKey++;
         }
         else
         {
@@ -363,8 +395,6 @@
     private List<ResumenItem> ResumenItems()
     {
         if (resultado is null) return new();
-        var primera = resultado.Cronograma.FirstOrDefault();
-        var ultima = resultado.Cronograma.LastOrDefault();
 
         return new List<ResumenItem>
         {
@@ -372,8 +402,6 @@
             new("Capital", Money(resultado.MontoSolicitado), false),
             new("Costo del crédito", Money(resultado.CostoTotalCredito), false),
             new("Tasa mensual", resultado.TasaNominalMensual.ToString("0.00") + " %", false),
-            new("Primera cuota", primera?.FechaVencimiento.ToString("dd MMM yyyy") ?? "-", false),
-            new("Última cuota", ultima?.FechaVencimiento.ToString("dd MMM yyyy") ?? "-", false),
             new("TEA real", (resultado.TeaReal * 100).ToString("0.00") + " %", false),
             new("Saldo final", Money(SaldoFinal), false),
         };
@@ -382,12 +410,12 @@
     private List<CreditFlow.Web.Models.CuotaDetalleResponse> FilasVisibles()
     {
         if (resultado is null) return new();
-        return vista switch
-        {
-            "Primeras 6" => resultado.Cronograma.Take(6).ToList(),
-            "Últimas 6" => resultado.Cronograma.TakeLast(6).ToList(),
-            _ => resultado.Cronograma
-        };
+        return resultado.Cronograma.Skip(paginaSkip).Take(FilasPorPagina).ToList();
+    }
+
+    private void OnPageChanged(Radzen.PagerEventArgs args)
+    {
+        paginaSkip = args.Skip;
     }
 
     private async Task ExportarCsvAsync()

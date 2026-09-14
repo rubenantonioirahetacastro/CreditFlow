@@ -1,42 +1,16 @@
 .sim-page {
-    min-height: 100vh;
+    /* El alto exacto lo fija simulador.js (simuladorFitViewport) midiendo el
+       espacio real restante del viewport, ya que depende del tema/layout de
+       Radzen y puede variar por zoom o DPI. Este valor es solo un respaldo
+       para el primer instante de render, antes de que corra el JS. */
+    height: calc(100vh - 3.5rem - 1.1rem);
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    background: #eef1f5;
+    /* Sin fondo propio: se deja ver el fondo de .rz-body (app-level) para
+       que no haya ninguna costura de color entre el panel y el resto de la app. */
     font-family: "Segoe UI", system-ui, sans-serif;
     color: #0c111d;
-}
-
-.sim-header {
-    position: sticky;
-    top: 0;
-    z-index: 6;
-    background: #fff;
-    border-bottom: 1px solid #e4e9f0;
-}
-
-.sim-header-inner {
-    max-width: 1500px;
-    margin: 0 auto;
-    padding: 14px 28px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
-
-.sim-title {
-    margin: 0;
-    font: 700 18px/1.25 inherit;
-    letter-spacing: -.02em;
-}
-
-.sim-subtitle {
-    font: 500 11.5px/1.5 ui-monospace, monospace;
-    color: #98a2b3;
-}
-
-.sim-header-inner > div:first-child {
-    margin-right: auto;
 }
 
 .sim-status-wrap {
@@ -89,20 +63,21 @@
 }
 
 .sim-body {
-    max-width: 1500px;
     width: 100%;
-    margin: 0 auto;
     box-sizing: border-box;
-    padding: 22px 28px 40px;
+    padding: 20px 24px;
     display: grid;
-    grid-template-columns: 340px minmax(0, 1fr);
+    grid-template-columns: 360px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
     gap: 20px;
-    align-items: start;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .sim-sidebar {
-    position: sticky;
-    top: 88px;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .sim-card {
@@ -124,8 +99,7 @@
 
 .sim-kick {
     font: 600 11px/1 inherit;
-    letter-spacing: .09em;
-    text-transform: uppercase;
+    letter-spacing: .02em;
     color: #98a2b3;
 }
 
@@ -159,9 +133,37 @@
 
 .sim-label {
     font: 600 10.5px/1 inherit;
-    letter-spacing: .07em;
-    text-transform: uppercase;
+    letter-spacing: .02em;
     color: #98a2b3;
+}
+
+.sim-info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    margin-left: 4px;
+    border-radius: 50%;
+    background: #eef1f5;
+    color: #98a2b3;
+    font: 700 9px/1 "Georgia", serif;
+    font-style: italic;
+    cursor: help;
+    vertical-align: middle;
+}
+
+.sim-input-num {
+    width: 92px;
+    padding: 5px 8px;
+    border: 1px solid #e4e9f0;
+    border-radius: 8px;
+    font: 600 13px/1.2 ui-monospace, monospace;
+    color: #0c111d;
+    background: #fff;
+    outline: none;
+    text-align: right;
+    box-sizing: border-box;
 }
 
 .sim-num {
@@ -218,28 +220,54 @@
     color: #fff;
 }
 
-.sim-note {
-    font: 500 11.5px/1.45 inherit;
-    color: #98a2b3;
-}
-
-.sim-details {
+.sim-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     border-top: 1px solid #eaeef4;
-    padding-top: 12px;
-}
-
-.sim-summary {
-    cursor: pointer;
-    font: 600 12px/1 inherit;
-    color: #667085;
-    list-style: none;
+    padding-top: 14px;
 }
 
 .sim-main {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 16px;
     min-width: 0;
+    min-height: 0;
+}
+
+.sim-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(238, 241, 245, .78);
+    backdrop-filter: blur(1.5px);
+    border-radius: 16px;
+    font: 600 13px/1 inherit;
+    color: #344054;
+}
+
+.sim-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #dfe4ea;
+    border-top-color: #14395c;
+    border-radius: 50%;
+    animation: sim-spin .7s linear infinite;
+}
+
+@keyframes sim-spin {
+    to { transform: rotate(360deg); }
+}
+
+.sim-summary-card {
+    flex: none;
 }
 
 .sim-loading {
@@ -282,18 +310,14 @@
 .sim-cuota-block {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    text-align: center;
     gap: 4px;
 }
 
 .sim-cuota-num {
     font: 600 40px/1 ui-monospace, monospace;
     letter-spacing: -.04em;
-}
-
-.sim-linea-nota {
-    font: 500 12px/1.4 inherit;
-    color: #667085;
-    max-width: 36ch;
 }
 
 .sim-summary-grid {
@@ -312,8 +336,7 @@
 
 .sim-summary-key {
     font: 600 10.5px/1 inherit;
-    letter-spacing: .07em;
-    text-transform: uppercase;
+    letter-spacing: .02em;
     color: #98a2b3;
 }
 
@@ -368,9 +391,14 @@
 .sim-table-card {
     overflow: hidden;
     padding: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .sim-table-head {
+    flex: none;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -395,7 +423,8 @@
 }
 
 .sim-table-scroll {
-    max-height: 520px;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow: auto;
 }
 
@@ -403,6 +432,7 @@
     display: grid;
     grid-template-columns: 64px 110px repeat(6, minmax(0, 1fr));
     align-items: center;
+    text-align: center;
 }
 
 .sim-table-header {
@@ -416,13 +446,9 @@
 .sim-th {
     padding: 11px 12px;
     font: 700 10.5px/1 inherit;
-    letter-spacing: .08em;
-    text-transform: uppercase;
+    letter-spacing: .03em;
     color: #98a2b3;
-}
-
-.sim-th.num {
-    text-align: right;
+    text-align: center;
 }
 
 .sim-table-row {
@@ -436,7 +462,9 @@
 .sim-td {
     padding: 12px;
     font: 500 13px/1.35 ui-monospace, monospace;
-    color: #0c111d;
+    color: #667085;
+    text-align: center;
+    font-size: 12.5px;
 }
 
 .sim-td.muted {
@@ -444,35 +472,51 @@
     font-family: inherit;
 }
 
-.sim-td.num {
-    text-align: right;
-    color: #667085;
-    font-size: 12.5px;
-}
-
 .sim-td.strong {
     font-weight: 600;
     color: #0c111d;
+    font-size: 13px;
 }
 
 .sim-td.verde {
-    color: #05603a;
+    color: #087443;
 }
 
 .sim-table-footer {
-    border-top: 2px solid #e4e9f0;
-    background: #fbfcfe;
     position: sticky;
     bottom: 0;
     z-index: 2;
+    border-top: 2px solid #e4e9f0;
+    background: #fbfcfe;
+}
+
+.sim-pager {
+    flex: none;
+    padding: 8px 20px;
+    border-top: 1px solid #eaeef4;
 }
 
 @media (max-width: 900px) {
+    .sim-page {
+        height: auto;
+        overflow: visible;
+    }
+
     .sim-body {
         grid-template-columns: 1fr;
+        grid-template-rows: none;
+        min-height: auto;
     }
 
     .sim-sidebar {
-        position: static;
+        overflow-y: visible;
+    }
+
+    .sim-main {
+        min-height: auto;
+    }
+
+    .sim-table-scroll {
+        max-height: 520px;
     }
 }

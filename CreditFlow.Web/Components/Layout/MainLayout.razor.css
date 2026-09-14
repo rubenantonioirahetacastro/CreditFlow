@@ -28,6 +28,23 @@
     color: #ffffff;
 }
 
+.app-page-title {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.app-page-title-main {
+    font-size: .95rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.app-page-title-sub {
+    font: 500 .68rem/1.4 ui-monospace, monospace;
+    color: #9aa7c7;
+}
+
 .app-header-link {
     color: #cbd5e1;
     text-decoration: none;

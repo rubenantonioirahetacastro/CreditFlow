@@ -1,11 +1,26 @@
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject CreditFlow.Web.Services.PageHeaderService Header
 
 <RadzenLayout>
     <RadzenHeader>
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="app-header px-2">
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
                 <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-                <span class="app-brand">CreditFlow.Web</span>
+                @if (Header.Title is not null)
+                {
+                    <div class="app-page-title">
+                        <span class="app-page-title-main">@Header.Title</span>
+                        @if (Header.Subtitle is not null)
+                        {
+                            <span class="app-page-title-sub">@Header.Subtitle</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <span class="app-brand">CreditFlow.Web</span>
+                }
             </RadzenStack>
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="app-header-link">About</a>
         </RadzenStack>
@@ -32,4 +47,16 @@
 
 @code {
     private bool sidebarExpanded = true;
+
+    protected override void OnInitialized()
+    {
+        Header.Changed += OnHeaderChanged;
+    }
+
+    private void OnHeaderChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Header.Changed -= OnHeaderChanged;
+    }
 }
