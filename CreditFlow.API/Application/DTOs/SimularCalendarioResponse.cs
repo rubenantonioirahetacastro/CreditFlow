@@ -8,6 +8,8 @@ namespace CreditFlow.API.Application.DTOs
 
         public decimal TasaNominalMensual { get; set; }
 
+        public decimal CuotaFija { get; set; }
+
         public decimal MontoSolicitado { get; set; }
 
         public int Plazo { get; set; }

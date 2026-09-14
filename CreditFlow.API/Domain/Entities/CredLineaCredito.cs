@@ -32,4 +32,10 @@ public partial class CredLineaCredito
     public string? CUser { get; set; }
 
     public bool BEstado { get; set; }
+
+    public int NMoneda { get; set; }
+
+    public int? NCategoria { get; set; }
+
+    public bool BReadecuacion { get; set; }
 }

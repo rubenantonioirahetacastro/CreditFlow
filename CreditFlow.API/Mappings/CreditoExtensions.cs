@@ -15,7 +15,6 @@ namespace CreditFlow.API.Mappings
                 nPrestamo = credito.NPrestamo,
                 nProd = credito.NProd,
                 nSubProd = credito.NSubProd,
-                nTipoGasto = 1,   // Asumiendo 1 representa gasto de colecturia
                 nPeriodo = credito.NPeriodo,
                 nCobroEnAgencia = credito.NCobroEnAgencia ?? 0,
                 nCodCred = credito.NCodCred,

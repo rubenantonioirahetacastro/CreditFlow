@@ -6,6 +6,8 @@ namespace CreditFlow.API.Application.DTOs
 
         public DateTime FechaVencimiento { get; set; }
 
+        public DateTime FechaCobranza { get; set; }
+
         public decimal Capital { get; set; }
 
         public decimal Interes { get; set; }

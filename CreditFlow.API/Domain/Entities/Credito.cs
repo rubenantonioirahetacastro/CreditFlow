@@ -41,6 +41,8 @@ public partial class Credito
 
     public int? NCobroEnAgencia { get; set; }
 
+    public bool BReadecuacion { get; set; }
+
     public int? NAceptaTerminos { get; set; }
 
     public int? IdPersona { get; set; }

@@ -24,4 +24,12 @@ public partial class CredGasto
     public int NPeriodo { get; set; }
 
     public int NTipoCargo { get; set; }
+
+    public int NMoneda { get; set; }
+
+    public int NTipoValor { get; set; }
+
+    public bool? BRefinan { get; set; }
+
+    public bool BCustodia { get; set; }
 }

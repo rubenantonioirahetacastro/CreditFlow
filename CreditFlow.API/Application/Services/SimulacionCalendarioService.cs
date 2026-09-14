@@ -10,15 +10,29 @@ namespace CreditFlow.API.Application.Services
 {
     public class SimulacionCalendarioService : ISimulacionCalendarioService
     {
-        private const decimal TASA_IVA = 0.13m;
+        // Códigos de VerNegocio (equivalente a DevuelveVarNegocio() en el VB de
+        // producción). Confirmados contra el dump real de VarNegocio de producción.
+        private const int COD_VALOR_IGV = 36;
+        private const int COD_NRO_DIA_ANIO = 400031; // oSesion.nNroDiasAnio (= 366 en producción)
 
         private readonly DbNegocioContext _context;
-        private readonly ILineaCreditoService _lineaCreditoService;
+        private readonly IPrimLineaCreditoService _primLineaCreditoService;
+        private readonly IGastoService _gastoService;
+        private readonly IFeriadoService _feriadoService;
+        private readonly IVarNegocioService _varNegocioService;
 
-        public SimulacionCalendarioService(DbNegocioContext context, ILineaCreditoService lineaCreditoService)
+        public SimulacionCalendarioService(
+            DbNegocioContext context,
+            IPrimLineaCreditoService primLineaCreditoService,
+            IGastoService gastoService,
+            IFeriadoService feriadoService,
+            IVarNegocioService varNegocioService)
         {
             _context = context;
-            _lineaCreditoService = lineaCreditoService;
+            _primLineaCreditoService = primLineaCreditoService;
+            _gastoService = gastoService;
+            _feriadoService = feriadoService;
+            _varNegocioService = varNegocioService;
         }
 
         public async Task<SimularCalendarioResponse> SimularAsync(SimularCalendarioRequest request)
@@ -29,64 +43,90 @@ namespace CreditFlow.API.Application.Services
             if (request.NPlazo <= 0)
                 throw new InvalidOperationException("El plazo debe ser mayor a 0.");
 
-            var linea = await _lineaCreditoService.ResolverLineaCreditoAsync(request.NSubProd, request.Monto);
-
-            if (linea.NProd != request.NProd)
-                throw new InvalidOperationException($"La línea de crédito encontrada para el subproducto {request.NSubProd} corresponde al producto {linea.NProd}, no al producto {request.NProd}.");
-
-            if (request.NPlazo < linea.NPlazoMin || request.NPlazo > linea.NPlazoMax)
-                throw new InvalidOperationException($"El plazo {request.NPlazo} está fuera del rango permitido para la línea {linea.CDescripcion} ({linea.NPlazoMin} - {linea.NPlazoMax}).");
+            if (request.NCodAge <= 0)
+                throw new InvalidOperationException("La agencia (NCodAge) es obligatoria para resolver la línea de crédito.");
 
             DateTime fechaInicio = request.FechaInicio ?? DateTime.Today;
-            decimal tasaNominalMensual = request.TasaOverride ?? linea.NTasaCom;
-            decimal gastoPorCuota = request.GastoOverride ?? 0m;
+            int periodoDias = GeneradorCalendarioMicroCredito.PeriodoDias(request.NSubProd);
 
-            decimal cuotaFijaEstimada = CalculadoraFinanciera.CalcularCuotaFijaEstimada(
-                request.Monto,
-                request.NPlazo,
-                request.NSubProd,
-                tasaNominalMensual,
-                TASA_IVA);
+            var primLinea = await _primLineaCreditoService.ObtenerPrimLineaCredAsync(new PrimLineaCreditoRequest
+            {
+                NCodAge = request.NCodAge,
+                NCuotas = request.NPlazo,
+                NMonto = request.Monto,
+                NNumPrestamo = request.NNumPrestamo,
+                NMoneda = request.NMoneda,
+                NProd = request.NProd,
+                NSubProd = request.NSubProd,
+                NCodCamp = request.NCodCamp,
+                NCategoria = request.NCategoria,
+                BRefinanciado = request.BRefinanciado,
+                BCustodia = request.BCustodia,
+                NPeriodo = periodoDias,
+                NCodCred = 0
+            });
 
-            var calendario = CalculadoraFinanciera.GenerarDetalleCuotasSimulado(
+            if (primLinea.NCodLinea == 0)
+                throw new InvalidOperationException("No existe una línea de crédito configurada para la agencia, producto, subproducto, plazo, monto, moneda y campaña indicados.");
+
+            decimal tasaNominalMensual = request.TasaOverride ?? primLinea.NTasaCom;
+
+            decimal gastoPorCuota = request.GastoOverride ?? await _gastoService.ObtenerGastoAsync(new CreditoRequest
+            {
+                nPrestamo = request.Monto,
+                nMoneda = request.NMoneda,
+                nProd = request.NProd,
+                nSubProd = request.NSubProd,
+                bRefinanciado = request.BRefinanciado,
+                nPeriodo = periodoDias,
+                nTipoCargo = request.NTipoCargo,
+                nCodLineaSecundario = request.NCodLineaSecundario,
+                nCobroEnAgencia = 0,
+                nCodCred = 0,
+                nCodAge = request.NCodAge,
+                fechaDesembolso = fechaInicio
+            });
+
+            var feriados = request.NCodAge > 0
+                ? await _feriadoService.ObtenerFeriadosAsync(fechaInicio, request.NCodAge)
+                : new List<DateTime>();
+
+            decimal tasaIva = await _varNegocioService.ObtenerValorDecimalAsync(COD_VALOR_IGV, 0.13m);
+            int nDiasAnio = await _varNegocioService.ObtenerValorIntAsync(COD_NRO_DIA_ANIO, 366);
+
+            var resultado = GeneradorCalendarioMicroCredito.Generar(
                 request.Monto,
                 request.NPlazo,
                 request.NSubProd,
                 tasaNominalMensual,
                 fechaInicio,
-                Array.Empty<DateTime>(),
-                cuotaFijaEstimada,
-                TASA_IVA,
-                gastoPorCuota);
+                gastoPorCuota,
+                nDiasAnio,
+                feriados,
+                tasaIva,
+                request.PermiteSabado,
+                request.PermiteDomingo,
+                request.PermiteFeriado);
 
-            decimal teaReal = CalculadoraFinanciera.CalcularTeaPorTir(request.Monto, calendario, fechaInicio);
+            var cronograma = resultado.Cuotas.Select(c => new CuotaDetalleResponse
+            {
+                NroCuota = c.NroCuota,
+                FechaVencimiento = c.FechaVencimiento,
+                FechaCobranza = c.FechaCobranza,
+                Capital = c.Capital,
+                Interes = c.Interes,
+                Gasto = c.Gasto,
+                Iva = c.IvaInteres + c.IvaGasto,
+                TotalCuota = c.TotalCuota,
+                SaldoDespues = c.SaldoDespues
+            }).ToList();
+
+            var flujosParaTir = resultado.Cuotas
+                .Select(c => new CredCalendario { DFecVenc = c.FechaVencimiento, NTotalCuota = c.TotalCuota })
+                .ToList();
+            decimal teaReal = CalculadoraFinanciera.CalcularTeaPorTir(request.Monto, flujosParaTir, fechaInicio);
 
             var (teaMaximaLegal, segmentoLegal, cumpleLeyUsura) = await ObtenerEvaluacionUsuraAsync(request.Monto, fechaInicio, teaReal);
-
-            var cronograma = new List<CuotaDetalleResponse>(calendario.Count);
-            decimal saldo = request.Monto;
-
-            foreach (var cuota in calendario)
-            {
-                decimal totalCuota = cuota.NTotalCuota ?? 0m;
-                decimal saldoDespues = saldo - cuota.NCapital;
-                if (saldoDespues < 0)
-                    saldoDespues = 0;
-
-                cronograma.Add(new CuotaDetalleResponse
-                {
-                    NroCuota = cuota.NNroCuota,
-                    FechaVencimiento = cuota.DFecVenc,
-                    Capital = cuota.NCapital,
-                    Interes = cuota.NIntComp,
-                    Gasto = cuota.Ngasto,
-                    Iva = cuota.NIgv,
-                    TotalCuota = totalCuota,
-                    SaldoDespues = saldoDespues
-                });
-
-                saldo = saldoDespues;
-            }
 
             decimal totalCapital = cronograma.Sum(c => c.Capital);
             decimal totalInteres = cronograma.Sum(c => c.Interes);
@@ -96,8 +136,9 @@ namespace CreditFlow.API.Application.Services
 
             return new SimularCalendarioResponse
             {
-                LineaUsada = linea.CDescripcion,
+                LineaUsada = primLinea.CDescLinea,
                 TasaNominalMensual = tasaNominalMensual,
+                CuotaFija = resultado.CuotaFija,
                 MontoSolicitado = request.Monto,
                 Plazo = request.NPlazo,
                 Cronograma = cronograma,

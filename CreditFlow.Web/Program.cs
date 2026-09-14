@@ -41,6 +41,7 @@ builder.Services.AddScoped<IRoleService, RoleApiService>();
 builder.Services.AddScoped<IAgenciaService, AgenciaApiService>();
 builder.Services.AddScoped<ILineaCreditoService, LineaCreditoApiService>();
 builder.Services.AddScoped<ICatalogoCodigoService, CatalogoCodigoApiService>();
+builder.Services.AddScoped<ISimulacionCalendarioService, SimulacionCalendarioApiService>();
 builder.Services.AddScoped<IVerificacionService, VerificacionApiService>();
 builder.Services.AddScoped<ObtenerCatalogoCodigos, ObtenerCatalogoCodigosApi>();
 builder.Services.AddScoped<IEvaluacionCreditoService, EvaluacionCreditoApiService>();

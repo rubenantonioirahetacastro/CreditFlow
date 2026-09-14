@@ -48,6 +48,8 @@ builder.Services.AddScoped<IBlobStorageService, AzureBlobStorageService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
 builder.Services.AddScoped<ILineaCreditoAdminService, LineaCreditoAdminService>();
+builder.Services.AddScoped<IVarNegocioService, VarNegocioService>();
+builder.Services.AddScoped<IPrimLineaCreditoService, PrimLineaCreditoService>();
 
 builder.Services.AddApplicationInsightsTelemetry(options =>
 {

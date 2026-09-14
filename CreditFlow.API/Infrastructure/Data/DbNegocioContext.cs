@@ -45,6 +45,12 @@ public partial class DbNegocioContext : DbContext
 
     public virtual DbSet<CredLineaCredito> CredLineaCreditos { get; set; }
 
+    public virtual DbSet<CredLineaCreditoAge> CredLineaCreditoAges { get; set; }
+
+    public virtual DbSet<CredLineaCreditoCamp> CredLineaCreditoCamps { get; set; }
+
+    public virtual DbSet<CredGastoCuotaCambio> CredGastoCuotaCambios { get; set; }
+
     public virtual DbSet<Credito> Creditos { get; set; }
 
     public virtual DbSet<Departamento> Departamentos { get; set; }
@@ -395,6 +401,16 @@ public partial class DbNegocioContext : DbContext
             entity.Property(e => e.NValor)
                 .HasColumnType("money")
                 .HasColumnName("nValor");
+            entity.Property(e => e.NMoneda)
+                .HasDefaultValue(1)
+                .HasColumnName("nMoneda");
+            entity.Property(e => e.NTipoValor)
+                .HasDefaultValue(1)
+                .HasColumnName("nTipoValor");
+            entity.Property(e => e.BRefinan).HasColumnName("bRefinan");
+            entity.Property(e => e.BCustodia)
+                .HasDefaultValue(false)
+                .HasColumnName("bCustodia");
         });
 
         modelBuilder.Entity<CredLineaCredito>(entity =>
@@ -431,6 +447,39 @@ public partial class DbNegocioContext : DbContext
             entity.Property(e => e.NTasaCom)
                 .HasColumnType("money")
                 .HasColumnName("nTasaCom");
+            entity.Property(e => e.NMoneda)
+                .HasDefaultValue(1)
+                .HasColumnName("nMoneda");
+            entity.Property(e => e.NCategoria).HasColumnName("nCategoria");
+            entity.Property(e => e.BReadecuacion)
+                .HasDefaultValue(false)
+                .HasColumnName("bReadecuacion");
+        });
+
+        modelBuilder.Entity<CredLineaCreditoAge>(entity =>
+        {
+            entity.ToTable("CredLineaCreditoAge");
+            entity.Property(e => e.NCodLinea).HasColumnName("nCodLinea");
+            entity.Property(e => e.NCodAge).HasColumnName("nCodAge");
+        });
+
+        modelBuilder.Entity<CredLineaCreditoCamp>(entity =>
+        {
+            entity.ToTable("CredLineaCreditoCamp");
+            entity.Property(e => e.NCodLinea).HasColumnName("nCodLinea");
+            entity.Property(e => e.NCodCamp)
+                .HasDefaultValue(0)
+                .HasColumnName("nCodCamp");
+        });
+
+        modelBuilder.Entity<CredGastoCuotaCambio>(entity =>
+        {
+            entity.ToTable("CredGastoCuotaCambio");
+            entity.Property(e => e.NCodAge).HasColumnName("nCodAge");
+            entity.Property(e => e.NCodCred).HasColumnName("nCodCred");
+            entity.Property(e => e.NMontoNuevo)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("nMontoNuevo");
         });
 
         modelBuilder.Entity<Credito>(entity =>
@@ -443,6 +492,9 @@ public partial class DbNegocioContext : DbContext
                 .HasColumnName("dFecVig");
             entity.Property(e => e.NAceptaTerminos).HasColumnName("nAceptaTerminos");
             entity.Property(e => e.NCobroEnAgencia).HasColumnName("nCobroEnAgencia");
+            entity.Property(e => e.BReadecuacion)
+                .HasDefaultValue(false)
+                .HasColumnName("bReadecuacion");
             entity.Property(e => e.NCodAge).HasColumnName("nCodAge");
             entity.Property(e => e.NCodLinea).HasColumnName("nCodLinea");
             entity.Property(e => e.NDiasAtraso).HasColumnName("nDiasAtraso");
