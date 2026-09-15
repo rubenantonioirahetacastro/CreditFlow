@@ -1,116 +1,220 @@
-using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using CreditFlow.Web.Models;
 using CreditFlow.Web.Services;
 
 namespace CreditFlow.Web.Core.Http;
 
-public class ApiClient : IApiClient
+public sealed class ApiClient : IApiClient
 {
+    private const string ConnectionMessage =
+        "No se pudo conectar con el servidor. Intentá nuevamente más tarde.";
+    private const string TimeoutMessage =
+        "La solicitud tardó demasiado. Verificá tu conexión e intentá nuevamente.";
+    private const string UnexpectedResponseMessage =
+        "El servidor respondió de forma inesperada. Intentá nuevamente más tarde.";
+
     private readonly HttpClient _httpClient;
     private readonly CustomAuthStateProvider _authStateProvider;
 
-    public ApiClient(IHttpClientFactory httpClientFactory, CustomAuthStateProvider authStateProvider)
+    public ApiClient(
+        IHttpClientFactory httpClientFactory,
+        CustomAuthStateProvider authStateProvider)
     {
         _httpClient = httpClientFactory.CreateClient("CreditFlowApi");
         _authStateProvider = authStateProvider;
     }
 
-    public async Task<T?> GetAsync<T>(string url)
+    public Task<ApiResult<T>> GetAsync<T>(
+        string url,
+        string? fallbackMessage = null,
+        CancellationToken cancellationToken = default) =>
+        SendForDataAsync<T>(HttpMethod.Get, url, null, fallbackMessage, cancellationToken);
+
+    public Task<ApiResult<TResponse>> PostAsync<TRequest, TResponse>(
+        string url,
+        TRequest body,
+        string? fallbackMessage = null,
+        CancellationToken cancellationToken = default) =>
+        SendForDataAsync<TResponse>(
+            HttpMethod.Post,
+            url,
+            JsonContent.Create(body),
+            fallbackMessage,
+            cancellationToken,
+            attachToken: true);
+
+    public Task<ApiResult<TResponse>> PostAnonymousAsync<TRequest, TResponse>(
+        string url,
+        TRequest body,
+        string? fallbackMessage = null,
+        CancellationToken cancellationToken = default) =>
+        SendForDataAsync<TResponse>(
+            HttpMethod.Post,
+            url,
+            JsonContent.Create(body),
+            fallbackMessage,
+            cancellationToken,
+            attachToken: false);
+
+    public Task<ApiResult> PostAsync<TRequest>(
+        string url,
+        TRequest body,
+        string? fallbackMessage = null,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(
+            HttpMethod.Post,
+            url,
+            JsonContent.Create(body),
+            fallbackMessage,
+            cancellationToken);
+
+    public Task<ApiResult> PostAsync(
+        string url,
+        HttpContent content,
+        string? fallbackMessage = null,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, url, content, fallbackMessage, cancellationToken);
+
+    public Task<ApiResult> PutAsync<TRequest>(
+        string url,
+        TRequest body,
+        string? fallbackMessage = null,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(
+            HttpMethod.Put,
+            url,
+            JsonContent.Create(body),
+            fallbackMessage,
+            cancellationToken);
+
+    public Task<ApiResult> PutAsync(
+        string url,
+        HttpContent content,
+        string? fallbackMessage = null,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Put, url, content, fallbackMessage, cancellationToken);
+
+    public Task<ApiResult> DeleteAsync(
+        string url,
+        string? fallbackMessage = null,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Delete, url, null, fallbackMessage, cancellationToken);
+
+    public async Task<ApiResult<string>> GetImageDataUrlAsync(
+        string url,
+        string? fallbackMessage = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            await AttachTokenAsync(request);
+            using var request = await CreateRequestAsync(HttpMethod.Get, url, null);
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
 
-            var response = await _httpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode)
-                return default;
+            {
+                var error = await ApiErrorParser.ParseAsync(response, fallbackMessage, cancellationToken);
+                return ApiResult<string>.Failure(error.Message!, error.StatusCode, error.Code);
+            }
 
-            return await response.Content.ReadFromJsonAsync<T>();
-        }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException)
-        {
-            return default;
-        }
-    }
-
-    public async Task<string?> GetImageDataUrlAsync(string url)
-    {
-        try
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            await AttachTokenAsync(request);
-
-            var response = await _httpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode)
-                return null;
-
-            var bytes = await response.Content.ReadAsByteArrayAsync();
+            var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
             var contentType = response.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
-            return $"data:{contentType};base64,{Convert.ToBase64String(bytes)}";
+            return ApiResult<string>.Success(
+                $"data:{contentType};base64,{Convert.ToBase64String(bytes)}");
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return ApiResult<string>.Failure(TimeoutMessage);
         }
         catch (HttpRequestException)
         {
-            return null;
+            return ApiResult<string>.Failure(ConnectionMessage);
         }
     }
 
-    public Task<(bool Exito, string? Mensaje)> PutAsync(string url, object? body = null)
-        => EnviarAsync(HttpMethod.Put, url, body);
-
-    public Task<(bool Exito, string? Mensaje)> PostAsync(string url, object? body = null)
-        => EnviarAsync(HttpMethod.Post, url, body);
-
-    private async Task<(bool Exito, string? Mensaje)> EnviarAsync(HttpMethod metodo, string url, object? body)
+    private async Task<ApiResult<T>> SendForDataAsync<T>(
+        HttpMethod method,
+        string url,
+        HttpContent? content,
+        string? fallbackMessage,
+        CancellationToken cancellationToken,
+        bool attachToken = true)
     {
         try
         {
-            var request = new HttpRequestMessage(metodo, url);
-            if (body is not null)
-                request.Content = JsonContent.Create(body);
+            using var request = await CreateRequestAsync(method, url, content, attachToken);
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
 
-            await AttachTokenAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await ApiErrorParser.ParseAsync(response, fallbackMessage, cancellationToken);
+                return ApiResult<T>.Failure(error.Message!, error.StatusCode, error.Code);
+            }
 
-            var response = await _httpClient.SendAsync(request);
-            if (response.IsSuccessStatusCode)
-                return (true, null);
-
-            return (false, await ExtraerMensajeErrorAsync(response));
+            var data = await response.Content.ReadFromJsonAsync<T>(cancellationToken: cancellationToken);
+            return data is null
+                ? ApiResult<T>.Failure(UnexpectedResponseMessage, response.StatusCode)
+                : ApiResult<T>.Success(data);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return ApiResult<T>.Failure(TimeoutMessage);
         }
         catch (HttpRequestException)
         {
-            return (false, "No se pudo conectar con el servidor. Intente nuevamente más tarde.");
+            return ApiResult<T>.Failure(ConnectionMessage);
         }
         catch (JsonException)
         {
-            return (false, "El servidor respondió de forma inesperada. Intente nuevamente más tarde.");
+            return ApiResult<T>.Failure(UnexpectedResponseMessage);
         }
     }
 
-    private static async Task<string> ExtraerMensajeErrorAsync(HttpResponseMessage response)
+    private async Task<ApiResult> SendAsync(
+        HttpMethod method,
+        string url,
+        HttpContent? content,
+        string? fallbackMessage,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var error = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
-            if (!string.IsNullOrWhiteSpace(error?.Mensaje))
-                return error.Mensaje;
+            using var request = await CreateRequestAsync(method, url, content);
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
+
+            return response.IsSuccessStatusCode
+                ? ApiResult.Success()
+                : await ApiErrorParser.ParseAsync(response, fallbackMessage, cancellationToken);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return ApiResult.Failure(TimeoutMessage);
+        }
+        catch (HttpRequestException)
+        {
+            return ApiResult.Failure(ConnectionMessage);
         }
         catch (JsonException)
         {
+            return ApiResult.Failure(UnexpectedResponseMessage);
         }
-
-        return response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden
-            ? "No tenés permiso para realizar esta acción."
-            : "Ocurrió un error al procesar la solicitud.";
     }
 
-    private async Task AttachTokenAsync(HttpRequestMessage request)
+    private async Task<HttpRequestMessage> CreateRequestAsync(
+        HttpMethod method,
+        string url,
+        HttpContent? content,
+        bool attachToken = true)
     {
+        var request = new HttpRequestMessage(method, url) { Content = content };
+        if (!attachToken)
+            return request;
+
         var token = await _authStateProvider.ObtenerAccessTokenAsync();
-        if (!string.IsNullOrEmpty(token))
+
+        if (!string.IsNullOrWhiteSpace(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        return request;
     }
 }

@@ -45,6 +45,8 @@ public partial class Persona
 
     public string? CCorreo { get; set; }
 
+    public string CDireccion { get; set; } = string.Empty;
+
     public string CTelefono { get; set; } = null!;
 
     public string CCelular { get; set; } = null!;

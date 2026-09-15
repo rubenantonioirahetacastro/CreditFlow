@@ -1,4 +1,4 @@
-using CreditFlow.API.Application.Interfaces;
+using CreditFlow.API.Core.Storage;
 using Microsoft.AspNetCore.Hosting;
 using System;
 using System.IO;

@@ -1,5 +1,5 @@
 @page "/simulador-credito"
-@attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+@attribute [Authorize(Policy = AuthorizationPolicies.CalendarConfiguration)]
 @using CreditFlow.Web.Models.Mantenimientos
 @implements IDisposable
 @inject CreditFlow.Web.Services.PageHeaderService Header
@@ -31,17 +31,17 @@
         <div class="sim-field">
           <div class="sim-row-between">
             <span class="sim-label">Préstamo</span>
-            <input type="number" class="sim-input-num" min="50" max="10000" step="50" @bind="monto" @bind:event="onchange" @bind:after="SimularAsync" />
+            <input type="number" class="sim-input-num" min="50" max="@MontoMaximoSlider" step="1" @bind="monto" @bind:event="onchange" @bind:after="SimularAsync" />
           </div>
-          <input type="range" min="50" max="10000" step="50" class="sim-slider" @bind="monto" @bind:event="onchange" @bind:after="SimularAsync" />
+          <input type="range" min="50" max="@MontoMaximoSlider" step="1" class="sim-slider" @bind="monto" @bind:event="onchange" @bind:after="SimularAsync" />
         </div>
 
         <div class="sim-field">
           <div class="sim-row-between">
             <span class="sim-label">Nro. de cuotas</span>
-            <input type="number" class="sim-input-num" min="1" max="48" step="1" @bind="cuotas" @bind:event="onchange" @bind:after="SimularAsync" />
+            <input type="number" class="sim-input-num" min="1" max="@CuotasMaximasSlider" step="1" @bind="cuotas" @bind:event="onchange" @bind:after="SimularAsync" />
           </div>
-          <input type="range" min="1" max="48" step="1" class="sim-slider" @bind="cuotas" @bind:event="onchange" @bind:after="SimularAsync" />
+          <input type="range" min="1" max="@CuotasMaximasSlider" step="1" class="sim-slider" @bind="cuotas" @bind:event="onchange" @bind:after="SimularAsync" />
         </div>
 
         <div class="sim-field">
@@ -232,6 +232,16 @@
 </div>
 
 @code {
+    [SupplyParameterFromQuery(Name = "agencyCode")] public int? AgencyCode { get; set; }
+    [SupplyParameterFromQuery(Name = "creditCode")] public int? CreditCode { get; set; }
+    [SupplyParameterFromQuery(Name = "creditLineCode")] public int? CreditLineCode { get; set; }
+    [SupplyParameterFromQuery(Name = "product")] public int? Product { get; set; }
+    [SupplyParameterFromQuery(Name = "subProduct")] public int? SubProduct { get; set; }
+    [SupplyParameterFromQuery(Name = "amount")] public decimal? Amount { get; set; }
+    [SupplyParameterFromQuery(Name = "installments")] public int? Installments { get; set; }
+    [SupplyParameterFromQuery(Name = "startDate")] public DateTime? StartDate { get; set; }
+    [SupplyParameterFromQuery(Name = "rate")] public decimal? Rate { get; set; }
+
     [Inject] private CreditFlow.Web.Services.Mantenimientos.IAgenciaService AgenciaService { get; set; } = default!;
     [Inject] private CreditFlow.Web.Services.ISimulacionCalendarioService SimulacionService { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -241,6 +251,7 @@
     private List<AgenciaDto> agencias = new();
 
     private int nCodAge;
+    private int nProd = 4;
     private decimal monto = 500m;
     private int cuotas = 12;
     private int nSubProd = 4;
@@ -265,6 +276,9 @@
     private int paginaSkip = 0;
     private int paginaKey = 0;
     private const int FilasPorPagina = 10;
+    private decimal MontoMaximoSlider => Math.Max(10_000m, Math.Ceiling(monto));
+    private int CuotasMaximasSlider => Math.Max(48, cuotas);
+    private bool TieneContextoCredito => AgencyCode > 0 && CreditCode > 0;
 
     private record OpcionPeriodicidad(string Label, int NSubProd);
     private static readonly List<OpcionPeriodicidad> Periodicidades = new()
@@ -280,11 +294,10 @@
         ActualizarTituloPagina();
 
         agencias = await AgenciaService.ObtenerTodasAsync();
-        if (agencias.Count > 0)
-        {
+        if (!AplicarContextoCredito() && agencias.Count > 0)
             nCodAge = agencias[0].NCodAge;
-            await SimularAsync();
-        }
+
+        await SimularAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -298,7 +311,9 @@
 
     private void ActualizarTituloPagina()
     {
-        Header.Set("Simulador de cronograma de cuotas");
+        Header.Set(TieneContextoCredito
+            ? $"Configurar calendario · Crédito {AgencyCode}-{CreditCode}"
+            : "Simulador de cronograma de cuotas");
     }
 
     public void Dispose()
@@ -316,6 +331,14 @@
 
     private async Task RestablecerAsync()
     {
+        if (AplicarContextoCredito())
+        {
+            ActualizarTituloPagina();
+            await SimularAsync();
+            return;
+        }
+
+        nProd = 4;
         monto = 500m;
         cuotas = 12;
         nSubProd = 4;
@@ -327,6 +350,26 @@
         gastoOverrideStr = null;
         ActualizarTituloPagina();
         await SimularAsync();
+    }
+
+    private bool AplicarContextoCredito()
+    {
+        if (!TieneContextoCredito || Amount is not > 0 || Installments is not > 0 ||
+            Product is not > 0 || SubProduct is not > 0)
+            return false;
+
+        nCodAge = AgencyCode!.Value;
+        nProd = Product!.Value;
+        nSubProd = SubProduct!.Value;
+        monto = Amount!.Value;
+        cuotas = Installments!.Value;
+        fechaInicio = StartDate?.Date ?? DateTime.Today;
+        tasaOverrideStr = Rate?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        gastoOverrideStr = null;
+        permiteSabado = permiteDomingo = permiteFeriado = false;
+        nCategoria = 1;
+        bRefinanciado = false;
+        return true;
     }
 
     private async Task SimularAsync()
@@ -347,7 +390,7 @@
 
         var request = new CreditFlow.Web.Models.SimularCalendarioRequest
         {
-            NProd = 4,
+            NProd = nProd,
             NSubProd = nSubProd,
             NPlazo = cuotas,
             Monto = monto,
@@ -357,6 +400,7 @@
             NCodAge = nCodAge,
             NMoneda = 1,
             NCodCamp = 0,
+            NCodLinea = CreditLineCode ?? 0,
             NCategoria = nCategoria,
             BRefinanciado = bRefinanciado,
             BCustodia = false,

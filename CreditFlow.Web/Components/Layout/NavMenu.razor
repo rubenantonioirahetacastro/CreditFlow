@@ -202,7 +202,7 @@
                 }
             }
 
-            <AuthorizeView Roles="Admin,Supervisor,Tecnologia" Context="mantenimientosContext">
+            <AuthorizeView Policy="@AuthorizationPolicies.Maintenance" Context="mantenimientosContext">
                 <Authorized>
                     @if (MostrarMantenimientos())
                     {

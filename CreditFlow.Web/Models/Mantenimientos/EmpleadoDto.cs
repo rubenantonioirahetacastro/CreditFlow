@@ -28,5 +28,7 @@ public class EmpleadoDto
 
     public int Estado { get; set; }
 
+    public int IdRol { get; set; }
+
     public string? Rol { get; set; }
 }

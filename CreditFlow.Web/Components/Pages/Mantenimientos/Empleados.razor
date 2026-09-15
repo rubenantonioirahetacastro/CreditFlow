@@ -1,5 +1,5 @@
 @page "/empleados"
-@attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+@attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
 
 <PageTitle>Mantenimiento de Empleados</PageTitle>
 
@@ -179,8 +179,6 @@
 
     private class EmpleadoEdicionDto : EmpleadoDto
     {
-        public int IdRol { get; set; }
-
         public string? Password { get; set; }
 
         public IBrowserFile? FotoSeleccionada { get; set; }
@@ -205,7 +203,7 @@
         if (AuthStateTask is not null)
         {
             var authState = await AuthStateTask;
-            esAdmin = authState.User.IsInRole("Admin");
+            esAdmin = RoleAuthorization.HasAnyRoleId(authState.User, RoleIds.GlobalAdministrators);
         }
 
         Roles = await AuthService.ObtenerRolesAsync();
@@ -236,7 +234,7 @@
         Telefono = e.Telefono,
         Estado = e.Estado,
         Rol = e.Rol,
-        IdRol = Roles.FirstOrDefault(r => r.Nombre == e.Rol)?.IdRol ?? 0
+        IdRol = e.IdRol
     };
 
     private static readonly string[] ColoresAvatar =

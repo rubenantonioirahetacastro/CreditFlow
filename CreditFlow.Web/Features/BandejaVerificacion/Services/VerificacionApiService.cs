@@ -14,14 +14,20 @@ public class VerificacionApiService : IVerificacionService
 
     public async Task<List<VerificacionListItem>> ObtenerBandejaAsync(int? nCodAge = null)
     {
-        var url = "api/Credito/listaCreditos-cpc";
+        var url = "api/BandejaVerificacion";
         if (nCodAge.HasValue)
-            url += $"?ncodage={nCodAge.Value}";
+            url += $"?nCodAge={nCodAge.Value}";
 
-        var creditos = await _apiClient.GetAsync<List<VerificacionListItem>>(url);
-        return creditos ?? new List<VerificacionListItem>();
+        var result = await _apiClient.GetAsync<List<VerificacionListItem>>(
+            url,
+            "No se pudo cargar la bandeja de verificación.");
+        return result.Data ?? [];
     }
 
-    public Task<string?> ObtenerFotoDataUrlAsync(int idPersona)
-        => _apiClient.GetImageDataUrlAsync($"api/BuscarSolicitudCredito/{idPersona}/foto");
+    public async Task<string?> ObtenerFotoDataUrlAsync(int idPersona)
+    {
+        var result = await _apiClient.GetImageDataUrlAsync(
+            $"api/BuscarSolicitudCredito/{idPersona}/foto");
+        return result.Data;
+    }
 }

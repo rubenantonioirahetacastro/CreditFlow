@@ -1,0 +1,10 @@
+@* Par etiqueta/valor genérico para grids tipo "ficha" (KYC, condiciones, referencias). *@
+<div style="display:flex;flex-direction:column;gap:2px;">
+    <div style="font:600 10.5px 'Plus Jakarta Sans',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#98a2b3;">@Etiqueta</div>
+    <div style="font:500 13px 'Plus Jakarta Sans',sans-serif;color:#0c111d;">@Valor</div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Etiqueta { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Valor { get; set; } = string.Empty;
+}

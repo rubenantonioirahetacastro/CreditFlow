@@ -1,5 +1,5 @@
 ﻿using Azure.Storage.Blobs;
-using CreditFlow.API.Application.Interfaces;
+using CreditFlow.API.Core.Storage;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;

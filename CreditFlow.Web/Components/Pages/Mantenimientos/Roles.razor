@@ -1,5 +1,5 @@
 @page "/roles"
-@attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+@attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
 
 <PageTitle>Mantenimiento de Roles</PageTitle>
 

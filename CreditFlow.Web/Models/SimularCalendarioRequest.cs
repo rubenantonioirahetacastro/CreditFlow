@@ -22,6 +22,8 @@ public class SimularCalendarioRequest
 
     public int NCodCamp { get; set; }
 
+    public int NCodLinea { get; set; }
+
     public int NCategoria { get; set; }
 
     public bool BRefinanciado { get; set; }

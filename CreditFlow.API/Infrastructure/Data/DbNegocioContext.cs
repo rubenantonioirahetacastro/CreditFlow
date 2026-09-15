@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using CreditFlow.API.Domain.Entities;
-using CreditFlow.API.Features.SolicitudCredito.Domain.Model;
+using CreditFlow.API.Features.Credit.Shared.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CreditFlow.API.Infrastructure.Data;
@@ -96,6 +96,8 @@ public partial class DbNegocioContext : DbContext
     public virtual DbSet<Venta> Ventas { get; set; }
 
     public virtual DbSet<VerNegocio> VerNegocios { get; set; }
+
+    public virtual DbSet<VerificacionCredito> VerificacionCreditos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -621,17 +623,29 @@ public partial class DbNegocioContext : DbContext
 
             entity.ToTable("GarantiaFoto");
 
-            entity.Property(e => e.NValor)
-                .HasColumnType("money")
-                .HasColumnName("nValor");
+            entity.HasIndex(e => e.IdGarantia)
+                .HasDatabaseName("IX_GarantiaFoto_IdGarantia");
+
             entity.Property(e => e.VFoto)
                 .IsUnicode(false)
                 .HasColumnName("vFoto");
+
+            entity.HasOne<Garantium>()
+                .WithMany()
+                .HasForeignKey(e => e.IdGarantia)
+                .HasConstraintName("FK_GarantiaFoto_Garantia");
         });
 
         modelBuilder.Entity<Garantium>(entity =>
         {
             entity.HasKey(e => e.IdGarantia);
+
+            entity.Property(e => e.NTipoGarantia).HasColumnName("nTipoGarantia");
+            entity.Property(e => e.NMarca).HasColumnName("nMarca");
+            entity.Property(e => e.NAnio).HasColumnName("nAnio");
+            entity.Property(e => e.NValor)
+                .HasColumnType("money")
+                .HasColumnName("nValor");
         });
 
         modelBuilder.Entity<LineaCatalogoAuxiliar>(entity =>
@@ -792,6 +806,10 @@ public partial class DbNegocioContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("cCorreo");
+            entity.Property(e => e.CDireccion)
+                .HasMaxLength(150)
+                .IsUnicode(false)
+                .HasColumnName("cDireccion");
             entity.Property(e => e.CDocumento)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -988,6 +1006,28 @@ public partial class DbNegocioContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("cValorVar");
             entity.Property(e => e.NTipoVar).HasColumnName("nTipoVar");
+        });
+
+        modelBuilder.Entity<VerificacionCredito>(entity =>
+        {
+            entity.HasKey(e => e.IdVerificacion);
+
+            entity.ToTable("VerificacionCredito");
+
+            entity.Property(e => e.IdVerificacion).HasColumnName("IdVerificacion");
+            entity.Property(e => e.NCodCred).HasColumnName("nCodCred");
+            entity.Property(e => e.NCodAge).HasColumnName("nCodAge");
+            entity.Property(e => e.IdEmpleado).HasColumnName("IdEmpleado");
+            entity.Property(e => e.CNombre)
+                .HasMaxLength(150)
+                .HasColumnName("cNombre");
+            entity.Property(e => e.DFecha).HasColumnName("dFecha");
+            entity.Property(e => e.NLatitud)
+                .HasColumnType("decimal(9,6)")
+                .HasColumnName("nLatitud");
+            entity.Property(e => e.NLongitud)
+                .HasColumnType("decimal(9,6)")
+                .HasColumnName("nLongitud");
         });
 
         OnModelCreatingPartial(modelBuilder);

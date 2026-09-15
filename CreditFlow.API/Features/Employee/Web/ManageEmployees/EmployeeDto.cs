@@ -1,0 +1,35 @@
+namespace CreditFlow.API.Features.Employee.Web.ManageEmployees
+{
+    public class EmployeeDto
+    {
+        public int IdEmpleado { get; set; }
+
+        public int IdUsuario { get; set; }
+
+        public string Documento { get; set; } = string.Empty;
+
+        public string CodigoUsuario { get; set; } = string.Empty;
+
+        public string? FotoUrl { get; set; }
+
+        public string Nombres { get; set; } = string.Empty;
+
+        public string PrimerApellido { get; set; } = string.Empty;
+
+        public string SegundoApellido { get; set; } = string.Empty;
+
+        public int Sexo { get; set; }
+
+        public int CodAgencia { get; set; }
+
+        public string Correo { get; set; } = string.Empty;
+
+        public string Telefono { get; set; } = string.Empty;
+
+        public int Estado { get; set; }
+
+        public int IdRol { get; set; }
+
+        public string? Rol { get; set; }
+    }
+}

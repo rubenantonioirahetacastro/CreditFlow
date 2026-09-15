@@ -1,5 +1,5 @@
 @page "/lineas-credito"
-@attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+@attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
 
 <PageTitle>Mantenimiento de Líneas de Crédito</PageTitle>
 
@@ -180,7 +180,7 @@
         if (AuthStateTask is not null)
         {
             var authState = await AuthStateTask;
-            puedeEditar = authState.User.IsInRole("Admin") || authState.User.IsInRole("Tecnologia");
+            puedeEditar = RoleAuthorization.HasAnyRoleId(authState.User, RoleIds.AdministrationAccess);
         }
 
         await CargarLineasAsync();

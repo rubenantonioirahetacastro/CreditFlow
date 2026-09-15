@@ -12,13 +12,35 @@ public class EvaluacionCreditoApiService : IEvaluacionCreditoService
         _apiClient = apiClient;
     }
 
-    public Task<(bool Exito, string? Mensaje)> ActualizarEvaluacionAsync(int nCodAge, int nCodCred, int nEstado)
+    public async Task<(bool Exito, string? Mensaje)> ActualizarEvaluacionAsync(int nCodAge, int nCodCred, int nEstado)
     {
-        return _apiClient.PutAsync("api/Credito/actualizar-evaluacion", new { nCodAge, nCodCred, nEstado });
+        var result = await _apiClient.PutAsync(
+            "api/Credito/actualizar-evaluacion",
+            new { nCodAge, nCodCred, nEstado },
+            "No se pudo actualizar la evaluación.");
+        return (result.IsSuccess, result.Message);
     }
 
-    public Task<DatosCreditoGestionDto?> ObtenerDatosCreditoAsync(int nCodAge, int nCodCred)
+    public async Task<DatosCreditoGestionDto?> ObtenerDatosCreditoAsync(int nCodAge, int nCodCred)
     {
-        return _apiClient.GetAsync<DatosCreditoGestionDto>($"api/DatosCreditoGestion/{nCodAge}/{nCodCred}");
+        var result = await _apiClient.GetAsync<DatosCreditoGestionDto>(
+            $"api/DatosCreditoGestion/{nCodAge}/{nCodCred}",
+            "No se pudieron cargar los datos del crédito.");
+        return result.Data;
+    }
+
+    public async Task<EvaluacionCreditoDetalleDto?> ObtenerDetalleCompletoAsync(int nCodAge, int nCodCred)
+    {
+        var result = await _apiClient.GetAsync<EvaluacionCreditoDetalleDto>(
+            $"api/EvaluacionCreditoDetalle/{nCodAge}/{nCodCred}",
+            "No se pudo cargar el expediente del crédito.");
+        return result.Data;
+    }
+
+    public async Task<string?> ObtenerFotoDataUrlAsync(string tipo, int idFoto)
+    {
+        var result = await _apiClient.GetImageDataUrlAsync(
+            $"api/BuscarSolicitudCredito/foto/{tipo}/{idFoto}");
+        return result.Data;
     }
 }

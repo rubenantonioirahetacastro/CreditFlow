@@ -8,9 +8,11 @@ public class LoginResponseDto
 
     public string? Token { get; set; }
 
-    public int IdPersona { get; set; }
+    public int? IdPersona { get; set; }
 
     public bool BTemporal { get; set; }
 
     public int IdRol { get; set; }
+
+    public List<int> IdRoles { get; set; } = [];
 }

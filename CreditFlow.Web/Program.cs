@@ -1,5 +1,6 @@
 using CreditFlow.Web.Components;
 using CreditFlow.Web.Core.Http;
+using CreditFlow.Web.Core.Security;
 using CreditFlow.Web.Endpoints;
 using CreditFlow.Web.Features.BandejaVerificacion.Services;
 using CreditFlow.Web.Features.EvaluacionCredito.Services;
@@ -30,7 +31,32 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/login";
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(
+        AuthorizationPolicies.Maintenance,
+        policy => policy
+            .RequireAuthenticatedUser()
+            .RequireAssertion(context => RoleAuthorization.HasAnyRoleId(
+                context.User,
+                RoleIds.MaintenanceAccess)));
+
+    options.AddPolicy(
+        AuthorizationPolicies.Administration,
+        policy => policy
+            .RequireAuthenticatedUser()
+            .RequireAssertion(context => RoleAuthorization.HasAnyRoleId(
+                context.User,
+                RoleIds.AdministrationAccess)));
+
+    options.AddPolicy(
+        AuthorizationPolicies.CalendarConfiguration,
+        policy => policy
+            .RequireAuthenticatedUser()
+            .RequireAssertion(context => RoleAuthorization.HasAnyRoleId(
+                context.User,
+                RoleIds.CalendarConfigurationAccess)));
+});
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<CustomAuthStateProvider>();

@@ -1,4 +1,4 @@
-using CreditFlow.API.Application.Interfaces;
+using CreditFlow.API.Core.Email;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;

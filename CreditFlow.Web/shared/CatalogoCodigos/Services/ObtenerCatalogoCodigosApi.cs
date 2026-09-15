@@ -14,7 +14,9 @@ public class ObtenerCatalogoCodigosApi : ObtenerCatalogoCodigos
 
     public async Task<List<CatalogoCodigoDto>> ObtenerCatalogoCodigo(int nCodigo)
     {
-        var catalogo = await _apiClient.GetAsync<List<CatalogoCodigoDto>>($"api/CatalogoCodigo/{nCodigo}");
-        return catalogo ?? new List<CatalogoCodigoDto>();
+        var result = await _apiClient.GetAsync<List<CatalogoCodigoDto>>(
+            $"api/CatalogoCodigo/{nCodigo}",
+            "No se pudo cargar el catálogo solicitado.");
+        return result.Data ?? [];
     }
 }

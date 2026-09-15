@@ -1,12 +1,23 @@
-using CreditFlow.API.Shared.Helpers;
+using CreditFlow.API.Core.Diagnostics;
+using CreditFlow.API.Core.Errors;
+using CreditFlow.API.Core.Security;
+using CreditFlow.API.Core.Serialization;
 using CreditFlow.API.Domain.Entities;
 using CreditFlow.API.Infrastructure.Data;
-using CreditFlow.API.Application.Interfaces;
-using CreditFlow.API.Application.Interfaces.Mantenimientos;
-using CreditFlow.API.Application.Services;
-using CreditFlow.API.Application.Services.Mantenimientos;
+using CreditFlow.API.Core.Email;
+using CreditFlow.API.Core.Storage;
 using CreditFlow.API.Infrastructure.Services;
-using CreditFlow.API.Features.SolicitudCredito;
+using CreditFlow.API.Infrastructure.Diagnostics;
+using CreditFlow.API.Features.Credit;
+using CreditFlow.API.Features.Employee;
+using CreditFlow.API.Features.Verification;
+using CreditFlow.API.Features.Simulator;
+using CreditFlow.API.Features.Payment;
+using CreditFlow.API.Features.Catalog;
+using CreditFlow.API.Features.Agency;
+using CreditFlow.API.Features.Roles;
+using CreditFlow.API.Features.Dashboard;
+using CreditFlow.API.Features.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
@@ -16,6 +27,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,25 +44,21 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
-builder.Services.AddScoped<ICrearSolicitudCreditoHandler, CrearSolicitudCreditoHandler>();
-builder.Services.AddScoped<ICatalogoCodigoService, CatalogoCodigoService>();
-builder.Services.AddScoped<ICalendarioService, CalendarioService>();
-builder.Services.AddScoped<IFeriadoService, FeriadoService>();
-builder.Services.AddScoped<IGastoService, GastoService>();
-builder.Services.AddScoped<IAgenciaService, AgenciaService>();
-builder.Services.AddScoped<IPagoService, PagoService>();
+builder.Services.AddCreditFeature();
+builder.Services.AddAuthenticationFeature();
+builder.Services.AddVerificationFeature();
+builder.Services.AddSimulatorFeature();
+builder.Services.AddEmployeeFeature(builder.Configuration);
+builder.Services.AddPaymentFeature();
+builder.Services.AddCatalogFeature();
+builder.Services.AddAgencyFeature();
+builder.Services.AddRoleFeature();
+builder.Services.AddDashboardFeature();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
-builder.Services.AddScoped<ISegmentoUsuraService, SegmentoUsuraService>();
-builder.Services.AddScoped<ILineaCreditoService, LineaCreditoService>();
-builder.Services.AddScoped<ISimulacionCalendarioService, SimulacionCalendarioService>();
-builder.Services.AddScoped<ErrorLogger>();
+builder.Services.AddScoped<IErrorLogger, DatabaseErrorLogger>();
 builder.Services.AddScoped<IBlobStorageService, AzureBlobStorageService>();
-builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
-builder.Services.AddScoped<ILineaCreditoAdminService, LineaCreditoAdminService>();
-builder.Services.AddScoped<IVarNegocioService, VarNegocioService>();
-builder.Services.AddScoped<IPrimLineaCreditoService, PrimLineaCreditoService>();
-builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services.AddApplicationInsightsTelemetry(options =>
 {
@@ -64,8 +72,33 @@ builder.Services.AddHealthChecks()
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new CreditFlow.API.Shared.Helpers.DateOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
     });
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(entry => entry.Value?.Errors.Count > 0)
+            .ToDictionary(
+                entry => entry.Key,
+                entry => entry.Value!.Errors
+                    .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
+                        ? "El valor enviado no es válido."
+                        : error.ErrorMessage)
+                    .ToArray());
+
+        var message = errors.Values
+            .SelectMany(items => items)
+            .FirstOrDefault()
+            ?? "Los datos enviados no son válidos.";
+
+        return new BadRequestObjectResult(new ApiErrorResponse(
+            "validation_error",
+            message,
+            errors));
+    };
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -89,13 +122,47 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ClockSkew = TimeSpan.Zero,
-            // Ensure role claims from the token are recognized for [Authorize(Roles = "...")]
-            RoleClaimType = ClaimTypes.Role,
-            NameClaimType = ClaimTypes.NameIdentifier
+            NameClaimType = ClaimTypes.Name
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(
+        AuthorizationPolicies.MobileVerifier,
+        policy => policy
+            .RequireAuthenticatedUser()
+            .RequireAssertion(context =>
+            {
+                return RoleAuthorization.HasAnyRoleId(
+                    context.User,
+                    RoleIds.VerificationAccess);
+            }));
+
+    options.AddPolicy(
+        AuthorizationPolicies.Maintenance,
+        policy => policy
+            .RequireAuthenticatedUser()
+            .RequireAssertion(context => RoleAuthorization.HasAnyRoleId(
+                context.User,
+                RoleIds.MaintenanceAccess)));
+
+    options.AddPolicy(
+        AuthorizationPolicies.Administration,
+        policy => policy
+            .RequireAuthenticatedUser()
+            .RequireAssertion(context => RoleAuthorization.HasAnyRoleId(
+                context.User,
+                RoleIds.AdministrationAccess)));
+
+    options.AddPolicy(
+        AuthorizationPolicies.CalendarConfiguration,
+        policy => policy
+            .RequireAuthenticatedUser()
+            .RequireAssertion(context => RoleAuthorization.HasAnyRoleId(
+                context.User,
+                RoleIds.CalendarConfigurationAccess)));
+});
 
 // Swagger with Bearer token support
 builder.Services.AddSwaggerGen(c =>
@@ -126,6 +193,8 @@ builder.Services.AddDbContext<DbNegocioContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("conexion")
     ?? throw new InvalidOperationException("Connection string 'API_CrediAvanzaContext' not found.")));
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())

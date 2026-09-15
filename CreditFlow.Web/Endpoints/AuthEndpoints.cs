@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CreditFlow.Web.Core.Security;
 using CreditFlow.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -24,17 +25,21 @@ public static class AuthEndpoints
                 return Results.Redirect($"/login?error={mensaje}");
             }
 
-            var roles = await authService.ObtenerRolesAsync();
-            var nombreRol = roles.FirstOrDefault(r => r.IdRol == response.IdRol)?.Nombre ?? response.IdRol.ToString();
-
             var claims = new List<Claim>
             {
                 new(ClaimTypes.Name, documento),
                 new(ClaimTypes.NameIdentifier, documento),
-                new("IdPersona", response.IdPersona.ToString()),
-                new(ClaimTypes.Role, nombreRol),
-                new("AccessToken", response.Token ?? string.Empty)
+                new(CustomClaimTypes.AccessToken, response.Token ?? string.Empty)
             };
+
+            var roleIds = response.IdRoles.Count > 0
+                ? response.IdRoles
+                : [response.IdRol];
+            foreach (var roleId in roleIds.Where(roleId => roleId > 0).Distinct())
+                claims.Add(new Claim(CustomClaimTypes.RoleId, roleId.ToString()));
+
+            if (response.IdPersona.HasValue)
+                claims.Add(new Claim(CustomClaimTypes.PersonId, response.IdPersona.Value.ToString()));
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);

@@ -1,5 +1,5 @@
 @page "/catalogos-codigos"
-@attribute [Authorize(Roles = "Admin,Supervisor,Tecnologia")]
+@attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
 
 <PageTitle>Mantenimiento de Catálogos de Códigos</PageTitle>
 

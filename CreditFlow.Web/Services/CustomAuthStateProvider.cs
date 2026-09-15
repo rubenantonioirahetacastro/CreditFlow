@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components.Authorization;
+using CreditFlow.Web.Core.Security;
 
 namespace CreditFlow.Web.Services;
 
@@ -20,6 +21,6 @@ public class CustomAuthStateProvider
     public async Task<string?> ObtenerAccessTokenAsync()
     {
         var state = await _authenticationStateProvider.GetAuthenticationStateAsync();
-        return state.User.FindFirst("AccessToken")?.Value;
+        return state.User.FindFirst(CustomClaimTypes.AccessToken)?.Value;
     }
 }

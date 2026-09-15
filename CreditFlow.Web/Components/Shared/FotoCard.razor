@@ -1,0 +1,35 @@
+@* Miniatura de una foto pedida por tipo+id (ver BuscarSolicitudCreditoController /foto/{tipo}/{idFoto}).
+   No recibe la ruta del blob directamente: recibe una función que la resuelve, así cada pantalla
+   decide contra qué servicio pedirla sin acoplar este componente a uno en particular. *@
+<div style="border:1px solid #eaeef4;border-radius:12px;overflow:hidden;background:#fbfcfe;">
+    @if (url is null)
+    {
+        <div style="height:110px;display:flex;align-items:center;justify-content:center;font:500 11px 'Plus Jakarta Sans',sans-serif;color:#98a2b3;">Cargando…</div>
+    }
+    else if (url == string.Empty)
+    {
+        <div style="height:110px;display:flex;align-items:center;justify-content:center;font:500 11px 'Plus Jakarta Sans',sans-serif;color:#98a2b3;">Sin imagen</div>
+    }
+    else
+    {
+        <img src="@url" alt="Foto" style="width:100%;height:110px;object-fit:cover;display:block;" />
+    }
+    @if (!string.IsNullOrWhiteSpace(Pie))
+    {
+        <div style="padding:6px 8px;font:600 11.5px 'IBM Plex Mono',monospace;color:#344054;">@Pie</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string TipoFoto { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public int IdFoto { get; set; }
+    [Parameter, EditorRequired] public Func<string, int, Task<string?>> ObtenerFoto { get; set; } = default!;
+    [Parameter] public string? Pie { get; set; }
+
+    private string? url;
+
+    protected override async Task OnInitializedAsync()
+    {
+        url = await ObtenerFoto(TipoFoto, IdFoto) ?? string.Empty;
+    }
+}

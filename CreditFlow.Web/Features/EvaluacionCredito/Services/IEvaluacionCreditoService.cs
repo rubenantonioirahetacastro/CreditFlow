@@ -9,4 +9,9 @@ public interface IEvaluacionCreditoService
 
     /// <summary>Datos del crédito (monto, estado actual) para precargar la pantalla de Evaluación.</summary>
     Task<DatosCreditoGestionDto?> ObtenerDatosCreditoAsync(int nCodAge, int nCodCred);
+
+    /// <summary>Expediente completo (cliente, negocio, garantía, fiador, verificaciones) para la pantalla de Evaluación.</summary>
+    Task<EvaluacionCreditoDetalleDto?> ObtenerDetalleCompletoAsync(int nCodAge, int nCodCred);
+
+    Task<string?> ObtenerFotoDataUrlAsync(string tipo, int idFoto);
 }
