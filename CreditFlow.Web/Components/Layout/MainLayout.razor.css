@@ -1,20 +1,20 @@
 ::deep .rz-header {
-    background-color: #142143;
+    background-color: var(--cds-primary);
     background-image: none;
-    color: #ffffff;
+    color: var(--cds-white);
     height: 3.5rem;
     display: flex;
     align-items: center;
 }
 
 ::deep .rz-sidebar {
-    background-color: #f8f9fa !important;
+    background-color: var(--cds-surface-sidebar) !important;
     background-image: none !important;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid var(--cds-border-neutral);
 }
 
 ::deep .rz-body {
-    background-color: #f2f2f2;
+    background-color: var(--cds-surface-layout);
 }
 
 .app-header {
@@ -25,7 +25,7 @@
 .app-brand {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--cds-white);
 }
 
 .app-page-title {
@@ -37,29 +37,29 @@
 .app-page-title-main {
     font-size: .95rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--cds-white);
 }
 
 .app-page-title-sub {
-    font: 500 .68rem/1.4 ui-monospace, monospace;
-    color: #9aa7c7;
+    font: 500 .68rem/1.4 var(--cds-font-family);
+    color: var(--cds-text-header-subtle);
 }
 
 .app-header-link {
-    color: #cbd5e1;
+    color: var(--cds-text-inverse-muted);
     text-decoration: none;
     white-space: nowrap;
 }
 
     .app-header-link:hover {
-        color: #ffffff;
+        color: var(--cds-white);
         text-decoration: underline;
     }
 
 #blazor-error-ui {
-    background: lightyellow;
+    background: var(--cds-warning-surface);
     bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -1px 2px var(--cds-shadow-ui);
     display: none;
     left: 0;
     padding: 0.6rem 1.25rem 0.7rem 1.25rem;

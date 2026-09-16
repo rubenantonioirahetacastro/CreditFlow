@@ -1,0 +1,27 @@
+@using CreditFlow.Web.Shared.Credit.Presentation
+
+<button type="button"
+        class="decision-option @(Selected ? "decision-option--selected" : null)"
+        style="@CssVariables"
+        disabled="@Disabled"
+        title="@Title"
+        @onclick="OnClick">
+    <span class="decision-option__indicator"></span>
+    <span class="decision-option__text">@Text</span>
+</button>
+
+@code {
+    [Parameter] public int StatusId { get; set; }
+    [Parameter, EditorRequired] public string Text { get; set; } = string.Empty;
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private CdsStatusAppearance Appearance => CreditStatusPalette.Resolve(StatusId);
+
+    private string CssVariables =>
+        $"--decision-content:{Appearance.ContentColor};" +
+        $"--decision-container:{Appearance.ContainerColor};" +
+        $"--decision-border:{Appearance.EffectiveBorderColor};";
+}

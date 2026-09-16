@@ -1,18 +1,21 @@
 using CreditFlow.Web.Components;
 using CreditFlow.Web.Core.Http;
+using CreditFlow.Web.Core.Navigation;
 using CreditFlow.Web.Core.Security;
-using CreditFlow.Web.Endpoints;
-using CreditFlow.Web.Features.BandejaVerificacion.Services;
-using CreditFlow.Web.Features.EvaluacionCredito.Services;
-using CreditFlow.Web.Shared.CatalogoCodigos.Services;
-using CreditFlow.Web.Services;
-using CreditFlow.Web.Services.Mantenimientos;
+using CreditFlow.Web.Core.UI;
+using CreditFlow.Web.Features.Maintenance;
+using CreditFlow.Web.Features.Authentication;
+using CreditFlow.Web.Features.Authentication.Endpoints;
+using CreditFlow.Web.Features.CreditEvaluation;
+using CreditFlow.Web.Features.Dashboard;
+using CreditFlow.Web.Features.Simulator;
+using CreditFlow.Web.Features.Verification;
+using CreditFlow.Web.Shared.Catalog;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -42,14 +45,6 @@ builder.Services.AddAuthorization(options =>
                 RoleIds.MaintenanceAccess)));
 
     options.AddPolicy(
-        AuthorizationPolicies.Administration,
-        policy => policy
-            .RequireAuthenticatedUser()
-            .RequireAssertion(context => RoleAuthorization.HasAnyRoleId(
-                context.User,
-                RoleIds.AdministrationAccess)));
-
-    options.AddPolicy(
         AuthorizationPolicies.CalendarConfiguration,
         policy => policy
             .RequireAuthenticatedUser()
@@ -61,28 +56,24 @@ builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<IApiClient, ApiClient>();
-builder.Services.AddScoped<IAuthService, AuthApiService>();
-builder.Services.AddScoped<IEmpleadoService, EmpleadoApiService>();
-builder.Services.AddScoped<IRoleService, RoleApiService>();
-builder.Services.AddScoped<IAgenciaService, AgenciaApiService>();
-builder.Services.AddScoped<ILineaCreditoService, LineaCreditoApiService>();
-builder.Services.AddScoped<ICatalogoCodigoService, CatalogoCodigoApiService>();
-builder.Services.AddScoped<ISimulacionCalendarioService, SimulacionCalendarioApiService>();
-builder.Services.AddScoped<CreditFlow.Web.Services.PageHeaderService>();
-builder.Services.AddScoped<IDashboardService, DashboardApiService>();
-builder.Services.AddScoped<IVerificacionService, VerificacionApiService>();
-builder.Services.AddScoped<ObtenerCatalogoCodigos, ObtenerCatalogoCodigosApi>();
-builder.Services.AddScoped<IEvaluacionCreditoService, EvaluacionCreditoApiService>();
+builder.Services.AddScoped<PageHeaderService>();
+builder.Services
+    .AddCoreUi()
+    .AddMaintenanceFeature()
+    .AddAuthenticationFeature()
+    .AddCreditEvaluationFeature()
+    .AddDashboardFeature()
+    .AddSimulatorFeature()
+    .AddVerificationFeature()
+    .AddSharedCatalogServices();
 
 builder.Services.AddRadzenComponents();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

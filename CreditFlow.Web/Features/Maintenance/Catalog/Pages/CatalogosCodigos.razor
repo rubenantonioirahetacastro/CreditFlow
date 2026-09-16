@@ -1,0 +1,256 @@
+@page "/catalogos-codigos"
+@attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
+
+<PageTitle>Mantenimiento de Catálogos de Códigos</PageTitle>
+
+<h3>Catálogos de Códigos</h3>
+<CdsFormMessage Message="@ValidationError" />
+
+<GridEstandar TItem="CatalogoEdicionDto"
+              @ref="gridEstandar"
+              Data="@ListaCatalogos"
+              IsLoading="@Cargando"
+              LoadingText="Cargando catálogos…"
+              ErrorMessage="@ErrorCarga"
+              OnRetry="@CargarCatalogosAsync"
+              EmptyText="No hay códigos de catálogo registrados."
+              ExportFileName="catalogos-codigos"
+              EditMode="DataGridEditMode.Single"
+              RowRender="@OnRowRender"
+              AddDisabled="@(filaEnEdicion != null)"
+              AddButtonTitle="Nuevo código"
+              OnAdd="@NuevoCatalogoAsync">
+    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Title="" Sortable="false" Filterable="false" Width="90px" CssClass="celda-accion" Frozen="true">
+        <Template Context="catalogo">
+            <div class="d-flex gap-1">
+                <CdsButton Icon="edit"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Variant="Variant.Outlined"
+                              Size="ButtonSize.ExtraSmall"
+                              Disabled="@(filaEnEdicion != null)"
+                              title="Editar código"
+                              Click="@(() => EditarAsync(catalogo))" />
+                <CdsButton Icon="delete"
+                              ButtonStyle="ButtonStyle.Danger"
+                              Variant="Variant.Outlined"
+                              Size="ButtonSize.ExtraSmall"
+                              Disabled="@(filaEnEdicion != null)"
+                              title="Eliminar código"
+                              Click="@(() => EliminarAsync(catalogo))" />
+            </div>
+        </Template>
+        <EditTemplate Context="catalogo">
+            <div class="d-flex gap-1">
+                <CdsButton Icon="save"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Variant="Variant.Outlined"
+                              Size="ButtonSize.ExtraSmall"
+                              Disabled="@Guardando"
+                              title="Guardar cambios"
+                              Click="@(() => GuardarAsync(catalogo))" />
+                <CdsButton Icon="close"
+                              ButtonStyle="ButtonStyle.Secondary"
+                              Variant="Variant.Outlined"
+                              Size="ButtonSize.ExtraSmall"
+                              Disabled="@Guardando"
+                              title="Cancelar edición"
+                              Click="@(() => CancelarAsync(catalogo))" />
+            </div>
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Property="@nameof(CatalogoEdicionDto.NCodigo)" Title="Código" Width="100px">
+        <EditTemplate Context="catalogo">
+            <CdsNumericField TValue="int" @bind-Value="catalogo.NCodigo" Disabled="@(!catalogo.EsNueva)" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Property="@nameof(CatalogoEdicionDto.NValor)" Title="Valor" Width="100px">
+        <EditTemplate Context="catalogo">
+            <CdsNumericField TValue="int" @bind-Value="catalogo.NValor" Disabled="@(!catalogo.EsNueva)" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Property="@nameof(CatalogoEdicionDto.CNomCod)" Title="Nombre">
+        <EditTemplate Context="catalogo">
+            <CdsTextField @bind-Value="catalogo.CNomCod" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Property="@nameof(CatalogoEdicionDto.NEstados)" Title="Estado" Width="110px" Filterable="false">
+        <Template Context="catalogo">@(catalogo.NEstados?.ToString() ?? "-")</Template>
+        <EditTemplate Context="catalogo">
+            <CdsNumericField TValue="int?" @bind-Value="catalogo.NEstados" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+
+    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Property="@nameof(CatalogoEdicionDto.NTipoCodigo)" Title="Tipo código" Width="120px" Filterable="false">
+        <Template Context="catalogo">@(catalogo.NTipoCodigo?.ToString() ?? "-")</Template>
+        <EditTemplate Context="catalogo">
+            <CdsNumericField TValue="int?" @bind-Value="catalogo.NTipoCodigo" />
+        </EditTemplate>
+    </RadzenDataGridColumn>
+</GridEstandar>
+
+@code {
+    [Inject] private ICatalogoCodigoService CatalogoCodigoService { get; set; } = default!;
+    [Inject] private DialogService DialogService { get; set; } = default!;
+    [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
+
+    private class CatalogoEdicionDto : CatalogoCodigoDto
+    {
+        public bool EsNueva { get; set; }
+    }
+
+    private GridEstandar<CatalogoEdicionDto> gridEstandar = default!;
+
+    private List<CatalogoEdicionDto> ListaCatalogos { get; set; } = new();
+
+    private CatalogoEdicionDto? filaEnEdicion;
+    private CatalogoEdicionDto? backupOriginal;
+
+    private bool Cargando = true;
+    private bool Guardando;
+    private string? ErrorCarga;
+    private string? ValidationError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCatalogosAsync();
+    }
+
+    private async Task CargarCatalogosAsync()
+    {
+        Cargando = true;
+        ErrorCarga = null;
+        var result = await CatalogoCodigoService.ObtenerTodosAsync();
+        if (result.IsSuccess)
+            ListaCatalogos = (result.Data ?? []).Select(MapearAEdicion).ToList();
+        else if (ListaCatalogos.Count > 0)
+            Notifications.Error("No se pudieron actualizar los catálogos", result.Message);
+        else
+            ErrorCarga = result.Message;
+        Cargando = false;
+    }
+
+    private static CatalogoEdicionDto MapearAEdicion(CatalogoCodigoDto c) => new()
+    {
+        NCodigo = c.NCodigo,
+        NValor = c.NValor,
+        CNomCod = c.CNomCod,
+        NEstados = c.NEstados,
+        NTipoCodigo = c.NTipoCodigo
+    };
+
+    private void OnRowRender(RowRenderEventArgs<CatalogoEdicionDto> args)
+    {
+        if (filaEnEdicion is not { } fila || !ReferenceEquals(args.Data, fila))
+            return;
+
+        args.Attributes["style"] = fila.EsNueva
+            ? "background-color: var(--cds-surface-table-success);"
+            : "background-color: var(--cds-surface-table-info);";
+    }
+
+    private async Task NuevoCatalogoAsync()
+    {
+        ValidationError = null;
+        var nuevo = new CatalogoEdicionDto { EsNueva = true };
+        filaEnEdicion = nuevo;
+        await gridEstandar.Grid.InsertRow(nuevo);
+    }
+
+    private async Task EditarAsync(CatalogoEdicionDto catalogo)
+    {
+        ValidationError = null;
+        backupOriginal = ClonarValores(catalogo);
+        filaEnEdicion = catalogo;
+        await gridEstandar.Grid.EditRow(catalogo);
+    }
+
+    private void CancelarAsync(CatalogoEdicionDto catalogo)
+    {
+        ValidationError = null;
+        gridEstandar.Grid.CancelEditRow(catalogo);
+
+        if (!catalogo.EsNueva && backupOriginal is not null)
+        {
+            CopiarValores(backupOriginal, catalogo);
+        }
+
+        backupOriginal = null;
+        filaEnEdicion = null;
+    }
+
+    private async Task GuardarAsync(CatalogoEdicionDto catalogo)
+    {
+        var validation = CatalogValidator.Validate(catalogo, catalogo.EsNueva);
+        if (!validation.IsValid)
+        {
+            ValidationError = validation.Message;
+            return;
+        }
+
+        ValidationError = null;
+        Guardando = true;
+
+        var (exito, mensaje) = catalogo.EsNueva
+            ? await CatalogoCodigoService.CrearAsync(catalogo)
+            : await CatalogoCodigoService.ActualizarAsync(catalogo);
+
+        Guardando = false;
+
+        if (!exito)
+        {
+            Notifications.Error("No se pudo guardar el código", mensaje);
+            return;
+        }
+
+        await gridEstandar.Grid.UpdateRow(catalogo);
+        backupOriginal = null;
+        filaEnEdicion = null;
+
+        Notifications.Success(
+            catalogo.EsNueva ? "Código creado" : "Código actualizado",
+            "Los cambios se guardaron correctamente.");
+        await CargarCatalogosAsync();
+    }
+
+    private async Task EliminarAsync(CatalogoEdicionDto catalogo)
+    {
+        var confirmado = await DialogService.Confirm(
+            $"¿Eliminar el código {catalogo.NValor} del catálogo {catalogo.NCodigo} ('{catalogo.CNomCod}')? Esta acción no se puede deshacer.",
+            "Confirmar eliminación",
+            new ConfirmOptions { OkButtonText = "Eliminar", CancelButtonText = "Cancelar" });
+
+        if (confirmado != true)
+            return;
+
+        var (exito, mensaje) = await CatalogoCodigoService.EliminarAsync(catalogo.NCodigo, catalogo.NValor);
+        if (!exito)
+        {
+            Notifications.Error("No se pudo eliminar el código", mensaje);
+            return;
+        }
+
+        Notifications.Success("Código eliminado");
+        await CargarCatalogosAsync();
+    }
+
+    private static CatalogoEdicionDto ClonarValores(CatalogoEdicionDto origen) => new()
+    {
+        NCodigo = origen.NCodigo,
+        NValor = origen.NValor,
+        CNomCod = origen.CNomCod,
+        NEstados = origen.NEstados,
+        NTipoCodigo = origen.NTipoCodigo,
+        EsNueva = origen.EsNueva
+    };
+
+    private static void CopiarValores(CatalogoEdicionDto origen, CatalogoEdicionDto destino)
+    {
+        destino.CNomCod = origen.CNomCod;
+        destino.NEstados = origen.NEstados;
+        destino.NTipoCodigo = origen.NTipoCodigo;
+    }
+}

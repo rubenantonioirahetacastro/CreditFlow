@@ -1,0 +1,495 @@
+@page "/otorgamiento/evaluacion/{NCodAge:int}/{NCodCred:int}"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using CreditFlow.Web.Features.CreditEvaluation.Models
+@using CreditFlow.Web.Features.CreditEvaluation.Services
+@using CreditFlow.Web.Shared.Catalog.Models
+@using CreditFlow.Web.Shared.Catalog.Services
+@using CreditFlow.Web.Shared.Credit.Presentation
+
+<PageTitle>Evaluación de crédito</PageTitle>
+
+@if (cargando)
+{
+    <CdsPageState Kind="CdsPageStateKind.Loading"
+                  Title="Cargando expediente…" />
+}
+else if (detalle is null)
+{
+    <CdsPageState Kind="CdsPageStateKind.Error"
+                  Title="No pudimos cargar el expediente"
+                  Message="@errorCarga"
+                  OnAction="@CargarAsync" />
+}
+else
+{
+    <div class="evaluation-page">
+
+        <header class="evaluation-header">
+            <div class="evaluation-header__content">
+                <a href="/otorgamiento/procesamiento-datos/bandeja-verificacion" class="evaluation-back">← Bandeja</a>
+                <div class="evaluation-client">
+                    <span class="evaluation-client__avatar">@Iniciales(detalle.Cliente.NombreCompleto)</span>
+                    <div class="evaluation-min-width">
+                        <div class="evaluation-client__title-row">
+                            <h1 class="evaluation-client__title">@detalle.Cliente.NombreCompleto</h1>
+                            <span class="evaluation-status">
+                                <span class="evaluation-status__dot"></span>@(detalle.Credito.EstadoNombre ?? "Sin estado")
+                            </span>
+                        </div>
+                        <div class="evaluation-client__meta">CRÉDITO @detalle.Credito.NCodAge-@detalle.Credito.NCodCred · @(detalle.Credito.Agencia ?? "—") · gestiona @(detalle.Credito.UsuarioGestion ?? "—") · @detalle.Credito.DFecVig.ToString("d/M/yyyy HH:mm")</div>
+                    </div>
+                </div>
+                <div class="evaluation-header__actions">
+                    <CdsButton Text="Configurar calendario"
+                               Icon="calendar_month"
+                               title="Configurar el calendario con las condiciones de este crédito"
+                               Click="@ConfigurarCalendario" />
+                </div>
+            </div>
+        </header>
+
+        <div class="evaluation-layout">
+
+            <div class="evaluation-content">
+
+                <CdsCard Padding="CdsCardPadding.Spacious" Class="evaluation-overview-card">
+                    <div class="evaluation-stack-14">
+                        <div class="evaluation-kick">Capacidad de pago declarada</div>
+                        @if (detalle.CapacidadPago is { } cap)
+                        {
+                            <div class="evaluation-flow">
+                                @foreach (var (label, valor, esIngreso) in FlujoFilas(cap))
+                                {
+                                    <div class="evaluation-flow__row">
+                                        <span class="evaluation-flow__label">@label</span>
+                                        <span class="evaluation-flow__value @(esIngreso ? "evaluation-flow__value--income" : "evaluation-flow__value--expense")">@(esIngreso ? "" : "−")@valor.ToString("C2")</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="evaluation-empty">No se registró capacidad de pago en la solicitud.</div>
+                        }
+                    </div>
+
+                    <div class="evaluation-divider-vertical"></div>
+
+                    <div class="evaluation-stack-16">
+                        <div class="evaluation-kick">Solicitud</div>
+                        <div class="evaluation-request-amount">
+                            <div class="evaluation-request-amount__value">@detalle.Credito.NPrestamo.ToString("C2")</div>
+                            <div class="evaluation-request-amount__label">solicitado</div>
+                        </div>
+                        <div class="evaluation-divider"></div>
+                        <div class="evaluation-kick">Condiciones propuestas</div>
+                        <div class="evaluation-grid-2">
+                            @foreach (var (k, v) in Condiciones())
+                            {
+                                <Campo Etiqueta="@k" Valor="@v" />
+                            }
+                        </div>
+                    </div>
+                </CdsCard>
+
+                <CdsCard Padding="CdsCardPadding.None" Class="evaluation-tabs-card">
+                    <div class="evaluation-tabs">
+                        @foreach (var t in TabsDisponibles())
+                        {
+                            <EvaluationTabButton Text="@t"
+                                                 Selected="@(tabActual == t)"
+                                                 OnClick="@(() => tabActual = t)" />
+                        }
+                    </div>
+                    <div class="evaluation-tab-content">
+                        @if (tabActual == "Garantía")
+                        {
+                            @if (!TieneGarantia())
+                            {
+                                <div class="evaluation-empty">No se registraron garantías.</div>
+                            }
+                            else
+                            {
+                                <div class="evaluation-grid-fields">
+                                    <Campo Etiqueta="Tipo de garantía" Valor="@NombreTipoGarantia()" />
+                                    <Campo Etiqueta="Marca" Valor="@NombreMarcaGarantia()" />
+                                    <Campo Etiqueta="Año" Valor="@NombreAnioGarantia()" />
+                                    <Campo Etiqueta="Valor verificado" Valor="@ValorGarantia()" />
+                                </div>
+
+                                @if (detalle.Garantia.ValorTotal > 0)
+                                {
+                                    <div class="evaluation-coverage">Cobertura @(detalle.Garantia.CoberturaPorcentaje?.ToString("0.0") ?? "—")%</div>
+                                }
+
+                                @if (detalle.Garantia.Fotos.Count > 0)
+                                {
+                                    <div class="evaluation-photo-grid">
+                                        @foreach (var f in detalle.Garantia.Fotos)
+                                        {
+                                            <FotoCard TipoFoto="garantia" IdFoto="@f.IdFoto" ObtenerFoto="EvaluacionCreditoService.ObtenerFotoDataUrlAsync" />
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="evaluation-empty">Las fotografías todavía no han sido agregadas.</div>
+                                }
+                            }
+                        }
+                        else if (tabActual == "Referencia")
+                        {
+                            @if (detalle.Fiador is { } fiador)
+                            {
+                                <div class="evaluation-grid-2">
+                                    <Campo Etiqueta="Nombre" Valor="@fiador.NombreCompleto" />
+                                    <Campo Etiqueta="Documento" Valor="@fiador.CDocumento" />
+                                    <Campo Etiqueta="Dirección" Valor="@fiador.CDireccion" />
+                                    <Campo Etiqueta="Celular" Valor="@fiador.CCelular" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="evaluation-empty">No se registró fiador o referencia.</div>
+                            }
+                        }
+                        else if (tabActual == "Verificación")
+                        {
+                            @if (detalle.Verificaciones.Count == 0)
+                            {
+                                <div class="evaluation-empty">Todavía no hay verificaciones registradas para esta solicitud.</div>
+                            }
+                            else
+                            {
+                                @foreach (var v in detalle.Verificaciones)
+                                {
+                                    <div class="evaluation-verification-row">
+                                        <div class="evaluation-verification-row__name">@v.CNombre</div>
+                                        <div class="evaluation-verification-row__date">@v.DFecha.ToString("d/M/yyyy HH:mm")</div>
+                                        <a target="_blank" href="https://www.google.com/maps?q=@v.NLatitud,@v.NLongitud" class="evaluation-link">Ver ubicación</a>
+                                    </div>
+                                }
+                            }
+                        }
+                        else if (tabActual == "Negocio")
+                        {
+                            @if (detalle.Negocio is { } negocio)
+                            {
+                                <div class="evaluation-grid-3">
+                                    <Campo Etiqueta="Nombre" Valor="@negocio.CNombre" />
+                                    <div class="evaluation-address">
+                                        <div class="evaluation-field-label">Dirección negocio</div>
+                                        @if (UrlUbicacionNegocio(negocio.CGeolocalizacion) is { } urlUbicacion)
+                                        {
+                                            <a href="@urlUbicacion" target="_blank" rel="noopener noreferrer" class="evaluation-address__link">@(string.IsNullOrWhiteSpace(negocio.CDireccion) ? "Ver ubicación" : negocio.CDireccion)</a>
+                                        }
+                                        else
+                                        {
+                                            <div class="evaluation-address__value">@(string.IsNullOrWhiteSpace(negocio.CDireccion) ? "—" : negocio.CDireccion)</div>
+                                        }
+                                    </div>
+                                    <Campo Etiqueta="Horario" Valor="@HorarioNegocio(negocio)" />
+                                    <Campo Etiqueta="Teléfono" Valor="@negocio.CTelefono" />
+                                    <Campo Etiqueta="Tipo de negocio" Valor="@NombreTipoNegocio(negocio)" />
+                                </div>
+                                @if (negocio.Fotos.Count > 0)
+                                {
+                                    <div class="evaluation-photo-grid evaluation-photo-grid--spaced">
+                                        @foreach (var f in negocio.Fotos)
+                                        {
+                                            <FotoCard TipoFoto="negocio" IdFoto="@f.IdFoto" ObtenerFoto="EvaluacionCreditoService.ObtenerFotoDataUrlAsync" />
+                                        }
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="evaluation-empty">No se registró negocio.</div>
+                            }
+                        }
+                        else if (tabActual == "Confirmación residencia")
+                        {
+                            @if (detalle.Documentacion.Fotos.Count == 0)
+                            {
+                                <div class="evaluation-empty">No hay documentos adjuntos.</div>
+                            }
+                            else
+                            {
+                                <div class="evaluation-photo-grid">
+                                    @foreach (var f in detalle.Documentacion.Fotos)
+                                    {
+                                        <FotoCard TipoFoto="documentacion" IdFoto="@f.IdFoto" ObtenerFoto="EvaluacionCreditoService.ObtenerFotoDataUrlAsync" Pie="@NombreDocumentoResidencia(f)" />
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </CdsCard>
+
+                <div class="evaluation-lower-grid">
+                    <CdsCard Class="evaluation-client-card">
+                        <div class="evaluation-kick">Cliente</div>
+                        <div class="evaluation-grid-2">
+                            <Campo Etiqueta="Documento" Valor="@detalle.Cliente.CDocumento" />
+                            <Campo Etiqueta="Vence" Valor="@detalle.Cliente.DFechaVencimientoDocumento.ToString("d/M/yyyy")" />
+                            <Campo Etiqueta="Edad" Valor="@(detalle.Cliente.Edad?.ToString() ?? "—")" />
+                            <Campo Etiqueta="Celular" Valor="@detalle.Cliente.CCelular" />
+                            <Campo Etiqueta="Correo" Valor="@(detalle.Cliente.CCorreo ?? "—")" />
+                        </div>
+                    </CdsCard>
+
+                    <CdsCard Class="evaluation-history-card">
+                        <div class="evaluation-kick">Historial del expediente</div>
+                        <div class="evaluation-history">
+                            @foreach (var (nombre, fecha) in Historial())
+                            {
+                                <div class="evaluation-history__row">
+                                    <div class="evaluation-history__marker-wrap">
+                                        <span class="evaluation-history__marker"></span>
+                                    </div>
+                                    <div class="evaluation-history__content">
+                                        <div class="evaluation-history__name">@nombre</div>
+                                        <div class="evaluation-history__date">@fecha</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </CdsCard>
+                </div>
+            </div>
+
+            <div class="evaluation-sidebar">
+
+                <CdsCard Class="evaluation-decision-card">
+                    <div class="evaluation-kick">Decisión</div>
+                    <div class="evaluation-decision-list">
+                        @foreach (var estado in estadosCatalogo)
+                        {
+                            var deshabilitado = estado.NValor == EstadoAprobado && !EstaVerificado();
+                            <CreditDecisionOption StatusId="@estado.NValor"
+                                                  Text="@estado.CNomCod"
+                                                  Selected="@(estadoElegido == estado.NValor)"
+                                                  Disabled="@deshabilitado"
+                                                  Title="@(deshabilitado ? "La solicitud debe estar verificada antes de aprobarse" : null)"
+                                                  OnClick="@(() => estadoElegido = estado.NValor)" />
+                        }
+                    </div>
+                    <CdsTextArea @bind-Value="comentario"
+                                 Placeholder="Comentario de la decisión (queda en el expediente)"
+                                 Rows="3" />
+                    @if (mensajeError is not null)
+                    {
+                        <CdsFormMessage Message="@mensajeError" />
+                    }
+                    <CdsButton Text="@(guardando ? "Guardando…" : "Guardar decisión")"
+                               Icon="save"
+                               Disabled="@(estadoElegido is null || guardando)"
+                               Click="@(() => Guardar(estadoElegido))" />
+                </CdsCard>
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int NCodAge { get; set; }
+    [Parameter] public int NCodCred { get; set; }
+
+    [Inject] private IEvaluacionCreditoService EvaluacionCreditoService { get; set; } = default!;
+    [Inject] private ObtenerCatalogoCodigos ObtenerCatalogoCodigos { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+
+    private const int CodigoCatalogoEstadosCredito = 116;
+    private const int EstadoEnAnalisis = 2;
+    private const int EstadoAprobado = 3;
+    private const int EstadoCancelado = 50;
+
+    private EvaluacionCreditoDetalleDto? detalle;
+    private List<CatalogoCodigoDto> estadosCatalogo = new();
+    private bool cargando = true;
+    private string? errorCarga;
+    private bool guardando;
+    private string? mensajeError;
+    private int? estadoElegido;
+    private string comentario = string.Empty;
+    private string tabActual = "Negocio";
+
+    protected override Task OnInitializedAsync() => CargarAsync();
+
+    private async Task CargarAsync()
+    {
+        cargando = true;
+        errorCarga = null;
+        var catalogoTask = ObtenerCatalogoCodigos.ObtenerCatalogoCodigo(CodigoCatalogoEstadosCredito);
+        var detalleTask = EvaluacionCreditoService.ObtenerDetalleCompletoAsync(NCodAge, NCodCred);
+
+        var catalogo = await catalogoTask;
+        estadosCatalogo = catalogo
+            .Where(c => c.NValor is EstadoEnAnalisis or EstadoAprobado or EstadoCancelado)
+            .OrderBy(c => c.NValor switch
+            {
+                EstadoEnAnalisis => 0,
+                EstadoAprobado => 1,
+                EstadoCancelado => 2,
+                _ => 3,
+            })
+            .ToList();
+        var detalleResult = await detalleTask;
+        detalle = detalleResult.Data;
+        errorCarga = detalleResult.IsSuccess
+            ? null
+            : detalleResult.Message ?? $"No se pudo cargar la solicitud {NCodAge}-{NCodCred}.";
+        estadoElegido = estadosCatalogo.Any(e => e.NValor == detalle?.Credito.NEstado)
+            ? detalle?.Credito.NEstado
+            : null;
+
+        cargando = false;
+    }
+
+    private async Task Guardar(int? nuevoEstado)
+    {
+        if (nuevoEstado is null || detalle is null) return;
+
+        guardando = true;
+        mensajeError = null;
+        var (exito, mensaje) = await EvaluacionCreditoService.ActualizarEvaluacionAsync(NCodAge, NCodCred, nuevoEstado.Value);
+        guardando = false;
+
+        if (!exito)
+        {
+            mensajeError = mensaje ?? "No se pudo guardar la decisión.";
+            return;
+        }
+
+        NavigationManager.NavigateTo("/otorgamiento/procesamiento-datos/bandeja-verificacion");
+    }
+
+    private void ConfigurarCalendario()
+    {
+        if (detalle is null)
+            return;
+
+        var credito = detalle.Credito;
+        var invariant = System.Globalization.CultureInfo.InvariantCulture;
+        var parameters = new List<string>
+        {
+            $"agencyCode={credito.NCodAge}",
+            $"creditCode={credito.NCodCred}",
+            $"product={credito.NProd}",
+            $"subProduct={credito.NSubProd}",
+            $"amount={credito.NPrestamo.ToString(invariant)}",
+            $"installments={credito.NNroCuotas}",
+            $"startDate={credito.DFecVig:yyyy-MM-dd}"
+        };
+
+        if (credito.NCodLinea.HasValue)
+            parameters.Add($"creditLineCode={credito.NCodLinea.Value}");
+
+        if (credito.NTasaComp.HasValue)
+            parameters.Add($"rate={credito.NTasaComp.Value.ToString(invariant)}");
+
+        NavigationManager.NavigateTo($"/simulador-credito?{string.Join("&", parameters)}");
+    }
+
+    private static string Iniciales(string nombreCompleto)
+    {
+        var partes = nombreCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var a = partes.Length > 0 ? partes[0][0].ToString() : "";
+        var b = partes.Length > 1 ? partes[1][0].ToString() : "";
+        return (a + b).ToUpperInvariant();
+    }
+
+    private bool EstaVerificado() => detalle?.Verificaciones.Count > 0;
+
+    private IEnumerable<(string Label, decimal Valor, bool EsIngreso)> FlujoFilas(CapacidadPagoEvaluacionDto c)
+    {
+        yield return ("Otros ingresos declarados", c.DOtrosIngresos, true);
+        yield return ("Gastos de educación", c.DGastosEducacion, false);
+        yield return ("Gastos de alimentación", c.DGastosAlimentacion, false);
+        yield return ("Gastos de salud", c.DGastosSalud, false);
+        yield return ("Otros gastos", c.DOtrosGastos, false);
+    }
+
+    private IEnumerable<(string K, string V)> Condiciones()
+    {
+        if (detalle is null) yield break;
+
+        yield return ("Subproducto", detalle.Credito.SubProducto ?? "—");
+        yield return ("Plazo", $"{detalle.Credito.PlazoMeses} meses");
+        yield return ("Cuotas", detalle.Credito.NNroCuotas.ToString());
+        yield return ("Tasa", detalle.Credito.NTasaComp is { } tasa ? $"{tasa:0.00} %" : "—");
+    }
+
+    private IEnumerable<string> TabsDisponibles()
+    {
+        yield return "Negocio";
+        yield return "Confirmación residencia";
+        yield return "Referencia";
+        yield return "Garantía";
+        yield return "Verificación";
+    }
+
+    private bool TieneGarantia() => detalle is not null &&
+        (detalle.Garantia.NTipoGarantia > 0 ||
+         detalle.Garantia.NMarca > 0 ||
+         detalle.Garantia.NAnio > 0 ||
+         detalle.Garantia.ValorTotal > 0 ||
+         detalle.Garantia.Fotos.Count > 0);
+
+    private string NombreTipoGarantia() => detalle?.Garantia.TipoGarantia
+        ?? (detalle?.Garantia.NTipoGarantia > 0 ? detalle.Garantia.NTipoGarantia.ToString() : "Pendiente");
+
+    private string NombreMarcaGarantia() => detalle?.Garantia.Marca
+        ?? (detalle?.Garantia.NMarca > 0 ? detalle.Garantia.NMarca.ToString() : "Pendiente");
+
+    private string NombreAnioGarantia() => detalle?.Garantia.Anio
+        ?? (detalle?.Garantia.NAnio > 0 ? detalle.Garantia.NAnio.ToString() : "Pendiente");
+
+    private string ValorGarantia() => detalle?.Garantia.ValorTotal > 0
+        ? detalle.Garantia.ValorTotal.ToString("C2")
+        : "Pendiente de verificación";
+
+    private static string NombreDocumentoResidencia(FotoEvaluacionDto foto) =>
+        foto.TipoFotoNombre ?? (foto.TipoFoto > 0 ? $"Documento {foto.TipoFoto}" : "Documento de residencia");
+
+    private static string? UrlUbicacionNegocio(string? coordenadas)
+    {
+        if (string.IsNullOrWhiteSpace(coordenadas)) return null;
+        return $"https://www.google.com/maps?q={Uri.EscapeDataString(coordenadas.Trim())}";
+    }
+
+    private static string NombreTipoNegocio(NegocioEvaluacionDto negocio) =>
+        negocio.TipoNegocio ?? (negocio.CSector > 0 ? negocio.CSector.ToString() : "—");
+
+    private static string HorarioNegocio(NegocioEvaluacionDto negocio)
+    {
+        if (string.IsNullOrWhiteSpace(negocio.THoraInicio) && string.IsNullOrWhiteSpace(negocio.THoraCierre))
+            return "—";
+
+        return $"{negocio.THoraInicio ?? "—"} – {negocio.THoraCierre ?? "—"}";
+    }
+
+    private IEnumerable<(string Nombre, string Fecha)> Historial()
+    {
+        if (detalle is null) yield break;
+
+        var esVerificado = detalle.Credito.EstadoNombre?.Contains(
+            "Verific",
+            StringComparison.OrdinalIgnoreCase) == true;
+
+        if (!string.Equals(detalle.Credito.EstadoNombre, "Solicitado", StringComparison.OrdinalIgnoreCase) &&
+            (!esVerificado || detalle.Verificaciones.Count == 0))
+        {
+            yield return (detalle.Credito.EstadoNombre ?? "Estado actual", "Actual");
+        }
+
+        foreach (var v in detalle.Verificaciones.OrderByDescending(v => v.DFecha))
+        {
+            yield return ($"Verificado por {v.CNombre}", v.DFecha.ToString("d/M/yyyy HH:mm"));
+        }
+
+        yield return ("Solicitado", detalle.Credito.DFecVig.ToString("d/M/yyyy HH:mm"));
+    }
+}

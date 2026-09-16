@@ -1,0 +1,11 @@
+<button type="button"
+        class="evaluation-tab @(Selected ? "evaluation-tab--selected" : null)"
+        @onclick="OnClick">
+    @Text
+</button>
+
+@code {
+    [Parameter, EditorRequired] public string Text { get; set; } = string.Empty;
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+}

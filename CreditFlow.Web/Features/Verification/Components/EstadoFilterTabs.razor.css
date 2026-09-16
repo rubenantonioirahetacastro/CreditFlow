@@ -1,0 +1,5 @@
+.status-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.status-tab { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid var(--cds-border-neutral); border-radius: 999px; background: var(--cds-white); color: var(--cds-status-default-content); cursor: pointer; font-size: .85rem; font-weight: 600; }
+.status-tab--selected { border-color: var(--status-tab-color); }
+.status-tab__dot { display: inline-block; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--status-tab-color); }
+.status-tab__count { padding: 1px 8px; border-radius: 999px; background: var(--cds-surface-muted-alt); color: var(--cds-text-muted-alt); font-size: .75rem; font-weight: 700; }

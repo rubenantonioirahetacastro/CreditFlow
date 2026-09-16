@@ -5,11 +5,11 @@
     padding-top: 0.85rem;
     padding-bottom: 0.85rem;
     margin-bottom: 0.25rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--cds-border-neutral);
 }
 
 .nav-search-icon {
-    color: #6b7280;
+    color: var(--cds-text-muted-alt);
     font-size: 1.1rem;
     flex-shrink: 0;
 }
@@ -17,21 +17,21 @@
 .nav-search-input {
     flex: 1;
     min-width: 0;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--cds-border-navigation);
     border-radius: 999px;
     padding: 0.4rem 0.9rem;
     font-size: 0.85rem;
-    color: #1f2937;
-    background-color: #eef0f3;
+    color: var(--cds-text-strong);
+    background-color: var(--cds-surface-navigation);
 }
 
 .nav-search-input:focus {
     outline: none;
-    border-color: #142143;
+    border-color: var(--cds-primary);
 }
 
 .nav-search-input::placeholder {
-    color: #9ca3af;
+    color: var(--cds-text-subtle-alt);
 }
 
 .nav-item {
@@ -48,7 +48,7 @@
     }
 
     .nav-item ::deep .nav-link {
-        color: #1f2937;
+        color: var(--cds-text-strong);
         background: none;
         border: none;
         border-radius: 999px;
@@ -61,42 +61,40 @@
         font-weight: 500;
     }
 
-    /* Bootstrap's .btn-link imposes its own link color on the logout <button>;
-       forzamos que herede el mismo color que el resto de los items del menu. */
     .nav-item ::deep button.nav-link,
     .nav-item ::deep button.nav-link:hover,
     .nav-item ::deep button.nav-link:focus {
-        color: #1f2937;
+        color: var(--cds-text-strong);
         box-shadow: none;
     }
 
     .nav-item ::deep .nav-link .rzi {
-        color: #6b7280;
+        color: var(--cds-text-muted-alt);
     }
 
 .nav-item ::deep a.active {
-    background-color: #dbe6fd;
-    color: #0f172a;
+    background-color: var(--cds-surface-navigation-active);
+    color: var(--cds-text-navigation);
     font-weight: 600;
 }
 
     .nav-item ::deep a.active .rzi {
-        color: #0f172a;
+        color: var(--cds-text-navigation);
     }
 
 .nav-item ::deep .nav-link:hover {
-    background-color: #eef1f4;
-    color: #0f172a;
+    background-color: var(--cds-surface-navigation-hover);
+    color: var(--cds-text-navigation);
 }
 
     .nav-item ::deep .nav-link:hover .rzi {
-        color: #0f172a;
+        color: var(--cds-text-navigation);
     }
 
 .nav-item ::deep .nav-toggle-icon {
     margin-left: auto;
     font-size: 1.1rem;
-    color: #6b7280;
+    color: var(--cds-text-muted-alt);
 }
 
 .nav-subgroup .nav-item {

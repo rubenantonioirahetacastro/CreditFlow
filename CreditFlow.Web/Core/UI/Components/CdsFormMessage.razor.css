@@ -1,0 +1,18 @@
+.cds-form-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--cds-danger-border);
+    border-radius: 10px;
+    background: var(--cds-danger-surface);
+    color: var(--cds-danger-text);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.cds-form-message ::deep .rzi {
+    flex: none;
+    margin-top: 1px;
+}

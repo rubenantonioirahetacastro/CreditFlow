@@ -1,0 +1,157 @@
+@page "/otorgamiento/procesamiento-datos/bandeja-verificacion"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@implements IDisposable
+@using CreditFlow.Web.Features.Verification.Models
+@using CreditFlow.Web.Features.Verification.Services
+
+<PageTitle>Bandeja de verificación</PageTitle>
+
+<VerificationPageHeader SecondsSinceRefresh="@SegundosDesdeActualizacion" />
+
+<VerificationSummary QueueCount="@Creditos.Count"
+                     NewToday="@NuevosHoy"
+                     RepeatLoans="@ConRepretamo"
+                     TotalAmount="@MontoTotal"
+                     AverageAmount="@MontoPromedio" />
+
+<EstadoFilterTabs TItem="VerificacionListItem"
+                  Items="@Creditos"
+                  EstadoSelector="@(c => c.NEstado)"
+                  Selected="@EstadoSeleccionado"
+                  SelectedChanged="@(estado => EstadoSeleccionado = estado)" />
+
+<GridEstandar TItem="VerificacionListItem"
+              Data="@CreditosFiltrados"
+              IsLoading="@Cargando"
+              LoadingText="Cargando bandeja de verificación…"
+              ErrorMessage="@ErrorCarga"
+              OnRetry="@CargarAsync"
+              EmptyText="No hay créditos pendientes en la bandeja."
+              ExportFileName="bandeja-verificacion"
+              ShowAddButton="false"
+              SelectionMode="DataGridSelectionMode.Single"
+              RowSelect="@AbrirEvaluacion">
+    <RadzenDataGridColumn TItem="VerificacionListItem" Title="" Sortable="false" Filterable="false" Width="80px" Frozen="true">
+        <Template Context="credito">
+            <Avatar Id="@(credito.IdPersona ?? 0)"
+                    TieneFoto="@(!string.IsNullOrEmpty(credito.FotoUrl))"
+                    Iniciales="@ObtenerIniciales(credito)"
+                    Color="@ObtenerColorAvatar(credito)"
+                    ObtenerFotoDataUrl="@VerificacionService.ObtenerFotoDataUrlAsync" />
+        </Template>
+    </RadzenDataGridColumn>
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.NombreCliente)" Title="Nombre" Width="240px" Frozen="true" />
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.Agencia)" Title="Agencia" Width="160px" />
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.SubProducto)" Title="Subproducto" Width="180px" />
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.MontoSolicitado)" Title="Monto" Width="140px" FormatString="{0:C2}" />
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.UsuarioGestion)" Title="Gestionado por" Width="160px" />
+    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.Estado)" Title="Estado" Width="170px">
+        <Template Context="credito">
+            <CreditStatusBadge StatusId="@credito.NEstado" Text="@credito.Estado" />
+        </Template>
+    </RadzenDataGridColumn>
+</GridEstandar>
+
+@code {
+    [Inject] private IVerificacionService VerificacionService { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
+
+    private const int SegundosEntreRefrescos = 120;
+
+    private List<VerificacionListItem> Creditos { get; set; } = new();
+    private bool Cargando = true;
+    private bool CargaInicialCompleta;
+    private string? ErrorCarga;
+    private int? EstadoSeleccionado;
+
+    private System.Timers.Timer? _timerRefresco;
+    private System.Timers.Timer? _timerReloj;
+    private int SegundosDesdeActualizacion;
+
+    private IEnumerable<VerificacionListItem> CreditosFiltrados => EstadoSeleccionado is null
+        ? Creditos
+        : Creditos.Where(c => c.NEstado == EstadoSeleccionado);
+
+    private int NuevosHoy => Creditos.Count(c => c.DFecVig.Date == DateTime.Today);
+    private int ConRepretamo => Creditos.Count(c => c.ConRepretamo);
+    private decimal MontoTotal => Creditos.Sum(c => c.MontoSolicitado);
+    private decimal MontoPromedio => Creditos.Count == 0 ? 0m : MontoTotal / Creditos.Count;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarAsync();
+
+        _timerReloj = new System.Timers.Timer(1000);
+        _timerReloj.Elapsed += async (_, _) =>
+        {
+            SegundosDesdeActualizacion++;
+            await InvokeAsync(StateHasChanged);
+        };
+        _timerReloj.Start();
+
+        _timerRefresco = new System.Timers.Timer(SegundosEntreRefrescos * 1000);
+        _timerRefresco.Elapsed += async (_, _) => await InvokeAsync(CargarAsync);
+        _timerRefresco.Start();
+    }
+
+    private async Task CargarAsync()
+    {
+        if (!CargaInicialCompleta)
+            Cargando = true;
+
+        var result = await VerificacionService.ObtenerBandejaAsync();
+        if (result.IsSuccess)
+        {
+            Creditos = result.Data ?? [];
+            SegundosDesdeActualizacion = 0;
+            ErrorCarga = null;
+            CargaInicialCompleta = true;
+        }
+        else if (CargaInicialCompleta)
+        {
+            Notifications.Error("No se pudo actualizar la bandeja", result.Message);
+        }
+        else
+        {
+            ErrorCarga = result.Message;
+        }
+
+        Cargando = false;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _timerRefresco?.Dispose();
+        _timerReloj?.Dispose();
+    }
+
+    private void AbrirEvaluacion(VerificacionListItem credito)
+    {
+        NavigationManager.NavigateTo($"/otorgamiento/evaluacion/{credito.NCodAge}/{credito.NCodCred}");
+    }
+
+    private static readonly string[] ColoresAvatar =
+    {
+        "var(--cds-primary)", "var(--cds-primary-accent-light)", "var(--cds-primary-light)", "var(--cds-primary-accent-dark)", "var(--cds-primary-dark)"
+    };
+
+    private static string ObtenerIniciales(VerificacionListItem credito)
+    {
+        var partes = (credito.NombreCliente ?? string.Empty)
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var inicialNombre = partes.Length > 0 ? partes[0][0].ToString() : "";
+        var inicialApellido = partes.Length > 1 ? partes[1][0].ToString() : "";
+        return (inicialNombre + inicialApellido).ToUpperInvariant();
+    }
+
+    private static string ObtenerColorAvatar(VerificacionListItem credito)
+    {
+        var clave = credito.NombreCliente ?? string.Empty;
+        var indice = Math.Abs(clave.GetHashCode()) % ColoresAvatar.Length;
+        return ColoresAvatar[indice];
+    }
+}

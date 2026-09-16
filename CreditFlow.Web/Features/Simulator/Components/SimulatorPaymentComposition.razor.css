@@ -1,0 +1,6 @@
+.payment-composition__bar { display: flex; height: 12px; overflow: hidden; border-radius: 99px; background: var(--cds-surface-muted); }
+.payment-composition__segment--capital { background: var(--cds-primary-accent); }
+.payment-composition__segment--interest { background: var(--cds-accent-orange); }
+.payment-composition__segment--tax { background: var(--cds-accent-purple); }
+.payment-composition__segment--expense { background: var(--cds-border-strong); }
+.payment-composition__legend { display: flex; flex-wrap: wrap; gap: 16px; }

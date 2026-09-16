@@ -7,8 +7,8 @@
     <base href="/" />
     <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/material-base.css" />
-    <link rel="stylesheet" href="app.css" />
-    <link rel="stylesheet" href="CreditFlow.Web.styles.css" />
+    <link rel="stylesheet" href="@VersionedAsset("app.css")" />
+    <link rel="stylesheet" href="@VersionedAsset("CreditFlow.Web.styles.css")" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet />
 </head>
@@ -21,3 +21,9 @@
 </body>
 
 </html>
+
+@code {
+    private static readonly string AssetVersion = typeof(App).Assembly.ManifestModule.ModuleVersionId.ToString("N");
+
+    private static string VersionedAsset(string path) => $"{path}?v={AssetVersion}";
+}

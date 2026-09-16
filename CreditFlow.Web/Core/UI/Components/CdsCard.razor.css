@@ -1,0 +1,49 @@
+.cds-card {
+    box-sizing: border-box;
+    min-width: 0;
+    border: 1px solid var(--cds-border-soft);
+    border-radius: 16px;
+    background: var(--cds-surface);
+}
+
+.cds-card-plain {
+    border-color: transparent;
+    border-radius: 0;
+    background: transparent;
+}
+
+.cds-card-none {
+    padding: 0;
+}
+
+.cds-card-compact {
+    padding: 16px 18px;
+}
+
+.cds-card-default {
+    padding: 18px 20px;
+}
+
+.cds-card-spacious {
+    padding: 22px;
+}
+
+.cds-card-interactive {
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.cds-card-interactive:hover {
+    transform: translateY(-3px);
+    border-color: var(--cds-border-spinner);
+    box-shadow: 0 10px 24px var(--cds-shadow-medium);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cds-card-interactive {
+        transition: none;
+    }
+
+    .cds-card-interactive:hover {
+        transform: none;
+    }
+}

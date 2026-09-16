@@ -1,0 +1,12 @@
+@using CreditFlow.Web.Core.UI.Components.StatusColor
+@using CreditFlow.Web.Shared.Credit.Presentation
+
+<CdsStatusBadge Text="@(Text ?? "Desconocido")"
+                Appearance="@appearance" />
+
+@code {
+    [Parameter] public int StatusId { get; set; }
+    [Parameter] public string? Text { get; set; }
+
+    private CdsStatusAppearance appearance => CreditStatusPalette.Resolve(StatusId);
+}

@@ -1,0 +1,274 @@
+@page "/"
+@attribute [Authorize]
+@implements IDisposable
+@using CreditFlow.Web.Features.Dashboard.Models
+@using CreditFlow.Web.Features.Dashboard.Services
+@inject IDashboardService DashboardService
+@inject CreditFlow.Web.Core.Navigation.PageHeaderService Header
+@inject ICdsNotificationService Notifications
+
+<PageTitle>Home</PageTitle>
+
+<div class="home-page">
+
+  @if (cargando && resumen is null)
+  {
+    <CdsPageState Kind="CdsPageStateKind.Loading"
+                  Title="Cargando panel de control…" />
+  }
+  else if (resumen is null)
+  {
+    <CdsPageState Kind="CdsPageStateKind.Error"
+                  Title="No pudimos cargar el panel"
+                  Message="@errorCarga"
+                  OnAction="@CargarAsync" />
+  }
+  else
+  {
+    <div class="home-toolbar">
+      <span class="home-subtitle">Cartera de créditos · actualizado @ultimaActualizacion.ToString("dd MMM yyyy, HH:mm")</span>
+      <CdsButton Text="@(cargando ? "Actualizando…" : "Actualizar")"
+                 Icon="refresh"
+                 Variant="Variant.Outlined"
+                 ButtonStyle="ButtonStyle.Secondary"
+                 Size="ButtonSize.Small"
+                 Disabled="@cargando"
+                 Click="@CargarAsync" />
+    </div>
+
+    <div class="home-kpi-grid">
+      <CdsCard Padding="CdsCardPadding.Compact" Interactive="true" Class="home-kpi-card home-delay-0">
+        <span class="home-kpi-label">Cartera vigente</span>
+        <span class="home-kpi-value">@Money((decimal)animCarteraVigente)</span>
+        <span class="home-kpi-note">@resumen.Kpis.CreditosActivos créditos activos</span>
+      </CdsCard>
+      <CdsCard Padding="CdsCardPadding.Compact" Interactive="true" Class="home-kpi-card home-delay-1">
+        <span class="home-kpi-label">Monto colocado (histórico)</span>
+        <span class="home-kpi-value">@Money((decimal)animMontoColocado)</span>
+        <span class="home-kpi-note">@resumen.Kpis.CreditosTotales créditos totales</span>
+      </CdsCard>
+      <CdsCard Padding="CdsCardPadding.Compact" Interactive="true" Class="@(resumen.Kpis.PorcentajeMorosidad > 5 ? "home-kpi-card warn home-delay-2" : "home-kpi-card home-delay-2")">
+        <span class="home-kpi-label">Cartera en riesgo</span>
+        <span class="home-kpi-value">@Money((decimal)animCarteraRiesgo)</span>
+        <span class="home-kpi-note">@animPorcentajeMorosidad.ToString("0.00") % de morosidad</span>
+      </CdsCard>
+      <CdsCard Padding="CdsCardPadding.Compact" Interactive="true" Class="home-kpi-card home-delay-3">
+        <span class="home-kpi-label">Tasa promedio ponderada</span>
+        <span class="home-kpi-value">@animTasa.ToString("0.00") %</span>
+        <span class="home-kpi-note">sobre saldo vigente</span>
+      </CdsCard>
+      <CdsCard Padding="CdsCardPadding.Compact" Interactive="true" Class="home-kpi-card home-delay-4">
+        <span class="home-kpi-label">Nuevos últimos 30 días</span>
+        <span class="home-kpi-value">@((int)Math.Round(animNuevos30))</span>
+        <span class="home-kpi-note">@Money((decimal)animMonto30) colocados</span>
+      </CdsCard>
+    </div>
+
+    <div class="home-grid-2">
+      <CdsCard Class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Colocación mensual</span>
+          <span class="home-card-sub">Últimos 12 meses</span>
+        </div>
+        <RadzenChart class="home-chart" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
+          <RadzenColumnSeries Data="@resumen.ColocacionMensual" CategoryProperty="Periodo" ValueProperty="Monto" Title="Monto colocado" Fill="var(--cds-primary-accent)">
+            <RadzenColumnOptions Radius="4" />
+            <RadzenSeriesDataLabels Visible="false" />
+          </RadzenColumnSeries>
+          <RadzenCategoryAxis />
+          <RadzenValueAxis FormatString="{0:C0}">
+            <RadzenGridLines Visible="true" />
+          </RadzenValueAxis>
+        </RadzenChart>
+      </CdsCard>
+
+      <CdsCard Class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Cartera por estado</span>
+          <span class="home-card-sub">Monto colocado</span>
+        </div>
+        <RadzenChart class="home-chart" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
+          <RadzenDonutSeries Data="@resumen.PorEstado" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Estado"
+                             Fills="@paletaMarca" StrokeWidth="0">
+            <RadzenSeriesDataLabels Visible="true" />
+          </RadzenDonutSeries>
+          <RadzenLegend Position="LegendPosition.Bottom" />
+        </RadzenChart>
+      </CdsCard>
+    </div>
+
+    <div class="home-grid-2">
+      <CdsCard Class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Por subproducto</span>
+          <span class="home-card-sub">Diario / Semanal / Quincenal / Mensual</span>
+        </div>
+        <RadzenChart class="home-chart" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
+          <RadzenColumnSeries Data="@resumen.PorSubProducto" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Monto" Fill="var(--cds-accent-orange)">
+            <RadzenColumnOptions Radius="4" />
+            <RadzenSeriesDataLabels Visible="false" />
+          </RadzenColumnSeries>
+          <RadzenCategoryAxis />
+          <RadzenValueAxis FormatString="{0:C0}">
+            <RadzenGridLines Visible="true" />
+          </RadzenValueAxis>
+        </RadzenChart>
+      </CdsCard>
+
+      <CdsCard Class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Por agencia</span>
+          <span class="home-card-sub">Monto colocado</span>
+        </div>
+        <RadzenChart class="home-chart" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
+          <RadzenColumnSeries Data="@resumen.PorAgencia" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Monto" Fill="var(--cds-accent-purple)">
+            <RadzenColumnOptions Radius="4" />
+            <RadzenSeriesDataLabels Visible="false" />
+          </RadzenColumnSeries>
+          <RadzenCategoryAxis />
+          <RadzenValueAxis FormatString="{0:C0}">
+            <RadzenGridLines Visible="true" />
+          </RadzenValueAxis>
+        </RadzenChart>
+      </CdsCard>
+    </div>
+
+    <div class="home-grid-2">
+      <CdsCard Class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Distribución de mora</span>
+          <span class="home-card-sub">Créditos activos, por rango de días de atraso</span>
+        </div>
+        <RadzenChart class="home-chart" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
+          <RadzenColumnSeries Data="@resumen.DistribucionMora" CategoryProperty="Rango" ValueProperty="Cantidad" Title="Créditos" Fill="var(--cds-danger)">
+            <RadzenColumnOptions Radius="4" />
+            <RadzenSeriesDataLabels Visible="true" />
+          </RadzenColumnSeries>
+          <RadzenCategoryAxis />
+          <RadzenValueAxis>
+            <RadzenGridLines Visible="true" />
+          </RadzenValueAxis>
+        </RadzenChart>
+      </CdsCard>
+
+      <CdsCard Class="home-card">
+        <div class="home-card-head">
+          <span class="home-card-title">Top créditos por monto</span>
+          <span class="home-card-sub">Los 8 más altos</span>
+        </div>
+        <div class="home-top-list">
+          @if (resumen.TopCreditos.Count == 0)
+          {
+            <div class="home-empty">Sin créditos registrados.</div>
+          }
+          else
+          {
+            @for (var i = 0; i < resumen.TopCreditos.Count; i++)
+            {
+              var t = resumen.TopCreditos[i];
+              <div class="home-top-row @HomeDelayClass(i)">
+                <div class="home-top-info">
+                  <span class="home-top-cliente">@t.Cliente</span>
+                  <span class="home-top-meta">@t.Agencia · @t.Estado · #@t.NCodAge-@t.NCodCred</span>
+                </div>
+                <span class="home-top-monto">@Money(t.Monto)</span>
+              </div>
+            }
+          }
+        </div>
+      </CdsCard>
+    </div>
+  }
+</div>
+
+@code {
+    private DashboardResumenResponse? resumen;
+    private bool cargando = true;
+    private string? errorCarga;
+    private DateTime ultimaActualizacion;
+
+    private static readonly string[] paletaMarca = { "var(--cds-primary-accent)", "var(--cds-accent-orange)", "var(--cds-accent-purple)", "var(--cds-success)", "var(--cds-border-strong)", "var(--cds-danger)" };
+
+    private static string HomeDelayClass(int index) => $"home-delay-{Math.Clamp(index, 0, 7)}";
+
+    private double animCarteraVigente;
+    private double animMontoColocado;
+    private double animCarteraRiesgo;
+    private double animPorcentajeMorosidad;
+    private double animTasa;
+    private double animNuevos30;
+    private double animMonto30;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Header.Set("Panel de control");
+        await CargarAsync();
+    }
+
+    public void Dispose()
+    {
+        Header.Clear();
+    }
+
+    private async Task CargarAsync()
+    {
+        var teniaDatos = resumen is not null;
+        cargando = true;
+        StateHasChanged();
+
+        var result = await DashboardService.ObtenerResumenAsync();
+        if (result.IsSuccess && result.Data is not null)
+        {
+            resumen = result.Data;
+            errorCarga = null;
+            ultimaActualizacion = DateTime.Now;
+        }
+        else if (teniaDatos)
+        {
+            Notifications.Error("No se pudo actualizar", result.Message);
+        }
+        else
+        {
+            errorCarga = result.Message ?? "No se pudo cargar la información del panel.";
+        }
+
+        cargando = false;
+        StateHasChanged();
+
+        if (result.IsSuccess && resumen is not null)
+        {
+            _ = AnimarKpisAsync(resumen);
+        }
+    }
+
+    private async Task AnimarKpisAsync(DashboardResumenResponse datos)
+    {
+        var kpis = datos.Kpis;
+        await Task.WhenAll(
+            AnimarAsync(v => animCarteraVigente = v, (double)kpis.CarteraVigente),
+            AnimarAsync(v => animMontoColocado = v, (double)kpis.MontoColocadoTotal),
+            AnimarAsync(v => animCarteraRiesgo = v, (double)kpis.CarteraEnRiesgo),
+            AnimarAsync(v => animPorcentajeMorosidad = v, (double)kpis.PorcentajeMorosidad),
+            AnimarAsync(v => animTasa = v, (double)kpis.TasaPromedioPonderada),
+            AnimarAsync(v => animNuevos30 = v, kpis.CreditosUltimos30Dias),
+            AnimarAsync(v => animMonto30 = v, (double)kpis.MontoUltimos30Dias)
+        );
+    }
+
+    private async Task AnimarAsync(Action<double> setter, double destino, int pasos = 26, int delayMs = 16)
+    {
+        setter(0);
+        StateHasChanged();
+        for (var i = 1; i <= pasos; i++)
+        {
+            var t = 1 - Math.Pow(1 - (double)i / pasos, 3);
+            setter(destino * t);
+            StateHasChanged();
+            await Task.Delay(delayMs);
+        }
+        setter(destino);
+        StateHasChanged();
+    }
+
+    private static string Money(decimal v) => v.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-SV"));
+}

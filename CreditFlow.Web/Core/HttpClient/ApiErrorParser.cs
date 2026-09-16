@@ -45,7 +45,6 @@ internal static class ApiErrorParser
         }
         catch (JsonException)
         {
-            // Algunas rutas heredadas todavía responden texto plano para errores 4xx.
             return content.Length <= 500 && !content.Contains("Exception", StringComparison.OrdinalIgnoreCase)
                 ? (Normalize(content.Trim('"')), null)
                 : (null, null);

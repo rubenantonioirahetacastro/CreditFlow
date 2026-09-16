@@ -1,0 +1,8 @@
+<span class="cds-truncated-text" title="@Title">@Text</span>
+
+@code {
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string? Title { get; set; }
+
+    protected override void OnParametersSet() => Title ??= Text;
+}

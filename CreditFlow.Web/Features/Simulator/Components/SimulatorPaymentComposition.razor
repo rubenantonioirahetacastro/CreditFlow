@@ -1,0 +1,24 @@
+<div class="payment-composition__bar" aria-label="Composición del pago">
+    <div class="payment-composition__segment payment-composition__segment--capital" style="@Width(Capital)"></div>
+    <div class="payment-composition__segment payment-composition__segment--interest" style="@Width(Interest)"></div>
+    <div class="payment-composition__segment payment-composition__segment--tax" style="@Width(Tax)"></div>
+    <div class="payment-composition__segment payment-composition__segment--expense" style="@Width(Expense)"></div>
+</div>
+<div class="payment-composition__legend">
+    <LegendItem Class="capital" Label="Capital" Value="@Money(Capital)" />
+    <LegendItem Class="interest" Label="Interés" Value="@Money(Interest)" />
+    <LegendItem Class="tax" Label="IVA" Value="@Money(Tax)" />
+    <LegendItem Class="expense" Label="Gastos" Value="@Money(Expense)" />
+</div>
+
+@code {
+    [Parameter] public decimal Capital { get; set; }
+    [Parameter] public decimal Interest { get; set; }
+    [Parameter] public decimal Tax { get; set; }
+    [Parameter] public decimal Expense { get; set; }
+    [Parameter] public decimal Total { get; set; }
+
+    private string Width(decimal value) => $"width:{Percentage(value, Total)}%;";
+    private static decimal Percentage(decimal value, decimal total) => total <= 0 ? 0 : Math.Round(value / total * 100, 2);
+    private static string Money(decimal value) => value.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-SV"));
+}

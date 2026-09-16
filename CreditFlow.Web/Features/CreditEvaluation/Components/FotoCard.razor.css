@@ -1,0 +1,4 @@
+.photo-card { border: 1px solid var(--cds-border-soft); border-radius: 12px; overflow: hidden; background: var(--cds-surface-subtle); }
+.photo-card__placeholder { height: 110px; display: flex; align-items: center; justify-content: center; font: 500 11px var(--cds-font-family); color: var(--cds-text-subtle); }
+.photo-card__image { width: 100%; height: 110px; object-fit: cover; display: block; }
+.photo-card__caption { padding: 6px 8px; font: 600 11.5px var(--cds-font-family); color: var(--cds-text-body); }

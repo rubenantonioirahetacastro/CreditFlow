@@ -1,0 +1,377 @@
+@page "/simulador-credito"
+@attribute [Authorize(Policy = AuthorizationPolicies.CalendarConfiguration)]
+@using CreditFlow.Web.Features.Maintenance.Agency.Models
+@using CreditFlow.Web.Features.Maintenance.Agency.Services
+@using CreditFlow.Web.Features.Simulator.Models
+@using CreditFlow.Web.Features.Simulator.Services
+@using CreditFlow.Web.Features.Simulator.Components
+@implements IDisposable
+@inject CreditFlow.Web.Core.Navigation.PageHeaderService Header
+
+<PageTitle>Simulador de Crédito</PageTitle>
+
+<div class="sim-page" @ref="paginaRootRef">
+
+  <div class="sim-body">
+
+    <div class="sim-sidebar">
+      <SimulatorConditionsCard State="@conditions"
+                               Agencies="@agencias"
+                               MaximumAmount="@MontoMaximoSlider"
+                               MaximumInstallments="@CuotasMaximasSlider"
+                               OnChanged="@SimularAsync"
+                               OnReset="@RestablecerAsync" />
+    </div>
+
+    <div class="sim-main">
+
+      @if (cargando)
+      {
+        <div class="sim-overlay">
+          <div class="sim-spinner"></div>
+          <span>Generando cronograma...</span>
+        </div>
+      }
+
+      @if (error is not null)
+      {
+        <div class="sim-alert">
+          <span class="sim-alert-dot"></span>
+          <div>@error</div>
+        </div>
+      }
+      else if (resultado is not null)
+      {
+        <CdsCard Class="sim-card sim-summary-card">
+          <div class="sim-summary-top">
+            <div class="sim-cuota-block">
+              <div class="sim-kick">Cuota @PeriodicidadLabel(nSubProd).ToLower()</div>
+              <div class="sim-cuota-num">@Money(resultado.CuotaFija)</div>
+            </div>
+            <div class="sim-summary-grid">
+              @foreach (var s in ResumenItems())
+              {
+                <div class="sim-summary-item">
+                  <div class="sim-summary-key">@s.Key</div>
+                  <div class="sim-num @(s.Strong ? "sim-summary-val-strong" : "sim-summary-val")">@s.Value</div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <SimulatorPaymentComposition Capital="@resultado.TotalCapital"
+                                       Interest="@resultado.TotalInteres"
+                                       Tax="@resultado.TotalIva"
+                                       Expense="@resultado.TotalGasto"
+                                       Total="@resultado.TotalPagado" />
+        </CdsCard>
+
+        <CdsCard Padding="CdsCardPadding.None" Class="sim-card sim-table-card">
+          <div class="sim-table-head">
+            <div class="sim-table-title">
+              Detalle de cuotas
+              <span class="sim-badge">@resultado.Cronograma.Count pagos</span>
+            </div>
+            <div class="sim-status-wrap">
+              <span class="sim-status @(EstaCuadrado ? "ok" : "bad")">
+                <span class="sim-status-dot"></span>
+                @(EstaCuadrado ? "Cronograma cuadrado" : $"Descuadre de {Money(SaldoFinal)}")
+              </span>
+              <CdsButton Text="Exportar CSV"
+                         Icon="download"
+                         Variant="Variant.Outlined"
+                         ButtonStyle="ButtonStyle.Secondary"
+                         Size="ButtonSize.Small"
+                         Click="@ExportarCsvAsync" />
+            </div>
+          </div>
+
+          <div class="sim-table-scroll">
+            <div class="sim-table-grid sim-table-header">
+              <div class="sim-th">Cuota</div>
+              <div class="sim-th">Vencimiento</div>
+              <div class="sim-th">Capital</div>
+              <div class="sim-th">Interés</div>
+              <div class="sim-th">IVA</div>
+              <div class="sim-th">Gastos</div>
+              <div class="sim-th">Total</div>
+              <div class="sim-th">Saldo</div>
+            </div>
+
+            @foreach (var r in FilasVisibles())
+            {
+              <div class="sim-table-grid sim-table-row">
+                <div class="sim-td muted">@r.NroCuota</div>
+                <div class="sim-td">@r.FechaVencimiento.ToString("dd MMM yy")</div>
+                <div class="sim-td strong">@Money(r.Capital)</div>
+                <div class="sim-td">@Money(r.Interes)</div>
+                <div class="sim-td">@Money(r.Iva)</div>
+                <div class="sim-td">@Money(r.Gasto)</div>
+                <div class="sim-td strong verde">@Money(r.TotalCuota)</div>
+                <div class="sim-td @(r.SaldoDespues == 0 ? "verde" : "")">@Money(r.SaldoDespues)</div>
+              </div>
+            }
+
+            <div class="sim-table-grid sim-table-footer">
+              <div class="sim-td strong">Total</div>
+              <div></div>
+              <div class="sim-td strong">@Money(resultado.TotalCapital)</div>
+              <div class="sim-td strong">@Money(resultado.TotalInteres)</div>
+              <div class="sim-td strong">@Money(resultado.TotalIva)</div>
+              <div class="sim-td strong">@Money(resultado.TotalGasto)</div>
+              <div class="sim-td strong verde">@Money(resultado.TotalPagado)</div>
+              <div></div>
+            </div>
+          </div>
+
+          <div class="sim-pager">
+            <RadzenPager @key="paginaKey"
+                         HorizontalAlign="HorizontalAlign.Center"
+                         Count="@resultado.Cronograma.Count"
+                         PageSize="@FilasPorPagina"
+                         PageNumbersCount="5"
+                         ShowPagingSummary="true"
+                         PagingSummaryFormat="Página {0} de {1} ({2} elementos)"
+                         PageChanged="@OnPageChanged" />
+          </div>
+        </CdsCard>
+      }
+      else if (!cargando)
+      {
+        <CdsCard Class="sim-card sim-loading">Seleccione una agencia para generar el cronograma.</CdsCard>
+      }
+    </div>
+  </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "agencyCode")] public int? AgencyCode { get; set; }
+    [SupplyParameterFromQuery(Name = "creditCode")] public int? CreditCode { get; set; }
+    [SupplyParameterFromQuery(Name = "creditLineCode")] public int? CreditLineCode { get; set; }
+    [SupplyParameterFromQuery(Name = "product")] public int? Product { get; set; }
+    [SupplyParameterFromQuery(Name = "subProduct")] public int? SubProduct { get; set; }
+    [SupplyParameterFromQuery(Name = "amount")] public decimal? Amount { get; set; }
+    [SupplyParameterFromQuery(Name = "installments")] public int? Installments { get; set; }
+    [SupplyParameterFromQuery(Name = "startDate")] public DateTime? StartDate { get; set; }
+    [SupplyParameterFromQuery(Name = "rate")] public decimal? Rate { get; set; }
+
+    [Inject] private IAgenciaService AgenciaService { get; set; } = default!;
+    [Inject] private ISimulacionCalendarioService SimulacionService { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private ElementReference paginaRootRef;
+
+    private List<AgenciaDto> agencias = new();
+
+    private readonly SimulatorConditionsState conditions = new();
+    private int nCodAge { get => conditions.AgencyCode; set => conditions.AgencyCode = value; }
+    private int nProd { get => conditions.ProductCode; set => conditions.ProductCode = value; }
+    private decimal monto { get => conditions.Amount; set => conditions.Amount = value; }
+    private int cuotas { get => conditions.Installments; set => conditions.Installments = value; }
+    private int nSubProd { get => conditions.SubProductCode; set => conditions.SubProductCode = value; }
+    private DateTime fechaInicio { get => conditions.StartDate; set => conditions.StartDate = value; }
+    private bool permiteSabado { get => conditions.AllowsSaturday; set => conditions.AllowsSaturday = value; }
+    private bool permiteDomingo { get => conditions.AllowsSunday; set => conditions.AllowsSunday = value; }
+    private bool permiteFeriado { get => conditions.AllowsHoliday; set => conditions.AllowsHoliday = value; }
+    private int nCategoria { get => conditions.CategoryCode; set => conditions.CategoryCode = value; }
+    private bool bRefinanciado { get => conditions.IsRefinanced; set => conditions.IsRefinanced = value; }
+    private string? tasaOverrideStr { get => conditions.RateOverride; set => conditions.RateOverride = value; }
+    private string? gastoOverrideStr { get => conditions.ExpenseOverride; set => conditions.ExpenseOverride = value; }
+
+    private bool cargando;
+    private string? error;
+    private SimularCalendarioResponse? resultado;
+
+    private int paginaSkip = 0;
+    private int paginaKey = 0;
+    private const int FilasPorPagina = 10;
+    private decimal MontoMaximoSlider => Math.Max(10_000m, Math.Ceiling(monto));
+    private int CuotasMaximasSlider => Math.Max(48, cuotas);
+    private bool TieneContextoCredito => AgencyCode > 0 && CreditCode > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ActualizarTituloPagina();
+
+        var agenciasResult = await AgenciaService.ObtenerTodasAsync();
+        agencias = agenciasResult.Data ?? [];
+        var contextoAplicado = AplicarContextoCredito();
+
+        if (!agenciasResult.IsSuccess && !contextoAplicado)
+        {
+            error = agenciasResult.Message ?? "No se pudieron cargar las agencias.";
+            return;
+        }
+
+        if (!contextoAplicado && agencias.Count > 0)
+            nCodAge = agencias[0].NCodAge;
+
+        await SimularAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JS.InvokeVoidAsync("simuladorFitViewport", paginaRootRef);
+    }
+
+    private void ActualizarTituloPagina()
+    {
+        Header.Set(TieneContextoCredito
+            ? $"Configurar calendario · Crédito {AgencyCode}-{CreditCode}"
+            : "Simulador de cronograma de cuotas");
+    }
+
+    public void Dispose()
+    {
+        Header.Clear();
+    }
+
+    private static string PeriodicidadLabel(int nSubProd) =>
+        SimulatorOptions.Periodicities.FirstOrDefault(p => p.SubProductCode == nSubProd)?.Label ?? "Mensual";
+
+    private async Task RestablecerAsync()
+    {
+        if (AplicarContextoCredito())
+        {
+            ActualizarTituloPagina();
+            await SimularAsync();
+            return;
+        }
+
+        nProd = 4;
+        monto = 500m;
+        cuotas = 12;
+        nSubProd = 4;
+        fechaInicio = DateTime.Today;
+        permiteSabado = permiteDomingo = permiteFeriado = false;
+        nCategoria = 1;
+        bRefinanciado = false;
+        tasaOverrideStr = null;
+        gastoOverrideStr = null;
+        ActualizarTituloPagina();
+        await SimularAsync();
+    }
+
+    private bool AplicarContextoCredito()
+    {
+        if (!TieneContextoCredito || Amount is not > 0 || Installments is not > 0 ||
+            Product is not > 0 || SubProduct is not > 0)
+            return false;
+
+        nCodAge = AgencyCode!.Value;
+        nProd = Product!.Value;
+        nSubProd = SubProduct!.Value;
+        monto = Amount!.Value;
+        cuotas = Installments!.Value;
+        fechaInicio = StartDate?.Date ?? DateTime.Today;
+        tasaOverrideStr = Rate?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        gastoOverrideStr = null;
+        permiteSabado = permiteDomingo = permiteFeriado = false;
+        nCategoria = 1;
+        bRefinanciado = false;
+        return true;
+    }
+
+    private async Task SimularAsync()
+    {
+        error = null;
+
+        if (nCodAge <= 0 || monto <= 0 || cuotas <= 0)
+        {
+            resultado = null;
+            return;
+        }
+
+        cargando = true;
+        StateHasChanged();
+
+        decimal? tasaOverride = decimal.TryParse(tasaOverrideStr, out var t) ? t : null;
+        decimal? gastoOverride = decimal.TryParse(gastoOverrideStr, out var g) ? g : null;
+
+        var request = new SimularCalendarioRequest
+        {
+            NProd = nProd,
+            NSubProd = nSubProd,
+            NPlazo = cuotas,
+            Monto = monto,
+            FechaInicio = fechaInicio,
+            TasaOverride = tasaOverride,
+            GastoOverride = gastoOverride,
+            NCodAge = nCodAge,
+            NMoneda = 1,
+            NCodCamp = 0,
+            NCodLinea = CreditLineCode ?? 0,
+            NCategoria = nCategoria,
+            BRefinanciado = bRefinanciado,
+            BCustodia = false,
+            PermiteSabado = permiteSabado,
+            PermiteDomingo = permiteDomingo,
+            PermiteFeriado = permiteFeriado
+        };
+
+        var (exito, mensaje, data) = await SimulacionService.SimularAsync(request);
+
+        cargando = false;
+        if (exito)
+        {
+            resultado = data;
+            paginaSkip = 0;
+            paginaKey++;
+        }
+        else
+        {
+            resultado = null;
+            error = (mensaje ?? "No se pudo generar el cronograma.")
+                + " Probá con otra categoría, monto, plazo o periodicidad — no todas las combinaciones tienen línea configurada.";
+        }
+    }
+
+    private bool EstaCuadrado => SaldoFinal == 0m;
+
+    private decimal SaldoFinal => resultado?.Cronograma.Count > 0 ? resultado.Cronograma[^1].SaldoDespues : 0m;
+
+    private static string Money(decimal v) => v.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-SV"));
+
+    private record ResumenItem(string Key, string Value, bool Strong);
+
+    private List<ResumenItem> ResumenItems()
+    {
+        if (resultado is null) return new();
+
+        return new List<ResumenItem>
+        {
+            new("Total a pagar", Money(resultado.TotalPagado), true),
+            new("Capital", Money(resultado.MontoSolicitado), false),
+            new("Costo del crédito", Money(resultado.CostoTotalCredito), false),
+            new("Tasa mensual", resultado.TasaNominalMensual.ToString("0.00") + " %", false),
+            new("TEA real", (resultado.TeaReal * 100).ToString("0.00") + " %", false),
+            new("Saldo final", Money(SaldoFinal), false),
+        };
+    }
+
+    private List<CuotaDetalleResponse> FilasVisibles()
+    {
+        if (resultado is null) return new();
+        return resultado.Cronograma.Skip(paginaSkip).Take(FilasPorPagina).ToList();
+    }
+
+    private void OnPageChanged(Radzen.PagerEventArgs args)
+    {
+        paginaSkip = args.Skip;
+    }
+
+    private async Task ExportarCsvAsync()
+    {
+        if (resultado is null) return;
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("Cuota,Vencimiento,Capital,Interes,IVA,Gasto,Total,Saldo");
+        foreach (var r in resultado.Cronograma)
+        {
+            sb.AppendLine($"{r.NroCuota},{r.FechaVencimiento:dd/MM/yyyy},{r.Capital},{r.Interes},{r.Iva},{r.Gasto},{r.TotalCuota},{r.SaldoDespues}");
+        }
+
+        var bytes = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetBytes(sb.ToString());
+        await JS.InvokeVoidAsync("Radzen.downloadFile", "cronograma.csv", bytes, "text/csv");
+    }
+}

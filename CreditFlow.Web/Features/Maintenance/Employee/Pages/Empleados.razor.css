@@ -1,0 +1,9 @@
+::deep .celda-accion {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    text-align: center;
+}
+.employee-lastname-field {
+    flex: 1 1 0;
+    min-width: 0;
+}

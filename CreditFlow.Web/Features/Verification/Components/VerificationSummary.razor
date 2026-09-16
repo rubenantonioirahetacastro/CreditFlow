@@ -1,0 +1,14 @@
+<div class="verification-summary">
+    <VerificationSummaryCard Label="En cola" Value="@QueueCount.ToString()" Description="@($"{NewToday} nuevos hoy")" />
+    <VerificationSummaryCard Label="Monto solicitado" Value="@TotalAmount.ToString("C2")" Description="@($"prom. {AverageAmount:C2}")" />
+    <VerificationSummaryCard Label="Nuevos" Value="@NewToday.ToString()" Description="hoy" />
+    <VerificationSummaryCard Label="Con représtamo" Value="@RepeatLoans.ToString()" Description="pagó ≥50% del anterior" />
+</div>
+
+@code {
+    [Parameter] public int QueueCount { get; set; }
+    [Parameter] public int NewToday { get; set; }
+    [Parameter] public int RepeatLoans { get; set; }
+    [Parameter] public decimal TotalAmount { get; set; }
+    [Parameter] public decimal AverageAmount { get; set; }
+}

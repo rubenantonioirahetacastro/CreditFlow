@@ -1,0 +1,26 @@
+<span class="cds-status-badge" style="@CssStyle" @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrWhiteSpace(Icon))
+    {
+        <RadzenIcon Icon="@Icon" class="cds-status-badge__icon" />
+    }
+    else if (ShowDot)
+    {
+        <span class="cds-status-badge__dot"></span>
+    }
+    <span>@Text</span>
+</span>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public CdsStatusAppearance Appearance { get; set; } = default!;
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public bool ShowDot { get; set; } = true;
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssStyle =>
+        $"--cds-status-color:{Appearance.ContentColor};" +
+        $"--cds-status-background:{Appearance.ContainerColor};" +
+        $"--cds-status-dot:{Appearance.EffectiveDotColor};" +
+        $"--cds-status-border:{Appearance.EffectiveBorderColor};";
+}

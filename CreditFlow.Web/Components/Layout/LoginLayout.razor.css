@@ -1,7 +1,7 @@
 #blazor-error-ui {
-    background: lightyellow;
+    background: var(--cds-warning-surface);
     bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -1px 2px var(--cds-shadow-ui);
     display: none;
     left: 0;
     padding: 0.6rem 1.25rem 0.7rem 1.25rem;

@@ -1,0 +1,28 @@
+.cds-status-badge {
+    align-items: center;
+    background: var(--cds-status-background);
+    border: 1px solid var(--cds-status-border);
+    border-radius: 999px;
+    color: var(--cds-status-color);
+    display: inline-flex;
+    font-size: .8rem;
+    font-weight: 600;
+    gap: 6px;
+    line-height: 1.4;
+    padding: 3px 12px;
+    white-space: nowrap;
+}
+
+.cds-status-badge__dot {
+    background: var(--cds-status-dot);
+    border-radius: 50%;
+    display: inline-block;
+    flex: 0 0 auto;
+    height: 7px;
+    width: 7px;
+}
+
+.cds-status-badge__icon {
+    color: currentColor;
+    font-size: 1rem;
+}

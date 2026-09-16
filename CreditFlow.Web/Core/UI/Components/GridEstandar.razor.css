@@ -1,0 +1,20 @@
+::deep .fab-add-btn.rz-primary,
+::deep .fab-add-btn {
+    background-color: var(--cds-accent-gold) !important;
+    border-color: var(--cds-accent-gold) !important;
+    color: var(--cds-primary) !important;
+}
+
+::deep .fab-add-btn .rzi {
+    color: var(--cds-primary) !important;
+}
+
+::deep .fab-add-btn:hover,
+::deep .fab-add-btn:focus {
+    background-color: var(--cds-accent-gold-hover) !important;
+    border-color: var(--cds-accent-gold-hover) !important;
+}
+
+::deep .rz-frozen-cell-left-end {
+    box-shadow: 6px 0 6px -4px var(--cds-shadow-brand) !important;
+}

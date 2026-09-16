@@ -1,0 +1,186 @@
+@typeparam TItem where TItem : notnull
+@attribute [CascadingTypeParameter(nameof(TItem))]
+@using System.Text
+@inject IJSRuntime JS
+
+@if (IsLoading)
+{
+    <CdsPageState Kind="CdsPageStateKind.Loading"
+                  Title="@LoadingText"
+                  Compact="true" />
+}
+else if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <CdsPageState Kind="CdsPageStateKind.Error"
+                  Title="No pudimos cargar la información"
+                  Message="@ErrorMessage"
+                  OnAction="@OnRetry"
+                  Compact="true" />
+}
+else
+{
+    @if (Data?.Any() == true)
+    {
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="mb-2">
+            <CdsButton ButtonStyle="ButtonStyle.Success"
+                   Variant="Variant.Outlined"
+                   Size="ButtonSize.ExtraSmall"
+                   title="Exportar a Excel"
+                   Click="@ExportarAsync">
+            <ChildContent>
+                <span class="btn-excel-content">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <rect x="2" y="2" width="20" height="20" rx="3" fill="var(--cds-excel)" />
+                        <path d="M7 7l4 5-4 5M17 7l-4 5 4 5" stroke="var(--cds-white)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span>Exportar</span>
+                </span>
+            </ChildContent>
+            </CdsButton>
+        </RadzenStack>
+    }
+
+    <RadzenDataGrid @ref="Grid"
+                TItem="TItem"
+                Data="@Data"
+                IsLoading="@IsLoading"
+                EmptyText="@EmptyText"
+                Style="height: calc(100vh - 240px);"
+                AllowFiltering="true"
+                AllowSorting="true"
+                AllowGrouping="false"
+                AllowAlternatingRows="true"
+                AllowPaging="true"
+                PageSize="20"
+                ShowPagingSummary="true"
+                PagingSummaryFormat="Página {0} de {1} ({2} elementos)"
+                FilterMode="FilterMode.Advanced"
+                EditMode="@EditMode"
+                RowEdit="@RowEdit"
+                RowUpdate="@RowUpdate"
+                RowCreate="@RowCreate"
+                RowRender="@RowRender"
+                SelectionMode="@(SelectionMode ?? DataGridSelectionMode.Single)"
+                Value="@seleccionados"
+                ValueChanged="@ValueChangedCallback"
+                RowSelect="@RowSelect"
+                RowDeselect="@RowDeselect">
+        <EmptyTemplate>
+            <CdsPageState Kind="CdsPageStateKind.Empty"
+                          Title="@EmptyText"
+                          ShowSurface="false"
+                          Compact="true" />
+        </EmptyTemplate>
+        <Columns>
+            @ChildContent
+        </Columns>
+    </RadzenDataGrid>
+
+    @if (ShowAddButton)
+    {
+        <RadzenFab Icon="add"
+                   ButtonStyle="ButtonStyle.Primary"
+                   Size="ButtonSize.Large"
+                   Disabled="@AddDisabled"
+                   Click="@OnAdd"
+                   title="@AddButtonTitle"
+                   class="fab-add-btn"
+                   Style="position: fixed; bottom: 2rem; right: 2rem; z-index: 1000;" />
+    }
+}
+
+@code {
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public bool IsLoading { get; set; }
+
+    [Parameter] public string LoadingText { get; set; } = "Cargando información…";
+
+    [Parameter] public string? ErrorMessage { get; set; }
+
+    [Parameter] public EventCallback OnRetry { get; set; }
+
+    [Parameter] public string EmptyText { get; set; } = "No hay datos para mostrar.";
+
+    public RadzenDataGrid<TItem> Grid { get; set; } = default!;
+
+    [Parameter] public string ExportFileName { get; set; } = "export";
+
+    [Parameter] public DataGridEditMode EditMode { get; set; } = DataGridEditMode.Single;
+
+    [Parameter] public EventCallback<TItem> RowEdit { get; set; }
+
+    [Parameter] public EventCallback<TItem> RowUpdate { get; set; }
+
+    [Parameter] public EventCallback<TItem> RowCreate { get; set; }
+
+    [Parameter] public Action<RowRenderEventArgs<TItem>>? RowRender { get; set; }
+
+    [Parameter] public bool ShowAddButton { get; set; } = true;
+
+    [Parameter] public bool AddDisabled { get; set; }
+
+    [Parameter] public string AddButtonTitle { get; set; } = "Agregar";
+
+    [Parameter] public EventCallback OnAdd { get; set; }
+
+    [Parameter] public DataGridSelectionMode? SelectionMode { get; set; }
+
+    [Parameter] public EventCallback<TItem> RowSelect { get; set; }
+
+    [Parameter] public EventCallback<TItem> RowDeselect { get; set; }
+
+    private IList<TItem> seleccionados = new List<TItem>();
+
+    private EventCallback<IList<TItem>> ValueChangedCallback => SelectionMode.HasValue
+        ? EventCallback.Factory.Create<IList<TItem>>(this, valor => seleccionados = valor)
+        : default;
+
+    private async Task ExportarAsync()
+    {
+        var columnas = Grid.ColumnsCollection
+            .Where(c => c.Visible && !string.IsNullOrEmpty(c.Property))
+            .ToList();
+
+        var sb = new StringBuilder();
+        sb.AppendLine(string.Join(",", columnas.Select(c => EscaparCsv(c.Title))));
+
+        foreach (var item in Data ?? Enumerable.Empty<TItem>())
+        {
+            var valores = columnas.Select(c => EscaparCsv(ObtenerValor(item, c.Property)?.ToString()));
+            sb.AppendLine(string.Join(",", valores));
+        }
+
+        var bytes = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetBytes(sb.ToString());
+        await JS.InvokeVoidAsync("Radzen.downloadFile", $"{ExportFileName}.csv", bytes, "text/csv");
+    }
+
+    private static string EscaparCsv(string? valor)
+    {
+        valor ??= string.Empty;
+        var comilla = '"';
+        if (valor.Contains(',') || valor.Contains(comilla) || valor.Contains('\n') || valor.Contains('\r'))
+        {
+            var valorEscapado = valor.Replace(comilla.ToString(), comilla.ToString() + comilla.ToString());
+            return comilla + valorEscapado + comilla;
+        }
+
+        return valor;
+    }
+
+    private static object? ObtenerValor(TItem item, string propertyPath)
+    {
+        object? valorActual = item;
+        foreach (var parte in propertyPath.Split('.'))
+        {
+            if (valorActual is null)
+                return null;
+
+            valorActual = valorActual.GetType().GetProperty(parte)?.GetValue(valorActual);
+        }
+
+        return valorActual;
+    }
+}

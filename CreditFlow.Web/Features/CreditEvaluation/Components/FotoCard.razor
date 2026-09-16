@@ -1,0 +1,32 @@
+<div class="photo-card">
+    @if (url is null)
+    {
+        <div class="photo-card__placeholder">Cargando…</div>
+    }
+    else if (url == string.Empty)
+    {
+        <div class="photo-card__placeholder">Sin imagen</div>
+    }
+    else
+    {
+        <img src="@url" alt="Foto" class="photo-card__image" />
+    }
+    @if (!string.IsNullOrWhiteSpace(Pie))
+    {
+        <div class="photo-card__caption">@Pie</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string TipoFoto { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public int IdFoto { get; set; }
+    [Parameter, EditorRequired] public Func<string, int, Task<string?>> ObtenerFoto { get; set; } = default!;
+    [Parameter] public string? Pie { get; set; }
+
+    private string? url;
+
+    protected override async Task OnInitializedAsync()
+    {
+        url = await ObtenerFoto(TipoFoto, IdFoto) ?? string.Empty;
+    }
+}

@@ -1,0 +1,62 @@
+<CdsCard Padding="CdsCardPadding.None" ShowSurface="@ShowSurface">
+<section class="cds-page-state @(Compact ? "cds-page-state-compact" : null)"
+         role="@(Kind == CdsPageStateKind.Error ? "alert" : "status")"
+         aria-live="@(Kind == CdsPageStateKind.Error ? "assertive" : "polite")"
+         aria-busy="@(Kind == CdsPageStateKind.Loading ? "true" : "false")">
+    @if (Kind == CdsPageStateKind.Loading)
+    {
+        <div class="cds-page-state-skeleton" aria-label="@EffectiveTitle">
+            <div class="cds-skeleton-line cds-skeleton-title"></div>
+            <div class="cds-skeleton-line cds-skeleton-subtitle"></div>
+            <div class="cds-skeleton-grid">
+                @for (var index = 0; index < 3; index++)
+                {
+                    <div class="cds-skeleton-card">
+                        <div class="cds-skeleton-line"></div>
+                        <div class="cds-skeleton-line cds-skeleton-short"></div>
+                    </div>
+                }
+            </div>
+            <span class="cds-page-state-loading-text">@EffectiveTitle</span>
+        </div>
+    }
+    else
+    {
+        <div class="cds-page-state-content">
+            <span class="cds-page-state-icon @(Kind == CdsPageStateKind.Error ? "cds-page-state-icon-error" : null)" aria-hidden="true">
+                <RadzenIcon Icon="@(Kind == CdsPageStateKind.Error ? "error_outline" : "inbox")" />
+            </span>
+            <h2>@EffectiveTitle</h2>
+            @if (!string.IsNullOrWhiteSpace(Message))
+            {
+                <p>@Message</p>
+            }
+            @if (OnAction.HasDelegate)
+            {
+                <CdsButton Text="@ActionText"
+                           Icon="@(Kind == CdsPageStateKind.Error ? "refresh" : null)"
+                           ButtonStyle="ButtonStyle.Primary"
+                           Click="@OnAction" />
+            }
+        </div>
+    }
+</section>
+</CdsCard>
+
+@code {
+    [Parameter] public CdsPageStateKind Kind { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public string ActionText { get; set; } = "Reintentar";
+    [Parameter] public EventCallback OnAction { get; set; }
+    [Parameter] public bool Compact { get; set; }
+    [Parameter] public bool ShowSurface { get; set; } = true;
+
+    private string EffectiveTitle => Title ?? Kind switch
+    {
+        CdsPageStateKind.Loading => "Cargando información…",
+        CdsPageStateKind.Error => "No pudimos cargar la información",
+        CdsPageStateKind.Empty => "No hay información para mostrar",
+        _ => string.Empty
+    };
+}

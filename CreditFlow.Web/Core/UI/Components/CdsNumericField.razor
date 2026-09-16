@@ -1,0 +1,27 @@
+@using Radzen
+
+@typeparam TValue
+
+<RadzenNumeric TValue="TValue"
+               Value="@Value"
+               ValueChanged="@ValueChanged"
+               Placeholder="@Placeholder"
+               Disabled="@Disabled"
+               ReadOnly="@ReadOnly"
+               Format="@Format"
+               ShowUpDown="@ShowUpDown"
+               Style="@Style"
+               @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public TValue Value { get; set; } = default!;
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public string? Format { get; set; }
+    [Parameter] public bool ShowUpDown { get; set; } = true;
+    [Parameter] public string Style { get; set; } = "width:100%";
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+}

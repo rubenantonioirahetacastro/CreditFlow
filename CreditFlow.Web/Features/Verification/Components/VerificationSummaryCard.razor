@@ -1,0 +1,11 @@
+<CdsCard Padding="CdsCardPadding.Compact">
+    <div class="summary-card__label">@Label</div>
+    <div class="summary-card__value">@Value</div>
+    <div class="summary-card__description">@Description</div>
+</CdsCard>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Value { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Description { get; set; } = string.Empty;
+}

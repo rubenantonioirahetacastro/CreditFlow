@@ -1,0 +1,124 @@
+.cds-page-state {
+    min-height: min(520px, calc(100vh - 180px));
+    display: grid;
+    place-items: center;
+    padding: 32px 20px;
+    box-sizing: border-box;
+}
+
+.cds-page-state-compact {
+    min-height: 240px;
+    padding: 24px 16px;
+}
+
+.cds-page-state-content,
+.cds-page-state-skeleton {
+    width: min(100%, 560px);
+}
+
+.cds-page-state-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.cds-page-state-icon {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: var(--cds-surface-muted);
+    color: var(--cds-text-muted);
+    font-size: 28px;
+}
+
+.cds-page-state-icon-error {
+    background: var(--cds-danger-surface);
+    color: var(--cds-danger-text);
+}
+
+.cds-page-state-content h2 {
+    margin: 18px 0 0;
+    color: var(--cds-text-primary);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.cds-page-state-content p {
+    max-width: 460px;
+    margin: 8px 0 20px;
+    color: var(--cds-text-muted);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.cds-page-state-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cds-skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.cds-skeleton-card {
+    min-height: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+    border: 1px solid var(--cds-border-soft);
+    border-radius: 14px;
+    background: var(--cds-surface);
+}
+
+.cds-skeleton-line {
+    height: 13px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--cds-surface-muted) 25%, var(--cds-surface-hover) 50%, var(--cds-surface-muted) 75%);
+    background-size: 200% 100%;
+    animation: cds-skeleton-wave 1.35s ease-in-out infinite;
+}
+
+.cds-skeleton-title {
+    width: 42%;
+    height: 20px;
+}
+
+.cds-skeleton-subtitle {
+    width: 68%;
+}
+
+.cds-skeleton-short {
+    width: 58%;
+}
+
+.cds-page-state-loading-text {
+    margin-top: 6px;
+    color: var(--cds-text-muted);
+    font-size: 13px;
+    text-align: center;
+}
+
+@keyframes cds-skeleton-wave {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+}
+
+@media (max-width: 640px) {
+    .cds-skeleton-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cds-skeleton-line {
+        animation: none;
+    }
+}

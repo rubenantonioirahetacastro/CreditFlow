@@ -1,0 +1,337 @@
+.sim-page {
+    height: calc(100vh - 3.5rem - 1.1rem);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--cds-font-family);
+    color: var(--cds-text-primary);
+}
+
+.sim-status-wrap {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.sim-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 11px;
+    border-radius: 9px;
+    font: 600 12px/1 inherit;
+    border: 1px solid transparent;
+}
+
+.sim-status.ok {
+    background: var(--cds-success-surface);
+    border-color: var(--cds-success-border);
+    color: var(--cds-success-text);
+}
+
+.sim-status.bad {
+    background: var(--cds-danger-surface);
+    border-color: var(--cds-danger-border);
+    color: var(--cds-danger-text);
+}
+
+.sim-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 99px;
+    background: currentColor;
+}
+
+.sim-body {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 20px;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.sim-sidebar {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+::deep .sim-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.sim-kick {
+    font: 600 11px/1 inherit;
+    letter-spacing: .02em;
+    color: var(--cds-text-subtle);
+}
+
+.sim-num {
+    font-family: var(--cds-font-family);
+    font-variant-numeric: tabular-nums;
+}
+
+.sim-num-strong {
+    font: 600 14px/1 inherit;
+}
+
+.sim-main {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    min-height: 0;
+}
+
+.sim-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: var(--cds-backdrop-soft);
+    backdrop-filter: blur(1.5px);
+    border-radius: 16px;
+    font: 600 13px/1 inherit;
+    color: var(--cds-text-body);
+}
+
+.sim-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--cds-border-spinner);
+    border-top-color: var(--cds-primary-accent);
+    border-radius: 50%;
+    animation: sim-spin .7s linear infinite;
+}
+
+@keyframes sim-spin {
+    to { transform: rotate(360deg); }
+}
+
+::deep .sim-summary-card {
+    flex: none;
+}
+
+::deep .sim-loading {
+    align-items: center;
+    justify-content: center;
+    color: var(--cds-text-muted);
+    font: 500 13px/1.4 inherit;
+    padding: 40px;
+    text-align: center;
+}
+
+.sim-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 13px 16px;
+    border-radius: 14px;
+    background: var(--cds-danger-surface);
+    border: 1px solid var(--cds-danger-border);
+    color: var(--cds-danger-text);
+    font: 500 12.5px/1.5 inherit;
+}
+
+.sim-alert-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    margin-top: 5px;
+    border-radius: 99px;
+    background: var(--cds-danger);
+}
+
+.sim-summary-top {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 28px;
+}
+
+.sim-cuota-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+}
+
+.sim-cuota-num {
+    font: 600 40px/1 var(--cds-font-family);
+    letter-spacing: -.04em;
+}
+
+.sim-summary-grid {
+    flex: 1 1 340px;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(122px, 1fr));
+    gap: 12px 24px;
+}
+
+.sim-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sim-summary-key {
+    font: 600 10.5px/1 inherit;
+    letter-spacing: .02em;
+    color: var(--cds-text-subtle);
+}
+
+.sim-summary-val {
+    font: 500 14px/1.2 inherit;
+    color: var(--cds-text-primary);
+}
+
+.sim-summary-val-strong {
+    font: 600 16px/1.2 inherit;
+    color: var(--cds-text-primary);
+}
+
+::deep .sim-table-card {
+    overflow: hidden;
+    padding: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sim-table-head {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--cds-border-soft);
+}
+
+.sim-table-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font: 700 14.5px/1 inherit;
+}
+
+.sim-badge {
+    padding: 3px 8px;
+    border-radius: 7px;
+    background: var(--cds-surface-table-header);
+    color: var(--cds-text-secondary);
+    font: 600 11px/1.4 var(--cds-font-family);
+}
+
+.sim-table-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.sim-table-grid {
+    display: grid;
+    grid-template-columns: 64px 110px repeat(6, minmax(0, 1fr));
+    align-items: center;
+    text-align: center;
+}
+
+.sim-table-header {
+    background: var(--cds-surface-subtle);
+    border-bottom: 1px solid var(--cds-border-soft);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.sim-th {
+    padding: 11px 12px;
+    font: 700 10.5px/1 inherit;
+    letter-spacing: .03em;
+    color: var(--cds-text-subtle);
+    text-align: center;
+}
+
+.sim-table-row {
+    border-bottom: 1px solid var(--cds-surface-muted);
+}
+
+.sim-table-row:hover {
+    background: var(--cds-surface-hover);
+}
+
+.sim-td {
+    padding: 12px;
+    font: 500 13px/1.35 var(--cds-font-family);
+    color: var(--cds-text-muted);
+    text-align: center;
+    font-size: 12.5px;
+}
+
+.sim-td.muted {
+    color: var(--cds-text-subtle);
+    font-family: inherit;
+}
+
+.sim-td.strong {
+    font-weight: 600;
+    color: var(--cds-text-primary);
+    font-size: 13px;
+}
+
+.sim-td.verde {
+    color: var(--cds-success-text-alt);
+}
+
+.sim-table-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    border-top: 2px solid var(--cds-border-default);
+    background: var(--cds-surface-subtle);
+}
+
+.sim-pager {
+    flex: none;
+    padding: 8px 20px;
+    border-top: 1px solid var(--cds-border-soft);
+}
+
+@media (max-width: 900px) {
+    .sim-page {
+        height: auto;
+        overflow: visible;
+    }
+
+    .sim-body {
+        grid-template-columns: 1fr;
+        grid-template-rows: none;
+        min-height: auto;
+    }
+
+    .sim-sidebar {
+        overflow-y: visible;
+    }
+
+    .sim-main {
+        min-height: auto;
+    }
+
+    .sim-table-scroll {
+        max-height: 520px;
+    }
+}
