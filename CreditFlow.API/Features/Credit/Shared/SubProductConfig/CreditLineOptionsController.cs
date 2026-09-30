@@ -5,20 +5,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CreditFlow.API.Features.Credit.Shared.SubProductConfig
 {
-    [Route("api/[controller]")]
+    [Route("api/LineaAuxiliar")]
     [ApiController]
-    public class CambioProductoController : ControllerBase
+    public class CreditLineOptionsController : ControllerBase
     {
+        private const int ProductoCredito = 4;
+
         private readonly DbNegocioContext _context;
 
-        public CambioProductoController(DbNegocioContext context)
+        public CreditLineOptionsController(DbNegocioContext context)
         {
             _context = context;
         }
 
-        // GET api/CambioProducto/1
+        // GET api/LineaAuxiliar/1
         [HttpGet("{nSubProd}")]
-        public async Task<IActionResult> GetCambioProducto(int nSubProd)
+        public async Task<IActionResult> GetCreditLineOptions(int nSubProd)
         {
             if (nSubProd <= 0)
                 return BadRequest("El código de subproducto (nSubProd) debe ser mayor a 0.");
@@ -26,9 +28,8 @@ namespace CreditFlow.API.Features.Credit.Shared.SubProductConfig
             var opciones = await (
                 from lca in _context.LineaCatalogoAuxiliars.AsNoTracking()
                 join cl in _context.CredLineaCreditos.AsNoTracking()
-                    on new { NProd = lca.NProd, NSubProd = lca.NSubProd }
-                    equals new { NProd = (int?)cl.NProd, NSubProd = (int?)cl.NSubProd }
-                where lca.NProd == 1
+                    on lca.NSubProd equals cl.NSubProd
+                where cl.NProd == ProductoCredito
                     && lca.NSubProd == nSubProd
                     && lca.NCatalogoCodigo.HasValue
                     && cl.BEstado
@@ -46,7 +47,7 @@ namespace CreditFlow.API.Features.Credit.Shared.SubProductConfig
                 .ToListAsync();
 
             if (opciones == null || opciones.Count == 0)
-                return NotFound("No se encontraron opciones de cambio de producto para el subproducto proporcionado.");
+                return NotFound("No se encontraron opciones de línea de crédito para el subproducto proporcionado.");
 
             return Ok(opciones);
         }
