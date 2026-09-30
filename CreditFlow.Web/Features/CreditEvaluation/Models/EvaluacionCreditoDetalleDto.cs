@@ -26,6 +26,7 @@ public class ClienteEvaluacionDto
     [JsonPropertyName("cCorreo")] public string? CCorreo { get; set; }
     [JsonPropertyName("cCelular")] public string CCelular { get; set; } = string.Empty;
     [JsonPropertyName("fotoUrl")] public string? FotoUrl { get; set; }
+    [JsonPropertyName("fotosDocumento")] public List<FotoEvaluacionDto> FotosDocumento { get; set; } = new();
 }
 
 public class CreditoEvaluacionDto

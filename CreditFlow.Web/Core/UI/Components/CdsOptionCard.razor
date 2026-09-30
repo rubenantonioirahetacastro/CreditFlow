@@ -1,27 +1,35 @@
-@using CreditFlow.Web.Shared.Credit.Presentation
-
+@* Tarjeta seleccionable tipo radio (ícono, nombre, frase y radio a la derecha). Neutra: la selección usa el color de marca. *@
 <button type="button"
-        class="decision-option @(Selected ? "decision-option--selected" : null)"
-        style="@CssVariables"
+        role="radio"
+        aria-checked="@Selected"
+        class="cds-option-card @(Selected ? "cds-option-card--selected" : null)"
         disabled="@Disabled"
         title="@Title"
         @onclick="OnClick">
-    <span class="decision-option__indicator"></span>
-    <span class="decision-option__text">@Text</span>
+    <span class="cds-option-card__icon" aria-hidden="true">
+        <RadzenIcon Icon="@(Disabled ? "lock" : Icon)" />
+    </span>
+    <span class="cds-option-card__body">
+        <span class="cds-option-card__text">@Text</span>
+        @if (!string.IsNullOrWhiteSpace(Description))
+        {
+            <span class="cds-option-card__description">@Description</span>
+        }
+    </span>
+    <span class="cds-option-card__indicator" aria-hidden="true"></span>
 </button>
 
 @code {
-    [Parameter] public int StatusId { get; set; }
     [Parameter, EditorRequired] public string Text { get; set; } = string.Empty;
+
+    /// <summary>Frase corta que explica el efecto de la decisión (o por qué no está disponible).</summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>Ícono Material Symbols de la opción; si está deshabilitada se muestra un candado.</summary>
+    [Parameter] public string Icon { get; set; } = "radio_button_unchecked";
+
     [Parameter] public bool Selected { get; set; }
     [Parameter] public bool Disabled { get; set; }
     [Parameter] public string? Title { get; set; }
     [Parameter] public EventCallback OnClick { get; set; }
-
-    private CdsStatusAppearance Appearance => CreditStatusPalette.Resolve(StatusId);
-
-    private string CssVariables =>
-        $"--decision-content:{Appearance.ContentColor};" +
-        $"--decision-container:{Appearance.ContainerColor};" +
-        $"--decision-border:{Appearance.EffectiveBorderColor};";
 }

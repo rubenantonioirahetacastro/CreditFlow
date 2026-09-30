@@ -1,0 +1,29 @@
+@implements IDisposable
+@inject CreditFlow.Web.Core.Navigation.PageHeaderService Header
+
+@* Único punto para titular una página: pestaña del navegador + barra superior
+   (ruta «Inicio / … / Título», ícono y descripción). Las páginas no renderizan <h1>-<h3> ni <PageTitle> propios. *@
+<PageTitle>@Title</PageTitle>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    /// <summary>Frase corta bajo el título que explica para qué sirve la página.</summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>Ícono Material Symbols de la página; usar el mismo que su opción del menú lateral.</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>
+    /// Grupos del menú lateral que contienen la página, de arriba hacia abajo (sin «Inicio» ni el título),
+    /// p. ej. Otorgamiento / Procesamiento de Datos. Un nivel con <c>Href</c> se muestra como enlace. Vacío en opciones de primer nivel.
+    /// </summary>
+    [Parameter] public IReadOnlyList<CreditFlow.Web.Core.Navigation.PagePathItem>? Path { get; set; }
+
+    /// <summary>Falso solo en Home: la ruta no empieza con «Inicio» cuando ya se está en Inicio.</summary>
+    [Parameter] public bool ShowHome { get; set; } = true;
+
+    protected override void OnParametersSet() => Header.Set(this, Title, Description, Icon, Path, ShowHome);
+
+    public void Dispose() => Header.Clear(this);
+}

@@ -1,9 +1,11 @@
 @page "/empleados"
 @attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
 
-<PageTitle>Mantenimiento de Empleados</PageTitle>
+<CdsPageHeader Title="Empleados"
+               Icon="badge"
+               Path="@(new PagePathItem[] { "Mantenimientos" })"
+               Description="Administra los empleados, sus roles y accesos." />
 
-<h3>Empleados</h3>
 <CdsFormMessage Message="@ValidationError" />
 
 <GridEstandar TItem="EmpleadoEdicionDto"

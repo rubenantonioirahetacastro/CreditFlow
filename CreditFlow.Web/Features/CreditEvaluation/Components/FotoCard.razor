@@ -1,4 +1,4 @@
-<div class="photo-card">
+<div class="photo-card @(Grande ? "photo-card--large" : null)">
     @if (url is null)
     {
         <div class="photo-card__placeholder">Cargando…</div>
@@ -9,7 +9,7 @@
     }
     else
     {
-        <img src="@url" alt="Foto" class="photo-card__image" />
+        <img src="@url" alt="@(Pie ?? "Foto del expediente")" class="photo-card__image" />
     }
     @if (!string.IsNullOrWhiteSpace(Pie))
     {
@@ -22,6 +22,9 @@
     [Parameter, EditorRequired] public int IdFoto { get; set; }
     [Parameter, EditorRequired] public Func<string, int, Task<string?>> ObtenerFoto { get; set; } = default!;
     [Parameter] public string? Pie { get; set; }
+
+    /// <summary>Tamaño de galería (imagen alta, sin recorte).</summary>
+    [Parameter] public bool Grande { get; set; }
 
     private string? url;
 

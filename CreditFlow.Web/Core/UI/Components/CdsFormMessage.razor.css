@@ -5,11 +5,13 @@
     margin: 0 0 12px;
     padding: 10px 12px;
     border: 1px solid var(--cds-danger-border);
-    border-radius: 10px;
+    border-radius: var(--cds-radius-control);
     background: var(--cds-danger-surface);
     color: var(--cds-danger-text);
-    font-size: 13px;
-    line-height: 1.4;
+    font-family: var(--cds-font-family);
+    font-size: var(--cds-font-size-small);
+    font-weight: var(--cds-font-weight-regular);
+    line-height: var(--cds-line-height);
 }
 
 .cds-form-message ::deep .rzi {

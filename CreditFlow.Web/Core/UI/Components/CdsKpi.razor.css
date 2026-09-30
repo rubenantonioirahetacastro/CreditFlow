@@ -1,0 +1,67 @@
+.cds-kpi {
+    min-width: 0;
+    line-height: var(--cds-line-height);
+}
+
+.cds-kpi__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+/* Con ícono: recuadro de marca a la izquierda y el texto a la derecha. */
+.cds-kpi--icon {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.cds-kpi__icon {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--cds-surface-selected);
+    color: var(--cds-primary);
+    --rz-icon-weight: var(--cds-icon-weight);
+    --rz-icon-grade: var(--cds-icon-grade);
+}
+
+    .cds-kpi__icon ::deep .rzi {
+        font-size: 22px;
+    }
+
+.cds-kpi__label {
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-regular);
+    letter-spacing: var(--cds-letter-spacing-label);
+    color: var(--cds-color-label);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cds-kpi__value {
+    font-size: var(--cds-font-size-body);
+    font-weight: var(--cds-font-weight-regular);
+    color: var(--cds-color-value);
+    font-variant-numeric: tabular-nums;
+}
+
+.cds-kpi__value--strong {
+    font-size: var(--cds-font-size-title);
+    font-weight: var(--cds-font-weight-strong);
+}
+
+.cds-kpi__description {
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-regular);
+    color: var(--cds-color-label);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

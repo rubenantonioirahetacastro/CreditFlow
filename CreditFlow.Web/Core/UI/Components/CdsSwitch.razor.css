@@ -1,0 +1,20 @@
+.cds-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    cursor: pointer;
+    font-family: var(--cds-font-family);
+    font-size: var(--cds-font-size-small);
+    line-height: var(--cds-line-height);
+    color: var(--cds-color-content);
+}
+
+.cds-switch--disabled {
+    cursor: not-allowed;
+    color: var(--cds-color-hint);
+}
+
+.cds-switch__text {
+    white-space: nowrap;
+}

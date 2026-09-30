@@ -1,4 +1,4 @@
-<span class="cds-status-badge" style="@CssStyle" @attributes="AdditionalAttributes">
+<span class="@CssClass" style="@CssStyle" @attributes="AdditionalAttributes">
     @if (!string.IsNullOrWhiteSpace(Icon))
     {
         <RadzenIcon Icon="@Icon" class="cds-status-badge__icon" />
@@ -15,8 +15,24 @@
     [Parameter, EditorRequired] public CdsStatusAppearance Appearance { get; set; } = default!;
     [Parameter] public string? Icon { get; set; }
     [Parameter] public bool ShowDot { get; set; } = true;
+    [Parameter] public CdsStatusBadgeVariant Variant { get; set; } = CdsStatusBadgeVariant.Pill;
+
+    /// <summary>
+    /// Animación breve de confirmación al aparecer (entrada, pulso del borde y ícono con rebote).
+    /// Para repetirla en cada resultado nuevo, el llamador cambia el <c>@key</c> del componente.
+    /// </summary>
+    [Parameter] public bool Celebrate { get; set; }
+
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass => string.Join(" ", new[]
+    {
+        "cds-status-badge",
+        Variant == CdsStatusBadgeVariant.Chip ? "cds-status-badge--chip" : null,
+        Variant == CdsStatusBadgeVariant.Subtle ? "cds-status-badge--subtle" : null,
+        Celebrate ? "cds-status-badge--celebrate" : null
+    }.Where(value => value is not null));
 
     private string CssStyle =>
         $"--cds-status-color:{Appearance.ContentColor};" +

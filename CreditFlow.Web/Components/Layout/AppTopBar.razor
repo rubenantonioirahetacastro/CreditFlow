@@ -1,0 +1,149 @@
+@using CreditFlow.Web.Core.Navigation
+@implements IDisposable
+@inject PageHeaderService Header
+@inject ICdsNotificationService Notifications
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<div class="topbar @(SidebarExpanded ? null : "topbar--collapsed")">
+    <div class="topbar-brand">
+        <button type="button" class="topbar-logo"
+                title="@(SidebarExpanded ? "Ocultar el menú" : "Mostrar el menú")"
+                aria-label="@(SidebarExpanded ? "Ocultar el menú" : "Mostrar el menú")"
+                aria-expanded="@SidebarExpanded"
+                @onclick="OnToggleSidebar">
+            @* Con el menú oculto solo cabe el símbolo, en el mismo ancho que el margen del contenido. *@
+            <img src="@(SidebarExpanded ? "images/crediflow-logo.svg" : "images/crediflow-mark.svg")"
+                 alt="CrediFlow" class="topbar-logo-image" />
+        </button>
+    </div>
+
+    <div class="topbar-title">
+        @if (Header.Title is not null)
+        {
+            @* Atrás: en todas las páginas menos Home (la raíz de la ruta). *@
+            @if (Header.ShowHome)
+            {
+                <button type="button" class="topbar-back" title="Atrás" aria-label="Atrás" @onclick="VolverAsync">
+                    <RadzenIcon Icon="chevron_left" />
+                </button>
+            }
+            @if (!string.IsNullOrWhiteSpace(Header.Icon))
+            {
+                <RadzenIcon Icon="@Header.Icon" class="topbar-title-icon" />
+            }
+            <div class="topbar-title-text">
+                @* Ruta estilo explorador de Windows: Inicio / grupo / subgrupo / página actual. *@
+                <nav class="topbar-path" aria-label="Ruta de navegación">
+                    @if (Header.ShowHome)
+                    {
+                        <a class="topbar-path-link" href="">Inicio</a>
+                        <span class="topbar-path-sep" aria-hidden="true">/</span>
+                    }
+                    @foreach (var nivel in Header.Path)
+                    {
+                        @if (string.IsNullOrWhiteSpace(nivel.Href))
+                        {
+                            <span class="topbar-path-level">@nivel.Text</span>
+                        }
+                        else
+                        {
+                            <a class="topbar-path-link" href="@nivel.Href">@nivel.Text</a>
+                        }
+                        <span class="topbar-path-sep" aria-hidden="true">/</span>
+                    }
+                    <span class="topbar-title-main" aria-current="page">@Header.Title</span>
+                </nav>
+                @if (!string.IsNullOrWhiteSpace(Header.Description))
+                {
+                    <span class="topbar-title-desc">@Header.Description</span>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="topbar-actions">
+        <button type="button" class="topbar-icon-button" title="Mensajes" aria-label="Mensajes" @onclick="MostrarProximamente">
+            <RadzenIcon Icon="chat" />
+        </button>
+        <button type="button" class="topbar-icon-button" title="Notificaciones" aria-label="Notificaciones" @onclick="MostrarProximamente">
+            <RadzenIcon Icon="notifications" />
+        </button>
+
+        <AuthorizeView>
+            <Authorized>
+                <div class="topbar-user">
+                    <button type="button" class="topbar-user-trigger" aria-haspopup="menu" aria-expanded="@menuUsuarioAbierto"
+                            @onclick="() => menuUsuarioAbierto = !menuUsuarioAbierto">
+                        <Avatar Iniciales=""
+                                Tamano="32"
+                                Sutil="true"
+                                ObtenerFotoDataUrl="@(_ => Task.FromResult<string?>(null))" />
+                        <span class="topbar-user-info">
+                            <span class="topbar-user-name">@context.User.Identity?.Name</span>
+                            <span class="topbar-user-role">@RoleDisplayNames.ForUser(context.User)</span>
+                        </span>
+                        <RadzenIcon Icon="expand_more" class="topbar-user-chevron" />
+                    </button>
+
+                    @if (menuUsuarioAbierto)
+                    {
+                        <div class="topbar-user-backdrop" @onclick="() => menuUsuarioAbierto = false"></div>
+                        <div class="topbar-user-menu" role="menu">
+                            <form method="post" action="/logout">
+                                <AntiforgeryToken />
+                                <button type="submit" class="topbar-user-item" role="menuitem">
+                                    <RadzenIcon Icon="logout" />
+                                    <span>Cerrar sesión</span>
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnToggleSidebar { get; set; }
+
+    /// <summary>Estado del menú lateral; la zona de marca y el título se ajustan para seguir alineados con el contenido.</summary>
+    [Parameter] public bool SidebarExpanded { get; set; } = true;
+
+    private bool menuUsuarioAbierto;
+
+    protected override void OnInitialized()
+    {
+        Header.Changed += OnChanged;
+    }
+
+    private void OnChanged() => InvokeAsync(StateHasChanged);
+
+    /// <summary>
+    /// Vuelve a la página anterior. Si no hay historial de la aplicación (p. ej. enlace abierto directo),
+    /// va al último nivel de la ruta que tenga enlace o, si no hay, a Inicio.
+    /// </summary>
+    private async Task VolverAsync()
+    {
+        var destinoAlternativo = Header.Path.LastOrDefault(p => !string.IsNullOrWhiteSpace(p.Href))?.Href ?? "/";
+        try
+        {
+            await JS.InvokeVoidAsync("cdsGoBack", destinoAlternativo);
+        }
+        catch (JSException)
+        {
+            // Script no disponible (p. ej. caché del navegador): navegación directa al destino alternativo.
+            Navigation.NavigateTo(destinoAlternativo);
+        }
+    }
+
+    // Mensajes y notificaciones aún no tienen backend.
+    private void MostrarProximamente() =>
+        Notifications.Info("Próximamente", "Esta opción estará disponible en una próxima versión.");
+
+    public void Dispose()
+    {
+        Header.Changed -= OnChanged;
+    }
+}

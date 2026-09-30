@@ -1,29 +1,20 @@
 @typeparam TItem
 @using CreditFlow.Web.Shared.Catalog.Models
 @using CreditFlow.Web.Shared.Catalog.Services
-@using CreditFlow.Web.Shared.Credit.Presentation
 @inject ObtenerCatalogoCodigos ObtenerCatalogoCodigos
 
-<div class="status-tabs">
-    <button type="button" class="status-tab @(Selected is null ? "status-tab--selected" : null)" @onclick="() => Seleccionar(null)" style="@ColorVariable("var(--cds-status-default-content)")">
-        <span class="status-tab__dot"></span>
-        <span>Todos</span>
-        <span class="status-tab__count">@Items.Count()</span>
-    </button>
+<CdsTabs AriaLabel="Filtrar por estado">
+    <CdsTab Text="Todos" Count="@Items.Count()" Selected="@(Selected is null)" OnClick="() => Seleccionar(null)" />
 
     @foreach (var estado in estados)
     {
         var nValor = estado.NValor;
-        var color = CreditStatusPalette.Resolve(nValor).ContentColor;
-        var cantidad = Items.Count(i => EstadoSelector(i) == nValor);
-
-        <button type="button" class="status-tab @(Selected == nValor ? "status-tab--selected" : null)" @onclick="() => Seleccionar(nValor)" style="@ColorVariable(color)">
-            <span class="status-tab__dot"></span>
-            <span>@estado.CNomCod</span>
-            <span class="status-tab__count">@cantidad</span>
-        </button>
+        <CdsTab Text="@estado.CNomCod"
+                Count="@Items.Count(i => EstadoSelector(i) == nValor)"
+                Selected="@(Selected == nValor)"
+                OnClick="() => Seleccionar(nValor)" />
     }
-</div>
+</CdsTabs>
 
 @code {
     private const int CodigoCatalogoEstadosCredito = 116;
@@ -34,6 +25,9 @@
 
     [Parameter] public int? Selected { get; set; }
 
+    /// <summary>Estados que se muestran como pestaña. Si es nulo, se muestran todos los del catálogo.</summary>
+    [Parameter] public IReadOnlyCollection<int>? VisibleStates { get; set; }
+
     [Parameter] public EventCallback<int?> SelectedChanged { get; set; }
 
     private List<CatalogoCodigoDto> estados = new();
@@ -42,10 +36,11 @@
     {
         var catalogo = await ObtenerCatalogoCodigos.ObtenerCatalogoCodigo(CodigoCatalogoEstadosCredito);
 
-        estados = catalogo.Where(c => c.NValor != c.NCodigo).ToList();
+        estados = catalogo
+            .Where(c => c.NValor != c.NCodigo)
+            .Where(c => VisibleStates is null || VisibleStates.Contains(c.NValor))
+            .ToList();
     }
 
     private Task Seleccionar(int? estado) => SelectedChanged.InvokeAsync(estado);
-
-    private static string ColorVariable(string color) => $"--status-tab-color:{color};";
 }

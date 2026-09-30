@@ -1,0 +1,47 @@
+.delete-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-space-stack);
+    font-family: var(--cds-font-family);
+    font-size: var(--cds-font-size-body);
+    line-height: var(--cds-line-height);
+    color: var(--cds-color-content);
+}
+
+.delete-dialog__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--cds-danger-surface);
+    color: var(--cds-danger-text);
+}
+
+    .delete-dialog__icon ::deep .rzi {
+        font-size: 22px;
+    }
+
+.delete-dialog__text {
+    margin: 0;
+}
+
+    .delete-dialog__text strong {
+        font-weight: var(--cds-font-weight-strong);
+        color: var(--cds-color-value);
+    }
+
+    .delete-dialog__text span:not(.cds-mono) {
+        display: block;
+        margin-top: 6px;
+        color: var(--cds-color-label);
+        font-size: var(--cds-font-size-small);
+    }
+
+.delete-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    padding-top: 4px;
+}

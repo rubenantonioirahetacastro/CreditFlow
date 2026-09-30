@@ -1,1 +1,29 @@
-.verification-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
+/* Cuatro indicadores del mismo ancho separados por líneas verticales finas. */
+.verification-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+    .verification-summary ::deep .cds-kpi {
+        padding: 2px 20px;
+    }
+
+        .verification-summary ::deep .cds-kpi:first-child {
+            padding-left: 0;
+        }
+
+        .verification-summary ::deep .cds-kpi + .cds-kpi {
+            border-left: 1px solid var(--cds-border-soft);
+        }
+
+@media (max-width: 1100px) {
+    .verification-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        row-gap: var(--cds-space-card);
+    }
+
+        .verification-summary ::deep .cds-kpi:nth-child(odd) {
+            padding-left: 0;
+            border-left: none;
+        }
+}

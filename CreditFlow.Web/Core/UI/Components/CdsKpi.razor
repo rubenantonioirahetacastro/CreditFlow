@@ -1,0 +1,40 @@
+@* Indicador de resumen: rótulo + valor (+ detalle opcional), con ícono opcional a la izquierda.
+   La distribución (grid) la define la página. *@
+<div class="cds-kpi @(string.IsNullOrWhiteSpace(Icon) ? null : "cds-kpi--icon")">
+    @if (!string.IsNullOrWhiteSpace(Icon))
+    {
+        <span class="cds-kpi__icon" aria-hidden="true"><RadzenIcon Icon="@Icon" /></span>
+    }
+    <div class="cds-kpi__body">
+        <div class="cds-kpi__label">@Label</div>
+        <div class="cds-kpi__value @(Strong ? "cds-kpi__value--strong" : null)">
+            @if (ChildContent is not null)
+            {
+                @ChildContent
+            }
+            else
+            {
+                @(string.IsNullOrWhiteSpace(Value) ? "—" : Value)
+            }
+        </div>
+        @if (!string.IsNullOrWhiteSpace(Description))
+        {
+            <div class="cds-kpi__description">@Description</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>Contenido propio para el valor (p. ej. un enlace). Si se indica, reemplaza a <see cref="Value"/>.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>Valor destacado (tamaño título, seminegrita).</summary>
+    [Parameter] public bool Strong { get; set; }
+
+    /// <summary>Ícono Material Symbols en un recuadro de marca a la izquierda del indicador.</summary>
+    [Parameter] public string? Icon { get; set; }
+}

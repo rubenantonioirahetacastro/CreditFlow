@@ -24,6 +24,9 @@ public class ClienteEvaluacionDto
     public string? CCorreo { get; set; }
     public string CCelular { get; set; } = string.Empty;
     public string? FotoUrl { get; set; }
+
+    /// <summary>Fotos del documento de identidad (FotoIds). Se sirven con GET api/BuscarSolicitudCredito/foto/persona/{idFoto}.</summary>
+    public List<FotoEvaluacionDto> FotosDocumento { get; set; } = new();
 }
 
 public class CreditoEvaluacionDto

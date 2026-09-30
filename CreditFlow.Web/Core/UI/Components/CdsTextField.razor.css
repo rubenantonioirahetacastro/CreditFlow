@@ -2,16 +2,40 @@
     display: block;
     width: 100%;
     box-sizing: border-box;
-    padding: .65rem .75rem;
+    height: 38px;
+    padding: 0 12px;
     border: 1px solid var(--cds-border-default);
-    border-radius: 8px;
+    border-radius: var(--cds-radius-control);
     background: var(--cds-white);
-    color: var(--cds-text-primary);
-    font: 400 1rem/1.5 var(--cds-font-family);
+    color: var(--cds-color-value);
+    font-family: var(--cds-font-family);
+    font-size: var(--cds-font-size-body);
+    font-weight: var(--cds-font-weight-regular);
+    line-height: var(--cds-line-height);
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 
-.cds-native-field:focus {
-    border-color: var(--cds-primary-accent);
-    outline: 0;
-    box-shadow: 0 0 0 3px var(--cds-focus-ring);
-}
+    .cds-native-field::placeholder {
+        color: var(--cds-color-hint);
+    }
+
+    .cds-native-field:focus {
+        border-color: var(--cds-primary);
+        outline: 0;
+        box-shadow: 0 0 0 3px var(--cds-surface-selected);
+    }
+
+    .cds-native-field:disabled,
+    .cds-native-field[readonly] {
+        background: var(--cds-surface-subtle);
+        color: var(--cds-color-label);
+    }
+
+    /* Estado de error (validación en vivo). */
+    .cds-native-field[aria-invalid="true"] {
+        border-color: var(--cds-danger);
+    }
+
+        .cds-native-field[aria-invalid="true"]:focus {
+            box-shadow: 0 0 0 3px var(--cds-danger-surface);
+        }

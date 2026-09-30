@@ -51,6 +51,8 @@ El design system reutilizable vive en `Core/UI/Components`, siguiendo la misma c
 
 `CdsCard` es la única superficie base para tarjetas. Centraliza fondo, borde, radio, espaciado e interacción. Las features pueden agregar clases para organizar el contenido, pero no deben reconstruir la superficie visual de una card con `background`, `border` y `border-radius` propios.
 
+El sistema visual completo (escala tipográfica, pesos, interlineado, colores por rol, espaciados, radios, patrones de formularios, tablas y títulos de página) está definido en `DESIGN.md` y sus valores viven como tokens en `wwwroot/app.css`. Es de cumplimiento obligatorio para toda página.
+
 La tipografía global se define únicamente mediante `--cds-font-family` en `wwwroot/app.css`. Páginas, features, componentes, Bootstrap y Radzen deben consumir ese token; no se permiten familias tipográficas literales fuera de ese punto. Las clases de iconos, como `.rzi`, conservan obligatoriamente su fuente especializada y nunca reciben la fuente de texto global.
 
 La paleta visual también tiene una única fuente de verdad: los tokens `--cds-*` de `wwwroot/app.css`. Ninguna feature, página, componente o modelo de presentación debe declarar valores hexadecimales, RGB o colores CSS literales. Se debe reutilizar el token semántico existente y, si aparece una necesidad visual distinta, registrar primero el nuevo token global.
@@ -150,4 +152,5 @@ Cada feature registra sus propios servicios mediante `<Feature>FeatureRegistrati
 - [ ] La ruta y el comportamiento existentes se conservaron.
 - [ ] Las cargas, errores, vacíos y resultados de acciones usan el componente compartido apropiado.
 - [ ] La página compone componentes de `Core`, `Shared` o su feature y no contiene diseños incrustados.
+- [ ] La página cumple la lista de comprobación visual de `DESIGN.md` y se titula con `CdsPageHeader`.
 - [ ] El proyecto compila sin advertencias.

@@ -1,0 +1,111 @@
+/* Especificación de tabla (DESIGN.md §7 «Tablas»): encabezados centrados, celdas small, nombres a la izquierda. */
+.catalog-values {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--cds-font-size-small);
+    line-height: var(--cds-line-height);
+    --rz-icon-weight: var(--cds-icon-weight);
+    --rz-icon-grade: var(--cds-icon-grade);
+}
+
+.catalog-values__row {
+    display: grid;
+    grid-template-columns: 72px minmax(160px, 1fr) 104px 128px 80px;
+    align-items: center;
+    column-gap: var(--cds-space-cell-x);
+    min-height: 54px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--cds-surface-muted);
+    text-align: center;
+    color: var(--cds-color-label);
+    transition: background-color .15s ease, opacity .15s ease;
+}
+
+    .catalog-values__row:not(.catalog-values__head):hover {
+        background: var(--cds-surface-hover);
+    }
+
+.catalog-values__head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-height: 40px;
+    background: var(--cds-surface-subtle);
+    border-bottom-color: var(--cds-border-soft);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-content);
+}
+
+/* Inactivas: atenuadas, pero el interruptor sigue siendo legible y operable. */
+.catalog-values__row--inactive > span:not(:nth-child(4)) {
+    opacity: .6;
+}
+
+.catalog-values__left {
+    text-align: left;
+}
+
+.catalog-values__value {
+    color: var(--cds-color-content);
+}
+
+.catalog-values__name {
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-value);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.catalog-values__type {
+    display: inline-block;
+    padding: 1px 8px;
+    border: 1px solid var(--cds-border-default);
+    border-radius: var(--cds-radius-badge);
+    color: var(--cds-color-content);
+    font-size: var(--cds-font-size-label);
+}
+
+.catalog-values__type--system {
+    border-color: var(--cds-border-selected);
+    background: var(--cds-surface-selected);
+    color: var(--cds-primary);
+}
+
+.catalog-values__actions {
+    display: inline-flex;
+    justify-content: center;
+    gap: 2px;
+}
+
+.catalog-values__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: var(--cds-color-label);
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+    .catalog-values__icon ::deep .rzi {
+        font-size: 18px;
+    }
+
+    .catalog-values__icon:hover,
+    .catalog-values__icon:focus-visible {
+        outline: none;
+        background: var(--cds-surface-selected);
+        color: var(--cds-primary);
+    }
+
+.catalog-values__icon--danger:hover,
+.catalog-values__icon--danger:focus-visible {
+    background: var(--cds-danger-surface);
+    color: var(--cds-danger-text);
+}

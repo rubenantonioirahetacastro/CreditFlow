@@ -2,11 +2,15 @@
 @using CreditFlow.Web.Shared.Credit.Presentation
 
 <CdsStatusBadge Text="@(Text ?? "Desconocido")"
-                Appearance="@appearance" />
+                Appearance="@appearance"
+                Variant="@Variant" />
 
 @code {
     [Parameter] public int StatusId { get; set; }
     [Parameter] public string? Text { get; set; }
+
+    /// <summary>Pill por defecto; <see cref="CdsStatusBadgeVariant.Subtle"/> en fichas de detalle.</summary>
+    [Parameter] public CdsStatusBadgeVariant Variant { get; set; } = CdsStatusBadgeVariant.Pill;
 
     private CdsStatusAppearance appearance => CreditStatusPalette.Resolve(StatusId);
 }

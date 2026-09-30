@@ -16,6 +16,8 @@ public class DashboardKpis
 public class SerieMensualItem
 {
     public string Periodo { get; set; } = string.Empty;
+    public int Anio { get; set; }
+    public int Mes { get; set; }
     public decimal Monto { get; set; }
     public int Cantidad { get; set; }
 }

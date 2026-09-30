@@ -1,13 +1,18 @@
 @page "/otorgamiento/evaluacion/{NCodAge:int}/{NCodCred:int}"
 @rendermode InteractiveServer
 @attribute [Authorize]
+@using System.Globalization
+@using CreditFlow.Web.Core.Utils.Format
 @using CreditFlow.Web.Features.CreditEvaluation.Models
 @using CreditFlow.Web.Features.CreditEvaluation.Services
 @using CreditFlow.Web.Shared.Catalog.Models
 @using CreditFlow.Web.Shared.Catalog.Services
-@using CreditFlow.Web.Shared.Credit.Presentation
+@using CreditFlow.Web.Shared.Credit.Components
 
-<PageTitle>Evaluación de crédito</PageTitle>
+<CdsPageHeader Title="@($"Evaluación {NCodAge}-{NCodCred}")"
+               Icon="fact_check"
+               Path="@RutaPagina"
+               Description="Revisa el expediente del cliente y registra la decisión del crédito." />
 
 @if (cargando)
 {
@@ -23,256 +28,278 @@ else if (detalle is null)
 }
 else
 {
-    <div class="evaluation-page">
+    <div class="cds-page eva-page">
+        <div class="eva-main">
 
-        <header class="evaluation-header">
-            <div class="evaluation-header__content">
-                <a href="/otorgamiento/procesamiento-datos/bandeja-verificacion" class="evaluation-back">← Bandeja</a>
-                <div class="evaluation-client">
-                    <span class="evaluation-client__avatar">@Iniciales(detalle.Cliente.NombreCompleto)</span>
-                    <div class="evaluation-min-width">
-                        <div class="evaluation-client__title-row">
-                            <h1 class="evaluation-client__title">@detalle.Cliente.NombreCompleto</h1>
-                            <span class="evaluation-status">
-                                <span class="evaluation-status__dot"></span>@(detalle.Credito.EstadoNombre ?? "Sin estado")
-                            </span>
+            @* Ficha del cliente *@
+            <CdsCard>
+                <div class="eva-client">
+                    <Avatar Iniciales="@Iniciales(NombreCliente)"
+                            Tamano="44"
+                            ObtenerFotoDataUrl="@(_ => Task.FromResult<string?>(null))" />
+                    <div class="eva-client__info">
+                        <div class="eva-client__title-row">
+                            <span class="eva-client__name">@NombreCliente</span>
+                            <CreditStatusBadge StatusId="@detalle.Credito.NEstado"
+                                               Text="@(detalle.Credito.EstadoNombre ?? "Sin estado")"
+                                               Variant="CdsStatusBadgeVariant.Subtle" />
                         </div>
-                        <div class="evaluation-client__meta">CRÉDITO @detalle.Credito.NCodAge-@detalle.Credito.NCodCred · @(detalle.Credito.Agencia ?? "—") · gestiona @(detalle.Credito.UsuarioGestion ?? "—") · @detalle.Credito.DFecVig.ToString("d/M/yyyy HH:mm")</div>
+                        <div class="eva-client__meta">
+                            <span>Crédito <strong>@detalle.Credito.NCodAge-@detalle.Credito.NCodCred</strong></span>
+                            <span class="eva-client__sep" aria-hidden="true">·</span>
+                            <span>@(string.IsNullOrWhiteSpace(detalle.Credito.Agencia) ? "Sin Agencia" : detalle.Credito.Agencia)</span>
+                            <span class="eva-client__sep" aria-hidden="true">·</span>
+                            <span>Gestiona @(detalle.Credito.UsuarioGestion ?? "—")</span>
+                            <span class="eva-client__sep" aria-hidden="true">·</span>
+                            <span>@detalle.Credito.DFecVig.ToString("d/M/yyyy HH:mm")</span>
+                        </div>
+                    </div>
+                    <div class="eva-client__actions">
+                        <CdsButton Text="Generar calendario"
+                                   Icon="calendar_month"
+                                   Size="ButtonSize.Small"
+                                   title="Generar el calendario de pagos con las condiciones de este crédito"
+                                   Click="@ConfigurarCalendario" />
                     </div>
                 </div>
-                <div class="evaluation-header__actions">
-                    <CdsButton Text="Configurar calendario"
-                               Icon="calendar_month"
-                               title="Configurar el calendario con las condiciones de este crédito"
-                               Click="@ConfigurarCalendario" />
+            </CdsCard>
+
+            @* Solicitud: mismo resumen con íconos que la Bandeja *@
+            <CdsCard>
+                <div class="eva-kpis">
+                    <CdsKpi Icon="payments" Label="Monto solicitado" Value="@Money(detalle.Credito.NPrestamo)" Strong="true" />
+                    <CdsKpi Icon="event_repeat" Label="Cuotas" Value="@detalle.Credito.NNroCuotas.ToString()" Strong="true" />
+                    <CdsKpi Icon="date_range" Label="Plazo" Value="@($"{detalle.Credito.PlazoMeses} meses")" Strong="true" />
+                    <CdsKpi Icon="percent" Label="Tasa" Value="@(detalle.Credito.NTasaComp is { } tasa ? $"{tasa:0.00} %" : null)" Strong="true" />
+                    <CdsKpi Icon="category" Label="Subproducto" Value="@NameFormatter.ToDisplayName(detalle.Credito.SubProducto)" Strong="true" />
                 </div>
-            </div>
-        </header>
+            </CdsCard>
 
-        <div class="evaluation-layout">
-
-            <div class="evaluation-content">
-
-                <CdsCard Padding="CdsCardPadding.Spacious" Class="evaluation-overview-card">
-                    <div class="evaluation-stack-14">
-                        <div class="evaluation-kick">Capacidad de pago declarada</div>
+            <div class="eva-row">
+                <CdsCard Padding="CdsCardPadding.None" Class="eva-section">
+                    <CdsCardHeader Title="Capacidad de pago declarada">
+                        <Actions>
+                            <CdsButton Icon="edit"
+                                       Variant="Variant.Text"
+                                       ButtonStyle="ButtonStyle.Base"
+                                       Size="ButtonSize.ExtraSmall"
+                                       title="Editar la capacidad de pago"
+                                       aria-label="Editar la capacidad de pago"
+                                       Click="@MantenimientoPendiente" />
+                        </Actions>
+                    </CdsCardHeader>
+                    <div class="eva-section__body">
                         @if (detalle.CapacidadPago is { } cap)
                         {
-                            <div class="evaluation-flow">
+                            <div class="eva-flow">
                                 @foreach (var (label, valor, esIngreso) in FlujoFilas(cap))
                                 {
-                                    <div class="evaluation-flow__row">
-                                        <span class="evaluation-flow__label">@label</span>
-                                        <span class="evaluation-flow__value @(esIngreso ? "evaluation-flow__value--income" : "evaluation-flow__value--expense")">@(esIngreso ? "" : "−")@valor.ToString("C2")</span>
+                                    <div class="eva-flow__row">
+                                        <span class="eva-flow__label">@label</span>
+                                        <span class="eva-flow__value @(esIngreso ? "eva-flow__value--income" : "eva-flow__value--expense")">@(esIngreso ? "+" : "−")@Money(valor)</span>
                                     </div>
                                 }
                             </div>
                         }
                         else
                         {
-                            <div class="evaluation-empty">No se registró capacidad de pago en la solicitud.</div>
+                            <div class="eva-empty">No se registró capacidad de pago en la solicitud.</div>
                         }
-                    </div>
-
-                    <div class="evaluation-divider-vertical"></div>
-
-                    <div class="evaluation-stack-16">
-                        <div class="evaluation-kick">Solicitud</div>
-                        <div class="evaluation-request-amount">
-                            <div class="evaluation-request-amount__value">@detalle.Credito.NPrestamo.ToString("C2")</div>
-                            <div class="evaluation-request-amount__label">solicitado</div>
-                        </div>
-                        <div class="evaluation-divider"></div>
-                        <div class="evaluation-kick">Condiciones propuestas</div>
-                        <div class="evaluation-grid-2">
-                            @foreach (var (k, v) in Condiciones())
-                            {
-                                <Campo Etiqueta="@k" Valor="@v" />
-                            }
-                        </div>
                     </div>
                 </CdsCard>
 
-                <CdsCard Padding="CdsCardPadding.None" Class="evaluation-tabs-card">
-                    <div class="evaluation-tabs">
-                        @foreach (var t in TabsDisponibles())
-                        {
-                            <EvaluationTabButton Text="@t"
-                                                 Selected="@(tabActual == t)"
-                                                 OnClick="@(() => tabActual = t)" />
-                        }
-                    </div>
-                    <div class="evaluation-tab-content">
-                        @if (tabActual == "Garantía")
-                        {
-                            @if (!TieneGarantia())
-                            {
-                                <div class="evaluation-empty">No se registraron garantías.</div>
-                            }
-                            else
-                            {
-                                <div class="evaluation-grid-fields">
-                                    <Campo Etiqueta="Tipo de garantía" Valor="@NombreTipoGarantia()" />
-                                    <Campo Etiqueta="Marca" Valor="@NombreMarcaGarantia()" />
-                                    <Campo Etiqueta="Año" Valor="@NombreAnioGarantia()" />
-                                    <Campo Etiqueta="Valor verificado" Valor="@ValorGarantia()" />
-                                </div>
+                <CdsCard Padding="CdsCardPadding.None" Class="eva-section">
+                    <CdsCardHeader Title="Cliente">
+                        <Actions>
+                            <CdsButton Icon="edit"
+                                       Variant="Variant.Text"
+                                       ButtonStyle="ButtonStyle.Base"
+                                       Size="ButtonSize.ExtraSmall"
+                                       title="Editar los datos del cliente"
+                                       aria-label="Editar los datos del cliente"
+                                       Click="@MantenimientoPendiente" />
+                        </Actions>
+                    </CdsCardHeader>
+                    <div class="eva-section__body">
+                        <div class="eva-fields eva-fields--2">
+                            <CdsKpi Label="Documento" Value="@detalle.Cliente.CDocumento" />
+                            <CdsKpi Label="Vence" Value="@detalle.Cliente.DFechaVencimientoDocumento.ToString("d/M/yyyy")" />
+                            <CdsKpi Label="Edad" Value="@(detalle.Cliente.Edad?.ToString())" />
+                            <CdsKpi Label="Celular" Value="@detalle.Cliente.CCelular" />
+                            <CdsKpi Label="Correo" Value="@detalle.Cliente.CCorreo" />
+                        </div>
 
+                        @* Imágenes del documento de identidad (DUI): se abren en la ventana de galería. *@
+                        <div class="eva-id-docs">
+                            <CdsButton Text="@($"Ver documento de identidad ({detalle.Cliente.FotosDocumento.Count})")"
+                                       Icon="badge"
+                                       Variant="Variant.Outlined"
+                                       ButtonStyle="ButtonStyle.Base"
+                                       Size="ButtonSize.Small"
+                                       Disabled="@(detalle.Cliente.FotosDocumento.Count == 0)"
+                                       title="@(detalle.Cliente.FotosDocumento.Count == 0 ? "No se registraron imágenes del documento" : "Ver las imágenes del documento de identidad")"
+                                       Click="@(() => AbrirGaleriaAsync("Documento de identidad", "persona", FotosDocumentoIdentidad()))" />
+                        </div>
+                    </div>
+                </CdsCard>
+            </div>
+
+            @* Expediente *@
+            <CdsCard Padding="CdsCardPadding.None" Class="eva-section">
+                <div class="eva-tabs">
+                    <CdsTabs AriaLabel="Secciones del expediente">
+                        @foreach (var (nombre, cantidad) in TabsDisponibles())
+                        {
+                            <CdsTab Text="@nombre"
+                                    Count="@cantidad"
+                                    Selected="@(tabActual == nombre)"
+                                    OnClick="@(() => tabActual = nombre)" />
+                        }
+                    </CdsTabs>
+                </div>
+                <div class="eva-section__body">
+                    @if (tabActual == TabNegocio)
+                    {
+                        @if (detalle.Negocio is { } negocio)
+                        {
+                            <div class="eva-tab-toolbar">
+                                <CdsButton Text="@($"Ver fotos del negocio ({negocio.Fotos.Count})")"
+                                           Icon="photo_library"
+                                           Variant="Variant.Outlined"
+                                           ButtonStyle="ButtonStyle.Base"
+                                           Size="ButtonSize.Small"
+                                           Disabled="@(negocio.Fotos.Count == 0)"
+                                           title="@(negocio.Fotos.Count == 0 ? "No hay fotos registradas del negocio" : "Ver las fotos del negocio en grande")"
+                                           Click="@(() => AbrirGaleriaAsync("Fotos del negocio", "negocio", negocio.Fotos.Select(f => new FotoGaleriaItem(f.IdFoto)).ToList()))" />
+                            </div>
+                            <div class="eva-fields eva-fields--3">
+                                <CdsKpi Label="Nombre" Value="@NameFormatter.ToDisplayName(negocio.CNombre)" />
+                                <CdsKpi Label="Dirección del negocio">
+                                    @if (UrlUbicacionNegocio(negocio.CGeolocalizacion) is { } urlUbicacion)
+                                    {
+                                        <a href="@urlUbicacion" target="_blank" rel="noopener noreferrer" class="cds-link">@(string.IsNullOrWhiteSpace(negocio.CDireccion) ? "Ver ubicación" : negocio.CDireccion)</a>
+                                    }
+                                    else
+                                    {
+                                        @(string.IsNullOrWhiteSpace(negocio.CDireccion) ? "—" : negocio.CDireccion)
+                                    }
+                                </CdsKpi>
+                                <CdsKpi Label="Horario" Value="@HorarioNegocio(negocio)" />
+                                <CdsKpi Label="Teléfono" Value="@negocio.CTelefono" />
+                                <CdsKpi Label="Tipo de negocio" Value="@NameFormatter.ToDisplayName(NombreTipoNegocio(negocio))" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="eva-empty">No se registró negocio.</div>
+                        }
+                    }
+                    else if (tabActual == TabResidencia)
+                    {
+                        @if (detalle.Documentacion.Fotos.Count == 0)
+                        {
+                            <div class="eva-empty">No hay documentos adjuntos.</div>
+                        }
+                        else
+                        {
+                            <div class="eva-photos">
+                                @foreach (var f in detalle.Documentacion.Fotos)
+                                {
+                                    <FotoCard TipoFoto="documentacion" IdFoto="@f.IdFoto" ObtenerFoto="EvaluacionCreditoService.ObtenerFotoDataUrlAsync" Pie="@NombreDocumentoResidencia(f)" />
+                                }
+                            </div>
+                        }
+                    }
+                    else if (tabActual == TabReferencia)
+                    {
+                        @if (detalle.Fiador is { } fiador)
+                        {
+                            <div class="eva-fields eva-fields--2">
+                                <CdsKpi Label="Nombre" Value="@NameFormatter.ToDisplayName(fiador.NombreCompleto)" />
+                                <CdsKpi Label="Documento" Value="@fiador.CDocumento" />
+                                <CdsKpi Label="Dirección" Value="@fiador.CDireccion" />
+                                <CdsKpi Label="Celular" Value="@fiador.CCelular" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="eva-empty">No se registró fiador o referencia.</div>
+                        }
+                    }
+                    else if (tabActual == TabGarantia)
+                    {
+                        @if (!TieneGarantia())
+                        {
+                            <div class="eva-empty">No se registraron garantías.</div>
+                        }
+                        else
+                        {
+                            <div class="eva-fields eva-fields--4">
+                                <CdsKpi Label="Tipo de garantía" Value="@NombreTipoGarantia()" />
+                                <CdsKpi Label="Marca" Value="@NombreMarcaGarantia()" />
+                                <CdsKpi Label="Año" Value="@NombreAnioGarantia()" />
+                                <CdsKpi Label="Valor verificado" Value="@ValorGarantia()" />
                                 @if (detalle.Garantia.ValorTotal > 0)
                                 {
-                                    <div class="evaluation-coverage">Cobertura @(detalle.Garantia.CoberturaPorcentaje?.ToString("0.0") ?? "—")%</div>
+                                    <CdsKpi Label="Cobertura" Value="@(detalle.Garantia.CoberturaPorcentaje is { } cobertura ? $"{cobertura:0.0} %" : null)" />
                                 }
+                            </div>
 
-                                @if (detalle.Garantia.Fotos.Count > 0)
-                                {
-                                    <div class="evaluation-photo-grid">
-                                        @foreach (var f in detalle.Garantia.Fotos)
-                                        {
-                                            <FotoCard TipoFoto="garantia" IdFoto="@f.IdFoto" ObtenerFoto="EvaluacionCreditoService.ObtenerFotoDataUrlAsync" />
-                                        }
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="evaluation-empty">Las fotografías todavía no han sido agregadas.</div>
-                                }
-                            }
-                        }
-                        else if (tabActual == "Referencia")
-                        {
-                            @if (detalle.Fiador is { } fiador)
+                            @if (detalle.Garantia.Fotos.Count > 0)
                             {
-                                <div class="evaluation-grid-2">
-                                    <Campo Etiqueta="Nombre" Valor="@fiador.NombreCompleto" />
-                                    <Campo Etiqueta="Documento" Valor="@fiador.CDocumento" />
-                                    <Campo Etiqueta="Dirección" Valor="@fiador.CDireccion" />
-                                    <Campo Etiqueta="Celular" Valor="@fiador.CCelular" />
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="evaluation-empty">No se registró fiador o referencia.</div>
-                            }
-                        }
-                        else if (tabActual == "Verificación")
-                        {
-                            @if (detalle.Verificaciones.Count == 0)
-                            {
-                                <div class="evaluation-empty">Todavía no hay verificaciones registradas para esta solicitud.</div>
-                            }
-                            else
-                            {
-                                @foreach (var v in detalle.Verificaciones)
-                                {
-                                    <div class="evaluation-verification-row">
-                                        <div class="evaluation-verification-row__name">@v.CNombre</div>
-                                        <div class="evaluation-verification-row__date">@v.DFecha.ToString("d/M/yyyy HH:mm")</div>
-                                        <a target="_blank" href="https://www.google.com/maps?q=@v.NLatitud,@v.NLongitud" class="evaluation-link">Ver ubicación</a>
-                                    </div>
-                                }
-                            }
-                        }
-                        else if (tabActual == "Negocio")
-                        {
-                            @if (detalle.Negocio is { } negocio)
-                            {
-                                <div class="evaluation-grid-3">
-                                    <Campo Etiqueta="Nombre" Valor="@negocio.CNombre" />
-                                    <div class="evaluation-address">
-                                        <div class="evaluation-field-label">Dirección negocio</div>
-                                        @if (UrlUbicacionNegocio(negocio.CGeolocalizacion) is { } urlUbicacion)
-                                        {
-                                            <a href="@urlUbicacion" target="_blank" rel="noopener noreferrer" class="evaluation-address__link">@(string.IsNullOrWhiteSpace(negocio.CDireccion) ? "Ver ubicación" : negocio.CDireccion)</a>
-                                        }
-                                        else
-                                        {
-                                            <div class="evaluation-address__value">@(string.IsNullOrWhiteSpace(negocio.CDireccion) ? "—" : negocio.CDireccion)</div>
-                                        }
-                                    </div>
-                                    <Campo Etiqueta="Horario" Valor="@HorarioNegocio(negocio)" />
-                                    <Campo Etiqueta="Teléfono" Valor="@negocio.CTelefono" />
-                                    <Campo Etiqueta="Tipo de negocio" Valor="@NombreTipoNegocio(negocio)" />
-                                </div>
-                                @if (negocio.Fotos.Count > 0)
-                                {
-                                    <div class="evaluation-photo-grid evaluation-photo-grid--spaced">
-                                        @foreach (var f in negocio.Fotos)
-                                        {
-                                            <FotoCard TipoFoto="negocio" IdFoto="@f.IdFoto" ObtenerFoto="EvaluacionCreditoService.ObtenerFotoDataUrlAsync" />
-                                        }
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <div class="evaluation-empty">No se registró negocio.</div>
-                            }
-                        }
-                        else if (tabActual == "Confirmación residencia")
-                        {
-                            @if (detalle.Documentacion.Fotos.Count == 0)
-                            {
-                                <div class="evaluation-empty">No hay documentos adjuntos.</div>
-                            }
-                            else
-                            {
-                                <div class="evaluation-photo-grid">
-                                    @foreach (var f in detalle.Documentacion.Fotos)
+                                <div class="eva-photos">
+                                    @foreach (var f in detalle.Garantia.Fotos)
                                     {
-                                        <FotoCard TipoFoto="documentacion" IdFoto="@f.IdFoto" ObtenerFoto="EvaluacionCreditoService.ObtenerFotoDataUrlAsync" Pie="@NombreDocumentoResidencia(f)" />
+                                        <FotoCard TipoFoto="garantia" IdFoto="@f.IdFoto" ObtenerFoto="EvaluacionCreditoService.ObtenerFotoDataUrlAsync" />
                                     }
                                 </div>
                             }
-                        }
-                    </div>
-                </CdsCard>
-
-                <div class="evaluation-lower-grid">
-                    <CdsCard Class="evaluation-client-card">
-                        <div class="evaluation-kick">Cliente</div>
-                        <div class="evaluation-grid-2">
-                            <Campo Etiqueta="Documento" Valor="@detalle.Cliente.CDocumento" />
-                            <Campo Etiqueta="Vence" Valor="@detalle.Cliente.DFechaVencimientoDocumento.ToString("d/M/yyyy")" />
-                            <Campo Etiqueta="Edad" Valor="@(detalle.Cliente.Edad?.ToString() ?? "—")" />
-                            <Campo Etiqueta="Celular" Valor="@detalle.Cliente.CCelular" />
-                            <Campo Etiqueta="Correo" Valor="@(detalle.Cliente.CCorreo ?? "—")" />
-                        </div>
-                    </CdsCard>
-
-                    <CdsCard Class="evaluation-history-card">
-                        <div class="evaluation-kick">Historial del expediente</div>
-                        <div class="evaluation-history">
-                            @foreach (var (nombre, fecha) in Historial())
+                            else
                             {
-                                <div class="evaluation-history__row">
-                                    <div class="evaluation-history__marker-wrap">
-                                        <span class="evaluation-history__marker"></span>
-                                    </div>
-                                    <div class="evaluation-history__content">
-                                        <div class="evaluation-history__name">@nombre</div>
-                                        <div class="evaluation-history__date">@fecha</div>
-                                    </div>
-                                </div>
+                                <div class="eva-empty">Las fotografías todavía no han sido agregadas.</div>
                             }
-                        </div>
-                    </CdsCard>
+                        }
+                    }
+                    else if (tabActual == TabVerificacion)
+                    {
+                        @if (detalle.Verificaciones.Count == 0)
+                        {
+                            <div class="eva-empty">Todavía no hay verificaciones registradas para esta solicitud.</div>
+                        }
+                        else
+                        {
+                            <div class="eva-verifications">
+                                @foreach (var v in detalle.Verificaciones)
+                                {
+                                    <div class="eva-verification">
+                                        <span class="eva-verification__name">@NameFormatter.ToDisplayName(v.CNombre)</span>
+                                        <span class="eva-verification__date">@v.DFecha.ToString("d/M/yyyy HH:mm")</span>
+                                        <a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps?q=@v.NLatitud,@v.NLongitud" class="cds-link">Ver ubicación</a>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
                 </div>
-            </div>
+            </CdsCard>
+        </div>
 
-            <div class="evaluation-sidebar">
-
-                <CdsCard Class="evaluation-decision-card">
-                    <div class="evaluation-kick">Decisión</div>
-                    <div class="evaluation-decision-list">
+        <aside class="eva-side">
+            <CdsCard Padding="CdsCardPadding.None" Class="eva-section">
+                <CdsCardHeader Title="Decisión" />
+                <div class="eva-section__body eva-decision">
+                    <div class="eva-decision__options" role="radiogroup" aria-label="Decisión del crédito">
                         @foreach (var estado in estadosCatalogo)
                         {
                             var deshabilitado = estado.NValor == EstadoAprobado && !EstaVerificado();
-                            <CreditDecisionOption StatusId="@estado.NValor"
-                                                  Text="@estado.CNomCod"
-                                                  Selected="@(estadoElegido == estado.NValor)"
-                                                  Disabled="@deshabilitado"
-                                                  Title="@(deshabilitado ? "La solicitud debe estar verificada antes de aprobarse" : null)"
-                                                  OnClick="@(() => estadoElegido = estado.NValor)" />
+                            var (icono, descripcion) = PresentacionDecision(estado.NValor, deshabilitado);
+                            <CdsOptionCard Text="@estado.CNomCod"
+                                           Icon="@icono"
+                                           Description="@descripcion"
+                                           Selected="@(estadoElegido == estado.NValor)"
+                                           Disabled="@deshabilitado"
+                                           Title="@(deshabilitado ? "La solicitud debe estar verificada antes de aprobarse" : null)"
+                                           OnClick="@(() => estadoElegido = estado.NValor)" />
                         }
                     </div>
                     <CdsTextArea @bind-Value="comentario"
@@ -286,10 +313,25 @@ else
                                Icon="save"
                                Disabled="@(estadoElegido is null || guardando)"
                                Click="@(() => Guardar(estadoElegido))" />
-                </CdsCard>
+                </div>
+            </CdsCard>
 
-            </div>
-        </div>
+            <CdsCard Padding="CdsCardPadding.None" Class="eva-section">
+                <CdsCardHeader Title="Historial del expediente" />
+                <div class="eva-section__body">
+                    <ol class="eva-timeline">
+                        @foreach (var (nombre, fecha) in Historial())
+                        {
+                            <li class="eva-timeline__item">
+                                <span class="eva-timeline__marker" aria-hidden="true"></span>
+                                <span class="eva-timeline__name">@nombre</span>
+                                <span class="eva-timeline__date">@fecha</span>
+                            </li>
+                        }
+                    </ol>
+                </div>
+            </CdsCard>
+        </aside>
     </div>
 }
 
@@ -300,11 +342,29 @@ else
     [Inject] private IEvaluacionCreditoService EvaluacionCreditoService { get; set; } = default!;
     [Inject] private ObtenerCatalogoCodigos ObtenerCatalogoCodigos { get; set; } = default!;
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
+    [Inject] private DialogService DialogService { get; set; } = default!;
 
     private const int CodigoCatalogoEstadosCredito = 116;
     private const int EstadoEnAnalisis = 2;
     private const int EstadoAprobado = 3;
     private const int EstadoCancelado = 50;
+
+    private const string RutaBandeja = "/otorgamiento/procesamiento-datos/bandeja-verificacion";
+    private const string TabNegocio = "Negocio";
+    private const string TabResidencia = "Confirmación de residencia";
+    private const string TabReferencia = "Referencia";
+    private const string TabGarantia = "Garantía";
+    private const string TabVerificacion = "Verificación";
+
+    private static readonly CultureInfo Cultura = CultureInfo.GetCultureInfo("es-SV");
+
+    private static readonly PagePathItem[] RutaPagina =
+    [
+        "Otorgamiento",
+        "Procesamiento de Datos",
+        new("Bandeja de verificación", RutaBandeja)
+    ];
 
     private EvaluacionCreditoDetalleDto? detalle;
     private List<CatalogoCodigoDto> estadosCatalogo = new();
@@ -314,7 +374,9 @@ else
     private string? mensajeError;
     private int? estadoElegido;
     private string comentario = string.Empty;
-    private string tabActual = "Negocio";
+    private string tabActual = TabNegocio;
+
+    private string NombreCliente => NameFormatter.ToDisplayName(detalle?.Cliente.NombreCompleto);
 
     protected override Task OnInitializedAsync() => CargarAsync();
 
@@ -363,7 +425,7 @@ else
             return;
         }
 
-        NavigationManager.NavigateTo("/otorgamiento/procesamiento-datos/bandeja-verificacion");
+        NavigationManager.NavigateTo(RutaBandeja);
     }
 
     private void ConfigurarCalendario()
@@ -372,7 +434,7 @@ else
             return;
 
         var credito = detalle.Credito;
-        var invariant = System.Globalization.CultureInfo.InvariantCulture;
+        var invariant = CultureInfo.InvariantCulture;
         var parameters = new List<string>
         {
             $"agencyCode={credito.NCodAge}",
@@ -393,6 +455,30 @@ else
         NavigationManager.NavigateTo($"/simulador-credito?{string.Join("&", parameters)}");
     }
 
+    // Pendiente: la Web aún no tiene formularios de mantenimiento de cliente ni de capacidad de pago
+    // (la API ya expone UpdateClient).
+    private void MantenimientoPendiente() =>
+        Notifications.Info("Próximamente", "La edición desde el expediente estará disponible en una próxima versión.");
+
+    private Task AbrirGaleriaAsync(string titulo, string tipoFoto, IReadOnlyList<FotoGaleriaItem> fotos) =>
+        DialogService.OpenAsync<FotoGaleria>(
+            titulo,
+            new Dictionary<string, object?>
+            {
+                [nameof(FotoGaleria.TipoFoto)] = tipoFoto,
+                [nameof(FotoGaleria.Fotos)] = fotos,
+                [nameof(FotoGaleria.ObtenerFoto)] = (Func<string, int, Task<string?>>)EvaluacionCreditoService.ObtenerFotoDataUrlAsync
+            },
+            new DialogOptions { Width = "min(960px, 92vw)", CloseDialogOnOverlayClick = true });
+
+    // NTipoFoto de FotoIds lo define la app móvil y la API no guarda su significado: se numeran en orden.
+    private IReadOnlyList<FotoGaleriaItem> FotosDocumentoIdentidad() =>
+        (detalle?.Cliente.FotosDocumento ?? [])
+            .Select((f, i) => new FotoGaleriaItem(f.IdFoto, $"Documento de identidad {i + 1}"))
+            .ToList();
+
+    private static string Money(decimal value) => value.ToString("C2", Cultura);
+
     private static string Iniciales(string nombreCompleto)
     {
         var partes = nombreCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -403,6 +489,15 @@ else
 
     private bool EstaVerificado() => detalle?.Verificaciones.Count > 0;
 
+    private static (string Icono, string Descripcion) PresentacionDecision(int estado, bool deshabilitado) => estado switch
+    {
+        EstadoEnAnalisis => ("manage_search", "Mantener la solicitud en revisión"),
+        EstadoAprobado when deshabilitado => ("task_alt", "Disponible cuando la solicitud esté verificada"),
+        EstadoAprobado => ("task_alt", "Aprobar el crédito con estas condiciones"),
+        EstadoCancelado => ("block", "Rechazar y cerrar la solicitud"),
+        _ => ("radio_button_unchecked", string.Empty)
+    };
+
     private IEnumerable<(string Label, decimal Valor, bool EsIngreso)> FlujoFilas(CapacidadPagoEvaluacionDto c)
     {
         yield return ("Otros ingresos declarados", c.DOtrosIngresos, true);
@@ -412,23 +507,14 @@ else
         yield return ("Otros gastos", c.DOtrosGastos, false);
     }
 
-    private IEnumerable<(string K, string V)> Condiciones()
+    /// <summary>Pestañas del expediente; el contador solo aparece donde indica cuántos registros hay.</summary>
+    private IEnumerable<(string Nombre, int? Cantidad)> TabsDisponibles()
     {
-        if (detalle is null) yield break;
-
-        yield return ("Subproducto", detalle.Credito.SubProducto ?? "—");
-        yield return ("Plazo", $"{detalle.Credito.PlazoMeses} meses");
-        yield return ("Cuotas", detalle.Credito.NNroCuotas.ToString());
-        yield return ("Tasa", detalle.Credito.NTasaComp is { } tasa ? $"{tasa:0.00} %" : "—");
-    }
-
-    private IEnumerable<string> TabsDisponibles()
-    {
-        yield return "Negocio";
-        yield return "Confirmación residencia";
-        yield return "Referencia";
-        yield return "Garantía";
-        yield return "Verificación";
+        yield return (TabNegocio, null);
+        yield return (TabResidencia, detalle?.Documentacion.Fotos.Count);
+        yield return (TabReferencia, null);
+        yield return (TabGarantia, null);
+        yield return (TabVerificacion, detalle?.Verificaciones.Count);
     }
 
     private bool TieneGarantia() => detalle is not null &&
@@ -448,7 +534,7 @@ else
         ?? (detalle?.Garantia.NAnio > 0 ? detalle.Garantia.NAnio.ToString() : "Pendiente");
 
     private string ValorGarantia() => detalle?.Garantia.ValorTotal > 0
-        ? detalle.Garantia.ValorTotal.ToString("C2")
+        ? Money(detalle.Garantia.ValorTotal)
         : "Pendiente de verificación";
 
     private static string NombreDocumentoResidencia(FotoEvaluacionDto foto) =>
@@ -487,7 +573,7 @@ else
 
         foreach (var v in detalle.Verificaciones.OrderByDescending(v => v.DFecha))
         {
-            yield return ($"Verificado por {v.CNombre}", v.DFecha.ToString("d/M/yyyy HH:mm"));
+            yield return ($"Verificado por {NameFormatter.ToDisplayName(v.CNombre)}", v.DFecha.ToString("d/M/yyyy HH:mm"));
         }
 
         yield return ("Solicitado", detalle.Credito.DFecVig.ToString("d/M/yyyy HH:mm"));

@@ -1,8 +1,10 @@
 @typeparam TItem where TItem : notnull
 @attribute [CascadingTypeParameter(nameof(TItem))]
-@using System.Text
+@using ClosedXML.Excel
 @inject IJSRuntime JS
 
+@* Contenedor propio: da ancla a los estilos ::deep y aplica la especificación de tabla de DESIGN.md. *@
+<div class="cds-grid @(FillHeight ? "cds-grid--fill" : null)">
 @if (IsLoading)
 {
     <CdsPageState Kind="CdsPageStateKind.Loading"
@@ -19,25 +21,11 @@ else if (!string.IsNullOrWhiteSpace(ErrorMessage))
 }
 else
 {
-    @if (Data?.Any() == true)
+    @if (ShowExportButton && Data?.Any() == true)
     {
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="mb-2">
-            <CdsButton ButtonStyle="ButtonStyle.Success"
-                   Variant="Variant.Outlined"
-                   Size="ButtonSize.ExtraSmall"
-                   title="Exportar a Excel"
-                   Click="@ExportarAsync">
-            <ChildContent>
-                <span class="btn-excel-content">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <rect x="2" y="2" width="20" height="20" rx="3" fill="var(--cds-excel)" />
-                        <path d="M7 7l4 5-4 5M17 7l-4 5 4 5" stroke="var(--cds-white)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    <span>Exportar</span>
-                </span>
-            </ChildContent>
-            </CdsButton>
-        </RadzenStack>
+        <div class="cds-grid__toolbar">
+            <CdsExportButton Format="CdsExportFormat.Excel" Click="@ExportarExcelAsync" />
+        </div>
     }
 
     <RadzenDataGrid @ref="Grid"
@@ -45,13 +33,15 @@ else
                 Data="@Data"
                 IsLoading="@IsLoading"
                 EmptyText="@EmptyText"
-                Style="height: calc(100vh - 240px);"
+                Style="@GridStyle"
                 AllowFiltering="true"
                 AllowSorting="true"
                 AllowGrouping="false"
-                AllowAlternatingRows="true"
+                AllowAlternatingRows="false"
                 AllowPaging="true"
-                PageSize="20"
+                PagerAlwaysVisible="true"
+                PagerHorizontalAlign="HorizontalAlign.Center"
+                PageSize="@PageSize"
                 ShowPagingSummary="true"
                 PagingSummaryFormat="Página {0} de {1} ({2} elementos)"
                 FilterMode="FilterMode.Advanced"
@@ -88,8 +78,25 @@ else
                    Style="position: fixed; bottom: 2rem; right: 2rem; z-index: 1000;" />
     }
 }
+</div>
 
 @code {
+    /// <summary>
+    /// Muestra el botón Excel encima de la grilla. Las páginas que tienen encabezado de tarjeta
+    /// (<see cref="CdsCardHeader"/>) lo ocultan y llaman a <see cref="ExportarExcelAsync"/> desde sus acciones.
+    /// </summary>
+    [Parameter] public bool ShowExportButton { get; set; } = true;
+
+    /// <summary>
+    /// Ocupa todo el alto disponible del contenedor (tarjeta con altura definida). Si es falso usa la altura clásica
+    /// relativa a la ventana.
+    /// </summary>
+    [Parameter] public bool FillHeight { get; set; }
+
+    [Parameter] public int PageSize { get; set; } = 10;
+
+    private string? GridStyle => FillHeight ? null : "height: calc(100vh - 240px);";
+
     [Parameter] public IEnumerable<TItem>? Data { get; set; }
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -138,36 +145,63 @@ else
         ? EventCallback.Factory.Create<IList<TItem>>(this, valor => seleccionados = valor)
         : default;
 
-    private async Task ExportarAsync()
+    /// <summary>Descarga las filas actuales (con los filtros de la página) como .xlsx con las columnas visibles.</summary>
+    public async Task ExportarExcelAsync()
     {
+        if (Grid is null)
+            return;
+
         var columnas = Grid.ColumnsCollection
             .Where(c => c.Visible && !string.IsNullOrEmpty(c.Property))
             .ToList();
 
-        var sb = new StringBuilder();
-        sb.AppendLine(string.Join(",", columnas.Select(c => EscaparCsv(c.Title))));
+        using var libro = new XLWorkbook();
+        var hoja = libro.Worksheets.Add("Datos");
 
+        for (var i = 0; i < columnas.Count; i++)
+            hoja.Cell(1, i + 1).Value = columnas[i].Title;
+        hoja.Range(1, 1, 1, Math.Max(columnas.Count, 1)).Style.Font.SetBold()
+            .Border.SetBottomBorder(XLBorderStyleValues.Thin);
+
+        var fila = 1;
         foreach (var item in Data ?? Enumerable.Empty<TItem>())
         {
-            var valores = columnas.Select(c => EscaparCsv(ObtenerValor(item, c.Property)?.ToString()));
-            sb.AppendLine(string.Join(",", valores));
+            fila++;
+            for (var i = 0; i < columnas.Count; i++)
+                EscribirCelda(hoja.Cell(fila, i + 1), ObtenerValor(item, columnas[i].Property), columnas[i].FormatString);
         }
 
-        var bytes = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetBytes(sb.ToString());
-        await JS.InvokeVoidAsync("Radzen.downloadFile", $"{ExportFileName}.csv", bytes, "text/csv");
+        hoja.SheetView.FreezeRows(1);
+        hoja.Columns(1, Math.Max(columnas.Count, 1)).AdjustToContents();
+
+        using var stream = new MemoryStream();
+        libro.SaveAs(stream);
+        await JS.InvokeVoidAsync("Radzen.downloadFile", $"{ExportFileName}.xlsx", stream.ToArray(),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     }
 
-    private static string EscaparCsv(string? valor)
+    private static void EscribirCelda(IXLCell celda, object? valor, string? formatString)
     {
-        valor ??= string.Empty;
-        var comilla = '"';
-        if (valor.Contains(',') || valor.Contains(comilla) || valor.Contains('\n') || valor.Contains('\r'))
+        switch (valor)
         {
-            var valorEscapado = valor.Replace(comilla.ToString(), comilla.ToString() + comilla.ToString());
-            return comilla + valorEscapado + comilla;
+            case null:
+                return;
+            case DateTime fecha:
+                celda.Value = fecha;
+                celda.Style.NumberFormat.Format = "dd/mm/yyyy";
+                return;
+            case decimal or double or float or int or long or short:
+                celda.Value = Convert.ToDouble(valor);
+                if (formatString?.Contains(":C", StringComparison.OrdinalIgnoreCase) == true)
+                    celda.Style.NumberFormat.Format = "$#,##0.00";
+                return;
+            case bool b:
+                celda.Value = b ? "Sí" : "No";
+                return;
+            default:
+                celda.Value = valor.ToString();
+                return;
         }
-
-        return valor;
     }
 
     private static object? ObtenerValor(TItem item, string propertyPath)

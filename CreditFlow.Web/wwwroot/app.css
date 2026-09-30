@@ -1,23 +1,91 @@
 :root {
     --cds-font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+    /* ── Sistema visual (ver DESIGN.md). Pantalla de referencia: Simulador de cronograma de cuotas. ── */
+    /* Tipografía: tamaños */
+    --cds-font-size-label: 12px;   /* rótulos de campo, KPI y encabezados de sección pequeños */
+    --cds-font-size-small: 13px;   /* celdas y encabezados de tabla, chips, pills, badges, leyendas */
+    --cds-font-size-body: 14px;    /* texto base, inputs, selects, mensajes, fila de totales */
+    --cds-font-size-title: 16px;   /* título de tarjeta y valor destacado */
+    --cds-font-size-hero: 40px;    /* cifra principal de una pantalla (máximo una) */
+    /* Tipografía: pesos, interlineado y tracking */
+    --cds-font-weight-regular: 500;
+    --cds-font-weight-strong: 600;
+    --cds-font-weight-bold: 700;   /* solo fila de totales */
+    --cds-line-height: 1.4;
+    --cds-line-height-tight: 1;    /* solo cifra hero e íconos dentro de cajas fijas */
+    --cds-letter-spacing-label: .02em;
+    --cds-letter-spacing-hero: -.04em;
+    /* Color de texto por rol */
+    --cds-color-value: var(--cds-text-primary);     /* datos, valores, títulos, texto de inputs */
+    --cds-color-content: var(--cds-text-body);      /* texto general, encabezados de tabla, pills, montos en negrita */
+    --cds-color-label: var(--cds-text-secondary);   /* rótulos y celdas normales de tabla */
+    --cds-color-hint: var(--cds-text-subtle);       /* solo íconos decorativos y placeholders */
+    /* Espaciado */
+    --cds-space-page-y: 15px;
+    --cds-space-page-x: 18px;
+    /* Márgenes del contenedor de contenido del layout (MainLayout: <article class="content">). */
+    --cds-space-layout-x: 18px;
+    --cds-space-layout-top: 13px;
+    --rz-layout-body-padding: 12px;
+    /* Distancia del borde del menú lateral al inicio del contenido de una página (48px):
+       relleno de RadzenBody + margen del layout + relleno de la página. La barra superior la usa para alinear el título. */
+    --cds-content-inset: calc(var(--rz-layout-body-padding) + var(--cds-space-layout-x) + var(--cds-space-page-x));
+    /* Distancia vertical de la barra superior al contenido (≈40px). */
+    --cds-content-top: calc(var(--rz-layout-body-padding) + var(--cds-space-layout-top));
+    --cds-space-columns: 20px;     /* entre columnas/tarjetas de la página */
+    --cds-space-card: 16px;        /* entre bloques dentro de una tarjeta y entre tarjetas apiladas */
+    --cds-space-stack: 14px;       /* entre campos de un formulario */
+    --cds-space-field: 6px;        /* entre rótulo y su control */
+    --cds-space-cell-y: 10px;
+    --cds-space-cell-x: 12px;
+    /* Radios */
+    --cds-radius-card: 16px;
+    --cds-radius-control: 10px;    /* inputs y selects */
+    --cds-radius-chip: 9px;        /* pills y chips */
+    --cds-radius-badge: 7px;
+    /* Íconos (Material Symbols, fuente variable): trazo fino y sutil */
+    --cds-icon-weight: 300;        /* 100–700; el texto usa 500–600 */
+    --cds-icon-grade: -25;         /* grado negativo = trazo aún más ligero sobre fondos claros */
+    /* Barra superior */
+    --cds-header-height: 4rem;
+    --rz-header-background-color: var(--cds-white);
+    --rz-header-color: var(--cds-color-value);
+    --rz-header-shadow: none;
+    --rz-header-border: 1px solid var(--cds-border-neutral);
+
     --cds-white: #ffffff;
-    --cds-primary: #142143;
-    --cds-primary-light: #2c3f6b;
-    --cds-primary-lighter: rgba(20, 33, 67, 0.12);
-    --cds-primary-dark: #0f1a35;
-    --cds-primary-darker: #0a1224;
-    --cds-primary-accent: #14395c;
-    --cds-primary-accent-light: #1a5d94;
-    --cds-primary-accent-dark: #0f3a5e;
-    --cds-action-dark: #0c1a2b;
-    --cds-link: #0875c1;
-    --cds-link-bootstrap: #006bb7;
-    --cds-bootstrap-primary: #1b6ec2;
-    --cds-bootstrap-primary-border: #1861ac;
-    --cds-focus-ring: #258cfb;
+
+    /* ── Paleta de marca CrediFlow (única fuente de los valores; ver DESIGN.md §4) ── */
+    --cds-brand-600: #3061F2;      /* principal: botones, enlaces, seleccionado, logo "Flow" */
+    --cds-brand-500: #4973F2;      /* hover y acentos secundarios */
+    --cds-brand-400: #809DF2;      /* acento suave, anillo de foco */
+    --cds-brand-200: #BBC8F2;      /* bordes y contornos de elementos seleccionados */
+    --cds-neutral-50: #F2F2F2;     /* fondo general de la aplicación */
+    /* Derivados de #3061F2 (no están en la paleta): solo para estados presionado/hover oscuros y tintes */
+    --cds-brand-700: #2450D6;
+    --cds-brand-800: #1B3FB0;
+    --cds-brand-tint: rgba(48, 97, 242, 0.10);
+    --cds-brand-ink: #0E1B3D;      /* texto "Credi" del logo */
+
+    /* Roles semánticos mapeados a la paleta */
+    --cds-primary: var(--cds-brand-600);
+    --cds-primary-light: var(--cds-brand-500);
+    --cds-primary-lighter: rgba(48, 97, 242, 0.12);
+    --cds-primary-dark: var(--cds-brand-700);
+    --cds-primary-darker: var(--cds-brand-800);
+    --cds-primary-accent: var(--cds-brand-600);
+    --cds-primary-accent-light: var(--cds-brand-500);
+    --cds-primary-accent-dark: var(--cds-brand-700);
+    --cds-action-dark: var(--cds-brand-600);
+    --cds-link: var(--cds-brand-600);
+    --cds-link-bootstrap: var(--cds-brand-600);
+    --cds-bootstrap-primary: var(--cds-brand-600);
+    --cds-bootstrap-primary-border: var(--cds-brand-700);
+    --cds-focus-ring: var(--cds-brand-400);
     --cds-text-primary: #0c111d;
     --cds-text-heading: #111827;
-    --cds-text-navigation: #0f172a;
+    --cds-text-navigation: var(--cds-brand-600);
     --cds-text-strong: #1f2937;
     --cds-text-body: #344054;
     --cds-text-secondary: #475467;
@@ -28,8 +96,8 @@
     --cds-text-header-subtle: #9aa7c7;
     --cds-text-inverse-muted: #cbd5e1;
     --cds-surface: #ffffff;
-    --cds-surface-page: #eef1f5;
-    --cds-surface-layout: #f2f2f2;
+    --cds-surface-page: var(--cds-neutral-50);
+    --cds-surface-layout: var(--cds-neutral-50);
     --cds-surface-sidebar: #f8f9fa;
     --cds-surface-hover: #f7f9fc;
     --cds-surface-subtle: #fbfcfe;
@@ -37,10 +105,20 @@
     --cds-surface-muted-alt: #f3f4f6;
     --cds-surface-control: #f5f5f5;
     --cds-surface-navigation: #eef0f3;
-    --cds-surface-navigation-hover: #eef1f4;
-    --cds-surface-navigation-active: #dbe6fd;
+    --cds-surface-navigation-hover: var(--cds-neutral-50);
+    --cds-surface-navigation-active: var(--cds-brand-tint);
+    --cds-surface-selected: var(--cds-brand-tint);          /* fondo de un elemento seleccionado (badge de pestaña activa) */
+    --cds-border-selected: var(--cds-brand-200);            /* contorno al pasar sobre un elemento seleccionable */
+    /* Segmento «Interés» de la composición del pago (Simulador). Verde categórico validado (dataviz, slot 3):
+       se distingue del azul de Capital, del violeta del IVA y del gris de Gastos, también con daltonismo.
+       No es el verde de «éxito», reservado para estados. */
+    --cds-chart-interest: #1BAF7A;
+    --cds-surface-inverse: var(--cds-brand-ink);            /* fondo oscuro de avisos flotantes (p. ej. «Deshacer») */
+    --cds-color-inverse-accent: var(--cds-brand-400);       /* acción e ícono sobre fondo oscuro */
+    --cds-surface-inverse-hover: rgba(255, 255, 255, 0.08); /* hover de una acción sobre fondo oscuro */
+    --cds-backdrop: rgba(14, 27, 61, 0.35);                 /* fondo detrás de paneles laterales y modales */
     --cds-surface-table-success: #e6f7ec;
-    --cds-surface-table-info: #e7f1fd;
+    --cds-surface-table-info: var(--cds-brand-tint);
     --cds-surface-table-header: #eef2f7;
     --cds-warning-surface: lightyellow;
     --cds-border-soft: #eaeef4;
@@ -78,6 +156,10 @@
     --cds-error-boundary: #b32121;
     --cds-info: #2e90fa;
     --cds-excel: #1d6f42;
+    --cds-excel-dark: #185c37;
+    --cds-excel-light: #21a366;
+    --cds-pdf: #d93025;
+    --cds-pdf-dark: #a50e0e;
     --cds-shadow-brand: rgba(20, 33, 67, 0.35);
     --cds-shadow-soft: rgba(12, 17, 29, 0.07);
     --cds-shadow-medium: rgba(12, 17, 29, 0.08);
@@ -105,9 +187,19 @@
     --bs-font-sans-serif: var(--cds-font-family);
     --bs-font-monospace: var(--cds-font-family);
     --rz-font-family: var(--cds-font-family);
+    /* Base de texto del tema Radzen conectada a la escala del sistema (sin esto Radzen usa 16px, 1.5 y sus propios grises). */
+    --rz-body-font-size: var(--cds-font-size-body);
+    --rz-body-line-height: var(--cds-line-height);
+    --rz-text-color: var(--cds-color-value);
+    --rz-text-title-color: var(--cds-color-value);
+    --rz-text-secondary-color: var(--cds-color-content);
+    --rz-text-tertiary-color: var(--cds-color-label);
+    --rz-input-placeholder-color: var(--cds-color-hint);
     --rz-primary: var(--cds-primary);
     --rz-primary-light: var(--cds-primary-light);
     --rz-primary-lighter: var(--cds-primary-lighter);
+    --rz-body-background-color: var(--cds-surface-layout);
+    --rz-sidebar-background-color: var(--cds-white);
     --rz-primary-dark: var(--cds-primary-dark);
     --rz-primary-darker: var(--cds-primary-darker);
 }
@@ -125,6 +217,50 @@ textarea {
     font-family: var(--rz-icon-font-family) !important;
 }
 
+/* Enlace dentro de tablas y textos (p. ej. número de crédito que abre su detalle). DESIGN.md §7 «Tablas». */
+.cds-link {
+    color: var(--cds-link);
+    font-weight: var(--cds-font-weight-strong);
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+}
+
+    .cds-link:hover,
+    .cds-link:focus-visible {
+        text-decoration: underline;
+    }
+
+/* Códigos y valores técnicos (catálogos, claves): misma fuente del sistema, cifras de ancho fijo para que se alineen. */
+.cds-mono {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Raíz obligatoria de toda página (DESIGN.md §2): base tipográfica idéntica en todo el proyecto. */
+.cds-page {
+    box-sizing: border-box;
+    font-family: var(--cds-font-family);
+    font-size: var(--cds-font-size-body);
+    font-weight: var(--cds-font-weight-regular);
+    line-height: var(--cds-line-height);
+    color: var(--cds-color-value);
+}
+
+/* Página que ocupa exactamente el alto visible; sus tarjetas manejan el scroll interno.
+   cdsFitViewport (wwwroot/js/simulador.js) ajusta el alto exacto en tiempo de ejecución. */
+.cds-page--fill {
+    height: calc(100vh - var(--cds-header-height) - var(--cds-content-top));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 900px) {
+    .cds-page--fill {
+        height: auto;
+        overflow: visible;
+    }
+}
+
 a, .btn-link {
     color: var(--cds-link-bootstrap);
 }
@@ -140,7 +276,7 @@ a, .btn-link {
 }
 
 .content {
-    padding-top: 1.1rem;
+    padding: var(--cds-space-layout-top) var(--cds-space-layout-x) 0;
 }
 
 h1:focus {

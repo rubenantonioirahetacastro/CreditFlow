@@ -1,43 +1,120 @@
-.decision-option {
+/* Tarjeta seleccionable (DESIGN.md §6). Usada en la decisión de la Evaluación y en el tipo de valor de Catálogos. */
+.cds-option-card {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
+    align-items: center;
+    gap: 12px;
     width: 100%;
     box-sizing: border-box;
-    padding: 11px 12px;
-    border: 1px solid var(--cds-border-soft);
+    padding: 10px 12px;
+    border: 1px solid var(--cds-border-default);
     border-radius: 12px;
-    background: var(--cds-surface);
-    cursor: pointer;
-}
-
-.decision-option--selected {
-    border-color: var(--decision-border);
-    background: var(--decision-container);
-}
-
-.decision-option:disabled {
-    cursor: not-allowed;
-    opacity: .52;
-}
-
-.decision-option__indicator {
-    width: 16px;
-    height: 16px;
-    flex: none;
-    margin-top: 2px;
-    border: 1.5px solid var(--cds-border-strong);
-    border-radius: 99px;
-    background: var(--cds-surface);
-    box-sizing: border-box;
-}
-
-.decision-option--selected .decision-option__indicator {
-    border: 5px solid var(--decision-content);
-}
-
-.decision-option__text {
-    flex: 1;
+    background: var(--cds-white);
+    color: var(--cds-color-value);
+    font-family: var(--cds-font-family);
+    line-height: var(--cds-line-height);
     text-align: left;
-    font: 600 13.5px var(--cds-font-family);
+    cursor: pointer;
+    --rz-icon-weight: var(--cds-icon-weight);
+    --rz-icon-grade: var(--cds-icon-grade);
+    transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+}
+
+    .cds-option-card:hover:not(:disabled) {
+        border-color: var(--cds-border-selected);
+        background: var(--cds-surface-subtle);
+    }
+
+    .cds-option-card:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--cds-surface-selected);
+    }
+
+.cds-option-card__icon {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--cds-radius-control);
+    background: var(--cds-surface-muted);
+    color: var(--cds-color-content);
+    transition: background-color .15s ease, color .15s ease;
+}
+
+    .cds-option-card__icon ::deep .rzi {
+        font-size: 20px;
+    }
+
+.cds-option-card__body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.cds-option-card__text {
+    font-size: var(--cds-font-size-body);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-value);
+}
+
+.cds-option-card__description {
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-regular);
+    color: var(--cds-color-label);
+}
+
+/* Indicador tipo radio a la derecha. */
+.cds-option-card__indicator {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    border: 1.5px solid var(--cds-border-strong);
+    border-radius: 50%;
+    background: var(--cds-white);
+    transition: border-color .15s ease, border-width .15s ease;
+}
+
+/* Seleccionada: marca, no color de estado. */
+.cds-option-card--selected,
+.cds-option-card--selected:hover:not(:disabled) {
+    border-color: var(--cds-primary);
+    background: var(--cds-surface-selected);
+    box-shadow: 0 0 0 1px var(--cds-primary);
+}
+
+    .cds-option-card--selected .cds-option-card__icon {
+        background: var(--cds-primary);
+        color: var(--cds-white);
+    }
+
+    .cds-option-card--selected .cds-option-card__indicator {
+        border: 5px solid var(--cds-primary);
+    }
+
+/* Deshabilitada: se explica con candado y descripción, no solo con opacidad. */
+.cds-option-card:disabled {
+    cursor: not-allowed;
+    border-style: dashed;
+    background: var(--cds-surface-subtle);
+}
+
+    .cds-option-card:disabled .cds-option-card__text,
+    .cds-option-card:disabled .cds-option-card__icon {
+        color: var(--cds-color-hint);
+    }
+
+    .cds-option-card:disabled .cds-option-card__indicator {
+        border-color: var(--cds-border-default);
+        background: var(--cds-surface-subtle);
+    }
+
+@media (prefers-reduced-motion: reduce) {
+    .cds-option-card,
+    .cds-option-card__icon,
+    .cds-option-card__indicator {
+        transition: none;
+    }
 }

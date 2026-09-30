@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/material-base.css" />
     <link rel="stylesheet" href="@VersionedAsset("app.css")" />
     <link rel="stylesheet" href="@VersionedAsset("CreditFlow.Web.styles.css")" />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="images/crediflow-mark.svg" />
+    <link rel="alternate icon" type="image/png" href="favicon.png" />
     <HeadOutlet />
 </head>
 
@@ -17,7 +18,7 @@
     <Routes @rendermode="InteractiveServer" />
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
-    <script src="js/simulador.js"></script>
+    <script src="@VersionedAsset("js/simulador.js")"></script>
 </body>
 
 </html>

@@ -1,0 +1,68 @@
+@implements IDisposable
+@* Aviso flotante abajo al centro tras un cambio, con la opción «Deshacer». Se oculta solo a los 6 segundos. *@
+@if (Visible)
+{
+    <div class="cds-undo-toast" role="status" aria-live="polite">
+        <RadzenIcon Icon="check_circle" class="cds-undo-toast__icon" />
+        <span class="cds-undo-toast__message">@Message</span>
+        @if (OnUndo.HasDelegate)
+        {
+            <button type="button" class="cds-undo-toast__action" @onclick="DeshacerAsync">Deshacer</button>
+        }
+        <button type="button" class="cds-undo-toast__close" title="Cerrar" aria-label="Cerrar" @onclick="CerrarAsync">
+            <RadzenIcon Icon="close" />
+        </button>
+    </div>
+}
+
+@code {
+    private const int SegundosVisible = 6;
+
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Message { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnUndo { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    /// <summary>Cambiar este valor reinicia el temporizador (un aviso nuevo).</summary>
+    [Parameter] public int Version { get; set; }
+
+    private int versionTemporizada = -1;
+    private CancellationTokenSource? temporizador;
+
+    protected override void OnParametersSet()
+    {
+        if (!Visible || Version == versionTemporizada)
+            return;
+
+        versionTemporizada = Version;
+        temporizador?.Cancel();
+        temporizador = new CancellationTokenSource();
+        _ = OcultarLuegoAsync(temporizador.Token);
+    }
+
+    private async Task OcultarLuegoAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(SegundosVisible), token);
+            await InvokeAsync(CerrarAsync);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private async Task DeshacerAsync()
+    {
+        temporizador?.Cancel();
+        await OnUndo.InvokeAsync();
+    }
+
+    private Task CerrarAsync()
+    {
+        temporizador?.Cancel();
+        return OnClose.InvokeAsync();
+    }
+
+    public void Dispose() => temporizador?.Cancel();
+}

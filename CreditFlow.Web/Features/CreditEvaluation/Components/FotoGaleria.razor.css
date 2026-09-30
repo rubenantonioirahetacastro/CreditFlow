@@ -1,0 +1,11 @@
+.photo-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--cds-space-card);
+    font-family: var(--cds-font-family);
+}
+
+.photo-gallery__empty {
+    color: var(--cds-color-label);
+    font-size: var(--cds-font-size-body);
+}

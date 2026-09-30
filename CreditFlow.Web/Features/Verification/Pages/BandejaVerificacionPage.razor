@@ -5,60 +5,87 @@
 @using CreditFlow.Web.Features.Verification.Models
 @using CreditFlow.Web.Features.Verification.Services
 
-<PageTitle>Bandeja de verificación</PageTitle>
+<CdsPageHeader Title="Bandeja de verificación"
+               Icon="inbox"
+               Path="@(new PagePathItem[] { "Otorgamiento", "Procesamiento de Datos" })"
+               Description="Créditos pendientes de verificación y aprobación." />
 
-<VerificationPageHeader SecondsSinceRefresh="@SegundosDesdeActualizacion" />
+<div class="cds-page cds-page--fill ver-page" @ref="paginaRootRef">
+    <VerificationSummary QueueCount="@Creditos.Count"
+                         NewToday="@NuevosHoy"
+                         RepeatLoans="@ConRepretamo"
+                         TotalAmount="@MontoTotal" />
 
-<VerificationSummary QueueCount="@Creditos.Count"
-                     NewToday="@NuevosHoy"
-                     RepeatLoans="@ConRepretamo"
-                     TotalAmount="@MontoTotal"
-                     AverageAmount="@MontoPromedio" />
+    <CdsCard Padding="CdsCardPadding.None" Class="ver-table-card">
+        <CdsCardHeader Title="Créditos en cola" Badge="@($"{CreditosFiltrados.Count()} créditos")">
+            <Actions>
+                <CdsStatusBadge Variant="CdsStatusBadgeVariant.Chip"
+                                Appearance="@CdsStatusAppearance.Success"
+                                Text="@($"En vivo · hace {SegundosDesdeActualizacion} s")"
+                                title="La bandeja se actualiza automáticamente cada 2 minutos"
+                                role="status" />
+                <CdsExportButton Format="CdsExportFormat.Excel"
+                                 Disabled="@(!CreditosFiltrados.Any())"
+                                 Click="@(() => grilla.ExportarExcelAsync())" />
+            </Actions>
+        </CdsCardHeader>
 
-<EstadoFilterTabs TItem="VerificacionListItem"
-                  Items="@Creditos"
-                  EstadoSelector="@(c => c.NEstado)"
-                  Selected="@EstadoSeleccionado"
-                  SelectedChanged="@(estado => EstadoSeleccionado = estado)" />
+        <div class="ver-filters">
+            <EstadoFilterTabs TItem="VerificacionListItem"
+                              Items="@Creditos"
+                              EstadoSelector="@(c => c.NEstado)"
+                              Selected="@EstadoSeleccionado"
+                              VisibleStates="@EstadosBandeja"
+                              SelectedChanged="@(estado => EstadoSeleccionado = estado)" />
+        </div>
 
-<GridEstandar TItem="VerificacionListItem"
-              Data="@CreditosFiltrados"
-              IsLoading="@Cargando"
-              LoadingText="Cargando bandeja de verificación…"
-              ErrorMessage="@ErrorCarga"
-              OnRetry="@CargarAsync"
-              EmptyText="No hay créditos pendientes en la bandeja."
-              ExportFileName="bandeja-verificacion"
-              ShowAddButton="false"
-              SelectionMode="DataGridSelectionMode.Single"
-              RowSelect="@AbrirEvaluacion">
-    <RadzenDataGridColumn TItem="VerificacionListItem" Title="" Sortable="false" Filterable="false" Width="80px" Frozen="true">
-        <Template Context="credito">
-            <Avatar Id="@(credito.IdPersona ?? 0)"
-                    TieneFoto="@(!string.IsNullOrEmpty(credito.FotoUrl))"
-                    Iniciales="@ObtenerIniciales(credito)"
-                    Color="@ObtenerColorAvatar(credito)"
-                    ObtenerFotoDataUrl="@VerificacionService.ObtenerFotoDataUrlAsync" />
-        </Template>
-    </RadzenDataGridColumn>
-    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.NombreCliente)" Title="Nombre" Width="240px" Frozen="true" />
-    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.Agencia)" Title="Agencia" Width="160px" />
-    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.SubProducto)" Title="Subproducto" Width="180px" />
-    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.MontoSolicitado)" Title="Monto" Width="140px" FormatString="{0:C2}" />
-    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.UsuarioGestion)" Title="Gestionado por" Width="160px" />
-    <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.Estado)" Title="Estado" Width="170px">
-        <Template Context="credito">
-            <CreditStatusBadge StatusId="@credito.NEstado" Text="@credito.Estado" />
-        </Template>
-    </RadzenDataGridColumn>
-</GridEstandar>
+        <div class="ver-grid">
+            <GridEstandar @ref="grilla"
+                          TItem="VerificacionListItem"
+                          Data="@CreditosFiltrados"
+                          IsLoading="@Cargando"
+                          LoadingText="Cargando bandeja de verificación…"
+                          ErrorMessage="@ErrorCarga"
+                          OnRetry="@CargarAsync"
+                          EmptyText="No hay créditos pendientes en la bandeja."
+                          ExportFileName="bandeja-verificacion"
+                          ShowAddButton="false"
+                          ShowExportButton="false"
+                          FillHeight="true"
+                          SelectionMode="DataGridSelectionMode.Single"
+                          RowSelect="@AbrirEvaluacion">
+                <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.CodigoCredito)" Title="Crédito" Width="110px" Frozen="true" TextAlign="TextAlign.Center">
+                    <Template Context="credito">
+                        @* stopPropagation: el clic en la fila ya navega; evita una segunda navegación. *@
+                        <a class="cds-link" href="@RutaEvaluacion(credito)" @onclick:stopPropagation="true">@credito.CodigoCredito</a>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.NombreClienteVisible)" Title="Nombre" Width="240px" TextAlign="TextAlign.Left" Frozen="true" />
+                <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.DFecVig)" Title="Fecha de solicitud" Width="150px" FormatString="{0:dd/MM/yyyy HH:mm}" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.AgenciaCredito)" Title="Agencia" Width="160px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.SubProducto)" Title="Subproducto" Width="180px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.MontoSolicitado)" Title="Monto" Width="140px" FormatString="{0:C2}" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.UsuarioGestion)" Title="Gestionado por" Width="160px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn TItem="VerificacionListItem" Property="@nameof(VerificacionListItem.Estado)" Title="Estado" Width="170px" TextAlign="TextAlign.Center" />
+            </GridEstandar>
+        </div>
+    </CdsCard>
+</div>
 
 @code {
     [Inject] private IVerificacionService VerificacionService { get; set; } = default!;
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private ElementReference paginaRootRef;
+    private GridEstandar<VerificacionListItem> grilla = default!;
 
     private const int SegundosEntreRefrescos = 120;
+
+    // Estados que la API incluye en la bandeja (Solicitado, En análisis, Aprobado, Verificado);
+    // misma lista que ObtenerBandejaVerificacionHandler.EstadosVisibles.
+    private static readonly int[] EstadosBandeja = [1, 2, 3, 5];
 
     private List<VerificacionListItem> Creditos { get; set; } = new();
     private bool Cargando = true;
@@ -77,7 +104,6 @@
     private int NuevosHoy => Creditos.Count(c => c.DFecVig.Date == DateTime.Today);
     private int ConRepretamo => Creditos.Count(c => c.ConRepretamo);
     private decimal MontoTotal => Creditos.Sum(c => c.MontoSolicitado);
-    private decimal MontoPromedio => Creditos.Count == 0 ? 0m : MontoTotal / Creditos.Count;
 
     protected override async Task OnInitializedAsync()
     {
@@ -94,6 +120,11 @@
         _timerRefresco = new System.Timers.Timer(SegundosEntreRefrescos * 1000);
         _timerRefresco.Elapsed += async (_, _) => await InvokeAsync(CargarAsync);
         _timerRefresco.Start();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JS.FitAsync(paginaRootRef);
     }
 
     private async Task CargarAsync()
@@ -128,30 +159,11 @@
         _timerReloj?.Dispose();
     }
 
+    private static string RutaEvaluacion(VerificacionListItem credito) =>
+        $"/otorgamiento/evaluacion/{credito.NCodAge}/{credito.NCodCred}";
+
     private void AbrirEvaluacion(VerificacionListItem credito)
     {
-        NavigationManager.NavigateTo($"/otorgamiento/evaluacion/{credito.NCodAge}/{credito.NCodCred}");
-    }
-
-    private static readonly string[] ColoresAvatar =
-    {
-        "var(--cds-primary)", "var(--cds-primary-accent-light)", "var(--cds-primary-light)", "var(--cds-primary-accent-dark)", "var(--cds-primary-dark)"
-    };
-
-    private static string ObtenerIniciales(VerificacionListItem credito)
-    {
-        var partes = (credito.NombreCliente ?? string.Empty)
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        var inicialNombre = partes.Length > 0 ? partes[0][0].ToString() : "";
-        var inicialApellido = partes.Length > 1 ? partes[1][0].ToString() : "";
-        return (inicialNombre + inicialApellido).ToUpperInvariant();
-    }
-
-    private static string ObtenerColorAvatar(VerificacionListItem credito)
-    {
-        var clave = credito.NombreCliente ?? string.Empty;
-        var indice = Math.Abs(clave.GetHashCode()) % ColoresAvatar.Length;
-        return ColoresAvatar[indice];
+        NavigationManager.NavigateTo(RutaEvaluacion(credito));
     }
 }

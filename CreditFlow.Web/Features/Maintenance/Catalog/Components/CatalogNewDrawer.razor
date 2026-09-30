@@ -1,0 +1,106 @@
+@using System.Globalization
+@using CreditFlow.Web.Features.Maintenance.Catalog.Models
+@using CreditFlow.Web.Features.Maintenance.Catalog.Validation
+
+<CdsDrawer Open="@Open"
+           Title="Nuevo catálogo"
+           Subtitle="Se crea el encabezado del catálogo; luego podrás agregarle valores."
+           OnClose="@OnClose">
+    <ChildContent>
+        <div class="new-catalog">
+            <CdsFormField Label="Código"
+                          For="new-catalog-code"
+                          Error="@(codigoTocado ? errores.Numero : null)"
+                          Hint="Número único que identifica al catálogo.">
+                <CdsTextField NativeForm="true"
+                              Class="cds-mono"
+                              Value="@codigoTexto"
+                              ValueChanged="@(v => { codigoTexto = v; codigoTocado = true; Validar(); })"
+                              id="new-catalog-code"
+                              inputmode="numeric"
+                              aria-invalid="@((codigoTocado && errores.Numero is not null).ToString().ToLowerInvariant())" />
+            </CdsFormField>
+
+            <CdsFormField Label="Nombre visible"
+                          For="new-catalog-name"
+                          Error="@(nombreTocado ? ErrorNombre : null)">
+                <CdsTextField NativeForm="true"
+                              Value="@nombre"
+                              ValueChanged="@(v => { nombre = v; nombreTocado = true; Validar(); })"
+                              Placeholder="Por ejemplo: Tipo de garantía"
+                              MaxLength="100"
+                              id="new-catalog-name"
+                              aria-invalid="@((nombreTocado && ErrorNombre is not null).ToString().ToLowerInvariant())" />
+            </CdsFormField>
+
+            <CdsFormField Label="Clave técnica (automática)"
+                          Hint="MAYÚSCULAS, sin tildes y con «_» en lugar de espacios. Es el nombre que se guarda.">
+                <div class="new-catalog__key cds-mono">@(string.IsNullOrEmpty(Clave) ? "—" : Clave)</div>
+            </CdsFormField>
+        </div>
+    </ChildContent>
+    <Footer>
+        <CdsButton Text="Cancelar"
+                   Variant="Variant.Outlined"
+                   ButtonStyle="ButtonStyle.Base"
+                   Size="ButtonSize.Small"
+                   Click="@OnClose" />
+        <CdsButton Text="@(Guardando ? "Creando…" : "Crear catálogo")"
+                   Icon="save"
+                   Size="ButtonSize.Small"
+                   Disabled="@(Guardando || HayErrores)"
+                   Click="@GuardarAsync" />
+    </Footer>
+</CdsDrawer>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public IReadOnlyCollection<int> CodigosExistentes { get; set; } = [];
+    [Parameter] public bool Guardando { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    /// <summary>Se emite con el código y la clave técnica del catálogo a crear.</summary>
+    [Parameter] public EventCallback<(int Codigo, string Clave)> OnSave { get; set; }
+
+    private bool abiertoAntes;
+    private string codigoTexto = string.Empty;
+    private string nombre = string.Empty;
+    private bool codigoTocado;
+    private bool nombreTocado;
+    private CatalogFormErrors errores = new(null, null);
+
+    private string Clave => CatalogoConvenciones.ClaveTecnica(nombre);
+
+    private string? ErrorNombre => errores.Nombre
+        ?? (string.IsNullOrEmpty(Clave) ? "El nombre debe contener letras o números." : null);
+
+    private bool HayErrores => errores.Numero is not null || ErrorNombre is not null;
+
+    protected override void OnParametersSet()
+    {
+        if (Open && !abiertoAntes)
+        {
+            // Propone el siguiente código libre a partir del mayor existente.
+            codigoTexto = ((CodigosExistentes.Count == 0 ? 99 : CodigosExistentes.Max()) + 1).ToString(CultureInfo.InvariantCulture);
+            nombre = string.Empty;
+            codigoTocado = true;
+            nombreTocado = false;
+            Validar();
+        }
+
+        abiertoAntes = Open;
+    }
+
+    private void Validar() =>
+        errores = CatalogValidator.ValidarCatalogo(codigoTexto.Trim(), nombre, CodigosExistentes);
+
+    private Task GuardarAsync()
+    {
+        codigoTocado = nombreTocado = true;
+        Validar();
+        if (HayErrores)
+            return Task.CompletedTask;
+
+        return OnSave.InvokeAsync((int.Parse(codigoTexto.Trim(), CultureInfo.InvariantCulture), Clave));
+    }
+}

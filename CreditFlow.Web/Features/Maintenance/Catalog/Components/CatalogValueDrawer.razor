@@ -1,0 +1,153 @@
+@using System.Globalization
+@using CreditFlow.Web.Features.Maintenance.Catalog.Models
+@using CreditFlow.Web.Features.Maintenance.Catalog.Validation
+@using CreditFlow.Web.Shared.Catalog.Models
+
+<CdsDrawer Open="@Open"
+           Title="@(esNuevo ? "Nuevo valor" : "Editar valor")"
+           Subtitle="@(Grupo is null ? null : $"Catálogo {Grupo.Nombre}")"
+           OnClose="@OnClose">
+    <ChildContent>
+        @if (Grupo is not null)
+        {
+            <div class="value-form">
+                @* Catálogo actual (solo lectura). *@
+                <div class="value-form__catalog">
+                    <span class="value-form__code cds-mono">@Grupo.Codigo</span>
+                    <span class="value-form__catalog-text">
+                        <span class="value-form__catalog-name">@Grupo.Nombre</span>
+                        <span class="value-form__catalog-key cds-mono">@Grupo.Clave</span>
+                    </span>
+                </div>
+
+                <CdsFormField Label="Valor"
+                              For="catalog-value-number"
+                              Error="@errores.Numero"
+                              Hint="@(esNuevo ? "Se propone el siguiente número disponible." : "El valor identifica el registro y no se puede cambiar.")">
+                    <CdsTextField NativeForm="true"
+                                  Class="cds-mono"
+                                  Value="@valorTexto"
+                                  ValueChanged="@(v => { valorTexto = v; Validar(); })"
+                                  ReadOnly="@(!esNuevo)"
+                                  id="catalog-value-number"
+                                  inputmode="numeric"
+                                  aria-invalid="@((errores.Numero is not null).ToString().ToLowerInvariant())" />
+                </CdsFormField>
+
+                <CdsFormField Label="Nombre"
+                              For="catalog-value-name"
+                              Error="@(nombreTocado ? errores.Nombre : null)"
+                              Hint="Se guarda en MAYÚSCULAS.">
+                    <CdsTextField NativeForm="true"
+                                  Value="@nombre"
+                                  ValueChanged="@(v => { nombre = v; nombreTocado = true; Validar(); })"
+                                  Placeholder="Por ejemplo: DUI"
+                                  MaxLength="100"
+                                  id="catalog-value-name"
+                                  aria-invalid="@((nombreTocado && errores.Nombre is not null).ToString().ToLowerInvariant())" />
+                </CdsFormField>
+
+                <CdsFormField Label="Tipo">
+                    <div class="value-form__types" role="radiogroup" aria-label="Tipo de valor">
+                        <CdsOptionCard Text="General"
+                                       Icon="category"
+                                       Description="Valor de uso general"
+                                       Selected="@(tipo == CatalogoConvenciones.TipoGeneral)"
+                                       OnClick="@(() => tipo = CatalogoConvenciones.TipoGeneral)" />
+                        <CdsOptionCard Text="Sistema"
+                                       Icon="settings"
+                                       Description="Reservado para el sistema"
+                                       Selected="@(tipo == CatalogoConvenciones.TipoSistema)"
+                                       OnClick="@(() => tipo = CatalogoConvenciones.TipoSistema)" />
+                    </div>
+                </CdsFormField>
+
+                <div class="value-form__switch">
+                    <CdsSwitch Value="@activo" ValueChanged="@(v => activo = v)" Text="Valor activo" />
+                </div>
+            </div>
+        }
+    </ChildContent>
+    <Footer>
+        <CdsButton Text="Cancelar"
+                   Variant="Variant.Outlined"
+                   ButtonStyle="ButtonStyle.Base"
+                   Size="ButtonSize.Small"
+                   Click="@OnClose" />
+        <CdsButton Text="@(Guardando ? "Guardando…" : esNuevo ? "Crear valor" : "Guardar cambios")"
+                   Icon="save"
+                   Size="ButtonSize.Small"
+                   Disabled="@(Guardando || errores.HayErrores)"
+                   Click="@GuardarAsync" />
+    </Footer>
+</CdsDrawer>
+
+@code {
+    private static readonly CultureInfo Cultura = CultureInfo.GetCultureInfo("es-SV");
+
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public CatalogoGrupo? Grupo { get; set; }
+
+    /// <summary>Valor a editar; nulo para crear uno nuevo.</summary>
+    [Parameter] public CatalogoCodigoDto? Valor { get; set; }
+
+    [Parameter] public bool Guardando { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<CatalogoCodigoDto> OnSave { get; set; }
+
+    private bool abiertoAntes;
+    private bool esNuevo;
+    private string valorTexto = string.Empty;
+    private string nombre = string.Empty;
+    private bool nombreTocado;
+    private int tipo = CatalogoConvenciones.TipoGeneral;
+    private bool activo = true;
+    private CatalogFormErrors errores = new(null, null);
+
+    protected override void OnParametersSet()
+    {
+        // Se inicializa cada vez que el panel se abre.
+        if (Open && !abiertoAntes && Grupo is not null)
+        {
+            esNuevo = Valor is null;
+            valorTexto = (Valor?.NValor ?? Grupo.SiguienteValor).ToString(CultureInfo.InvariantCulture);
+            nombre = Valor?.CNomCod ?? string.Empty;
+            nombreTocado = !esNuevo;
+            tipo = Valor?.NTipoCodigo == CatalogoConvenciones.TipoSistema ? CatalogoConvenciones.TipoSistema : CatalogoConvenciones.TipoGeneral;
+            activo = Valor is null || CatalogoConvenciones.EsActivo(Valor);
+            Validar();
+        }
+
+        abiertoAntes = Open;
+    }
+
+    private void Validar()
+    {
+        if (Grupo is null)
+            return;
+
+        errores = CatalogValidator.ValidarValor(
+            valorTexto.Trim(),
+            nombre,
+            Grupo.Codigo,
+            Grupo.Valores.Select(v => v.NValor),
+            esNuevo);
+    }
+
+    private Task GuardarAsync()
+    {
+        nombreTocado = true;
+        Validar();
+        if (errores.HayErrores || Grupo is null)
+            return Task.CompletedTask;
+
+        return OnSave.InvokeAsync(new CatalogoCodigoDto
+        {
+            NCodigo = Grupo.Codigo,
+            NValor = int.Parse(valorTexto.Trim(), CultureInfo.InvariantCulture),
+            CNomCod = nombre.Trim().ToUpper(Cultura),
+            NEstados = activo ? CatalogoConvenciones.EstadoActivo : CatalogoConvenciones.EstadoInactivo,
+            NTipoCodigo = tipo
+        });
+    }
+}

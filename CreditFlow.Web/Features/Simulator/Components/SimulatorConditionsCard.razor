@@ -1,110 +1,121 @@
 @using CreditFlow.Web.Features.Maintenance.Agency.Models
 @using CreditFlow.Web.Features.Simulator.Models
+@using System.Globalization
 
-<CdsCard Class="sim-conditions-card">
-    <div class="conditions-head">
-        <span class="conditions-kick">Condiciones</span>
-        <CdsButton Text="Restablecer"
-                   Icon="restart_alt"
-                   Variant="Variant.Outlined"
-                   ButtonStyle="ButtonStyle.Secondary"
-                   Size="ButtonSize.ExtraSmall"
-                   Click="@OnReset" />
-    </div>
-
-    <div class="conditions-field">
-        <label class="conditions-label">Agencia</label>
-        <select class="conditions-input" @bind="State.AgencyCode" @bind:after="NotifyChangedAsync">
-            <option value="0">Seleccione...</option>
-            @foreach (var agency in Agencies)
-            {
-                <option value="@agency.NCodAge">@agency.Nombre</option>
-            }
-        </select>
-    </div>
-
-    <div class="conditions-field">
-        <div class="conditions-row-between">
-            <span class="conditions-label">Préstamo</span>
-            <input type="number" class="conditions-number" min="50" max="@MaximumAmount" step="1"
-                   @bind="State.Amount" @bind:event="onchange" @bind:after="NotifyChangedAsync" />
+<CdsCard>
+    <div class="conditions-body">
+        <div class="conditions-head">
+            <span class="conditions-kick">Condiciones</span>
+            <CdsButton Text="Restablecer"
+                       Icon="restart_alt"
+                       Variant="Variant.Outlined"
+                       ButtonStyle="ButtonStyle.Base"
+                       Size="ButtonSize.ExtraSmall"
+                       Click="@OnReset" />
         </div>
-        <input type="range" min="50" max="@MaximumAmount" step="1" class="conditions-slider"
-               @bind="State.Amount" @bind:event="onchange" @bind:after="NotifyChangedAsync" />
-    </div>
 
-    <div class="conditions-field">
-        <div class="conditions-row-between">
-            <span class="conditions-label">Nro. de cuotas</span>
-            <input type="number" class="conditions-number" min="1" max="@MaximumInstallments" step="1"
-                   @bind="State.Installments" @bind:event="onchange" @bind:after="NotifyChangedAsync" />
-        </div>
-        <input type="range" min="1" max="@MaximumInstallments" step="1" class="conditions-slider"
-               @bind="State.Installments" @bind:event="onchange" @bind:after="NotifyChangedAsync" />
-    </div>
-
-    <div class="conditions-field">
-        <label class="conditions-label">Subproducto</label>
-        <select class="conditions-input" @bind="State.SubProductCode" @bind:after="NotifyChangedAsync">
-            @foreach (var option in SimulatorOptions.Periodicities)
-            {
-                <option value="@option.SubProductCode">@option.Label</option>
-            }
-        </select>
-    </div>
-
-    <div class="conditions-grid">
         <div class="conditions-field">
-            <label class="conditions-label">Tasa (override)</label>
-            <input type="text" class="conditions-input" placeholder="Auto"
-                   @bind="State.RateOverride" @bind:after="NotifyChangedAsync" />
+            <label class="conditions-label">Agencia</label>
+            <select class="conditions-input" @bind="State.AgencyCode" @bind:after="NotifyChangedAsync">
+                <option value="0">Seleccione...</option>
+                @foreach (var agency in Agencies)
+                {
+                    <option value="@agency.NCodAge">@agency.Nombre</option>
+                }
+            </select>
         </div>
+
         <div class="conditions-field">
-            <label class="conditions-label">Desembolso</label>
-            <input type="date" class="conditions-input"
-                   @bind="State.StartDate" @bind:after="NotifyChangedAsync" />
+            <div class="conditions-row-between">
+                <span class="conditions-label">Préstamo</span>
+                <div class="conditions-money">
+                    <span class="conditions-money__symbol" aria-hidden="true">$</span>
+                    <input type="number" class="conditions-number conditions-number--money" min="50" max="@MaximumAmount" step="1"
+                           aria-label="Préstamo en dólares"
+                           @bind="State.Amount" @bind:event="onchange" @bind:after="NotifyChangedAsync" />
+                </div>
+            </div>
+            @* oninput refleja el valor mientras se arrastra; la simulación se ejecuta al soltar (onchange). *@
+            <input type="range" min="50" max="@MaximumAmount" step="1" class="conditions-slider"
+                   value="@State.Amount" @oninput="AmountSliding" @onchange="AmountCommittedAsync" />
         </div>
-    </div>
 
-    <div class="conditions-field">
-        <span class="conditions-label">
-            Cobrar también en
-            <span class="conditions-info" title="Los vencimientos que caen en día no habilitado se corren al siguiente día hábil.">i</span>
-        </span>
-        <div class="conditions-pills">
-            <button type="button" class="conditions-pill @(State.AllowsSaturday ? "conditions-pill--selected" : null)" @onclick="ToggleSaturdayAsync">Sábado</button>
-            <button type="button" class="conditions-pill @(State.AllowsSunday ? "conditions-pill--selected" : null)" @onclick="ToggleSundayAsync">Domingo</button>
-            <button type="button" class="conditions-pill @(State.AllowsHoliday ? "conditions-pill--selected" : null)" @onclick="ToggleHolidayAsync">Feriados</button>
+        <div class="conditions-field">
+            <div class="conditions-row-between">
+                <span class="conditions-label">Nro. de cuotas</span>
+                <input type="number" class="conditions-number" min="1" max="@MaximumInstallments" step="1"
+                       @bind="State.Installments" @bind:event="onchange" @bind:after="NotifyChangedAsync" />
+            </div>
+            <input type="range" min="1" max="@MaximumInstallments" step="1" class="conditions-slider"
+                   value="@State.Installments" @oninput="InstallmentsSliding" @onchange="InstallmentsCommittedAsync" />
         </div>
-    </div>
 
-    <div class="conditions-section">
-        <span class="conditions-label">Avanzado</span>
+        <div class="conditions-field">
+            <label class="conditions-label">Subproducto</label>
+            <select class="conditions-input" @bind="State.SubProductCode" @bind:after="NotifyChangedAsync">
+                @foreach (var option in SimulatorOptions.Periodicities)
+                {
+                    <option value="@option.SubProductCode">@option.Label</option>
+                }
+            </select>
+        </div>
+
         <div class="conditions-grid">
             <div class="conditions-field">
-                <label class="conditions-label">Refinanciado</label>
-                <select class="conditions-input" value="@State.IsRefinanced.ToString().ToLowerInvariant()" @onchange="RefinancedChangedAsync">
-                    <option value="false">No</option>
-                    <option value="true">Sí</option>
-                </select>
+                <label class="conditions-label">Tasa (override)</label>
+                <input type="text" class="conditions-input" placeholder="Auto"
+                       @bind="State.RateOverride" @bind:after="NotifyChangedAsync" />
             </div>
             <div class="conditions-field">
-                <label class="conditions-label">
-                    Categoría
-                    <span class="conditions-info" title="Determina qué línea de tarifario aplica. No todas las combinaciones existen para todas las categorías.">i</span>
-                </label>
-                <select class="conditions-input" @bind="State.CategoryCode" @bind:after="NotifyChangedAsync">
-                    @for (var category = 1; category <= 16; category++)
-                    {
-                        <option value="@category">Categoría @category</option>
-                    }
-                </select>
+                <label class="conditions-label">Desembolso</label>
+                <input type="date" class="conditions-input"
+                       @bind="State.StartDate" @bind:after="NotifyChangedAsync" />
             </div>
         </div>
+
         <div class="conditions-field">
-            <label class="conditions-label">Gasto por cuota (override)</label>
-            <input type="text" class="conditions-input" placeholder="Auto"
-                   @bind="State.ExpenseOverride" @bind:after="NotifyChangedAsync" />
+            <span class="conditions-label">
+                Cobrar también en
+                <span class="conditions-info" title="Los vencimientos que caen en día no habilitado se corren al siguiente día hábil.">i</span>
+            </span>
+            <div class="conditions-pills">
+                <button type="button" class="conditions-pill @(State.AllowsSaturday ? "conditions-pill--selected" : null)" @onclick="ToggleSaturdayAsync">Sábado</button>
+                <button type="button" class="conditions-pill @(State.AllowsSunday ? "conditions-pill--selected" : null)" @onclick="ToggleSundayAsync">Domingo</button>
+                <button type="button" class="conditions-pill @(State.AllowsHoliday ? "conditions-pill--selected" : null)" @onclick="ToggleHolidayAsync">Feriados</button>
+            </div>
+        </div>
+
+        <div class="conditions-section">
+            <div class="conditions-section-title">
+                <RadzenIcon Icon="settings" class="conditions-gear" aria-hidden="true" />
+                <span class="conditions-label">Avanzado</span>
+            </div>
+            <div class="conditions-grid">
+                <div class="conditions-field">
+                    <label class="conditions-label">Refinanciado</label>
+                    <select class="conditions-input" value="@State.IsRefinanced.ToString().ToLowerInvariant()" @onchange="RefinancedChangedAsync">
+                        <option value="false">No</option>
+                        <option value="true">Sí</option>
+                    </select>
+                </div>
+                <div class="conditions-field">
+                    <label class="conditions-label">
+                        Categoría
+                        <span class="conditions-info" title="Determina qué línea de tarifario aplica. No todas las combinaciones existen para todas las categorías.">i</span>
+                    </label>
+                    <select class="conditions-input" @bind="State.CategoryCode" @bind:after="NotifyChangedAsync">
+                        @for (var category = 1; category <= 16; category++)
+                        {
+                            <option value="@category">Categoría @category</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="conditions-field">
+                <label class="conditions-label">Gasto por cuota (override)</label>
+                <input type="text" class="conditions-input" placeholder="Auto"
+                       @bind="State.ExpenseOverride" @bind:after="NotifyChangedAsync" />
+            </div>
         </div>
     </div>
 </CdsCard>
@@ -118,6 +129,30 @@
     [Parameter] public EventCallback OnReset { get; set; }
 
     private Task NotifyChangedAsync() => OnChanged.InvokeAsync();
+
+    private void AmountSliding(ChangeEventArgs args)
+    {
+        if (decimal.TryParse(args.Value?.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var amount))
+            State.Amount = amount;
+    }
+
+    private Task AmountCommittedAsync(ChangeEventArgs args)
+    {
+        AmountSliding(args);
+        return NotifyChangedAsync();
+    }
+
+    private void InstallmentsSliding(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var installments))
+            State.Installments = installments;
+    }
+
+    private Task InstallmentsCommittedAsync(ChangeEventArgs args)
+    {
+        InstallmentsSliding(args);
+        return NotifyChangedAsync();
+    }
 
     private async Task ToggleSaturdayAsync() { State.AllowsSaturday = !State.AllowsSaturday; await NotifyChangedAsync(); }
     private async Task ToggleSundayAsync() { State.AllowsSunday = !State.AllowsSunday; await NotifyChangedAsync(); }

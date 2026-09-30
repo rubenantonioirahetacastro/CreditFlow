@@ -1,0 +1,9 @@
+@* Fila de pestañas con subrayado (DESIGN.md §6). Se coloca sobre un borde inferior (encabezado de tarjeta o fila de filtros). *@
+<div class="cds-tabs" role="tablist" aria-label="@AriaLabel">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+}

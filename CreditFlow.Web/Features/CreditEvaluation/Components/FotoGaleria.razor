@@ -1,0 +1,27 @@
+@* Contenido del diálogo de galería: fotos grandes del expediente (negocio, documento de identidad, etc.). *@
+<div class="photo-gallery">
+    @if (Fotos.Count == 0)
+    {
+        <div class="photo-gallery__empty">No hay fotografías registradas.</div>
+    }
+    else
+    {
+        @foreach (var foto in Fotos)
+        {
+            <FotoCard TipoFoto="@TipoFoto"
+                      IdFoto="@foto.IdFoto"
+                      ObtenerFoto="@ObtenerFoto"
+                      Pie="@foto.Pie"
+                      Grande="true" />
+        }
+    }
+</div>
+
+@code {
+    /// <summary>Tipo de foto del endpoint api/BuscarSolicitudCredito/foto/{tipo}/{id}: negocio, persona, documentacion, garantia.</summary>
+    [Parameter, EditorRequired] public string TipoFoto { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired] public IReadOnlyList<FotoGaleriaItem> Fotos { get; set; } = [];
+
+    [Parameter, EditorRequired] public Func<string, int, Task<string?>> ObtenerFoto { get; set; } = default!;
+}

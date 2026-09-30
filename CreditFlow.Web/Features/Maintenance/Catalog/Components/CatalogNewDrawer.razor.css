@@ -1,0 +1,16 @@
+.new-catalog {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.new-catalog__key {
+    padding: 9px 12px;
+    border: 1px dashed var(--cds-border-default);
+    border-radius: var(--cds-radius-control);
+    background: var(--cds-surface-subtle);
+    color: var(--cds-color-content);
+    font-size: var(--cds-font-size-small);
+    font-weight: var(--cds-font-weight-strong);
+    word-break: break-all;
+}

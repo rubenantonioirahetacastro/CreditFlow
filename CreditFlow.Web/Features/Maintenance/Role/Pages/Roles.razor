@@ -1,9 +1,11 @@
 @page "/roles"
 @attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
 
-<PageTitle>Mantenimiento de Roles</PageTitle>
+<CdsPageHeader Title="Roles"
+               Icon="admin_panel_settings"
+               Path="@(new PagePathItem[] { "Mantenimientos" })"
+               Description="Administra los roles y sus permisos." />
 
-<h3>Roles</h3>
 <CdsFormMessage Message="@ValidationError" />
 
 <GridEstandar TItem="RoleDto"

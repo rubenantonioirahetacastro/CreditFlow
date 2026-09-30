@@ -1,39 +1,3 @@
-.nav-search {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding-top: 0.85rem;
-    padding-bottom: 0.85rem;
-    margin-bottom: 0.25rem;
-    border-bottom: 1px solid var(--cds-border-neutral);
-}
-
-.nav-search-icon {
-    color: var(--cds-text-muted-alt);
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-
-.nav-search-input {
-    flex: 1;
-    min-width: 0;
-    border: 1px solid var(--cds-border-navigation);
-    border-radius: 999px;
-    padding: 0.4rem 0.9rem;
-    font-size: 0.85rem;
-    color: var(--cds-text-strong);
-    background-color: var(--cds-surface-navigation);
-}
-
-.nav-search-input:focus {
-    outline: none;
-    border-color: var(--cds-primary);
-}
-
-.nav-search-input::placeholder {
-    color: var(--cds-text-subtle-alt);
-}
-
 .nav-item {
     font-size: 0.9rem;
     padding: 0.15rem 0.5rem;
@@ -110,3 +74,78 @@
         padding-left: 3.75rem;
         font-size: 0.8rem;
     }
+
+/* Estructura: búsqueda arriba, menú con scroll propio y tarjeta de usuario anclada al fondo. */
+.nav-shell {
+    /* Íconos sutiles: peso fijo (no heredan el 500/600 del texto ni del ítem activo). */
+    --rz-icon-weight: var(--cds-icon-weight);
+    --rz-icon-grade: var(--cds-icon-grade);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+/* Buscador del menú, fijo arriba de Home. */
+.nav-search {
+    flex: none;
+    padding: 14px 16px 6px;
+}
+
+.nav-search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    margin: 0;
+    padding: 0 12px;
+    border: 1px solid var(--cds-border-neutral);
+    border-radius: var(--cds-radius-control);
+    background: var(--cds-surface-subtle);
+    color: var(--cds-color-label);
+    cursor: text;
+}
+
+    .nav-search-box:focus-within {
+        border-color: var(--cds-primary);
+    }
+
+    .nav-search-box ::deep .nav-search-icon {
+        font-size: 18px;
+    }
+
+    .nav-search-box input {
+        flex: 1 1 auto;
+        min-width: 0;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--cds-color-value);
+        font-family: var(--cds-font-family);
+        font-size: var(--cds-font-size-small);
+    }
+
+        .nav-search-box input::placeholder {
+            color: var(--cds-color-hint);
+        }
+
+.nav-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* Otorgamiento: encabezado fijo de sección (siempre desplegado, sin interacción). */
+.nav-item ::deep .nav-section-title,
+.nav-item ::deep .nav-section-title:hover {
+    background: none;
+    color: var(--cds-text-strong);
+    font-weight: 600;
+    cursor: default;
+}
+
+    .nav-item ::deep .nav-section-title .rzi,
+    .nav-item ::deep .nav-section-title:hover .rzi {
+        color: var(--cds-text-muted-alt);
+    }
+

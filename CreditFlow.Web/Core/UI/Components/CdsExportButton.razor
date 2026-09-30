@@ -1,0 +1,43 @@
+@using Microsoft.AspNetCore.Components.Web
+@using Radzen
+
+<CdsButton ButtonStyle="ButtonStyle.Base"
+           Variant="Variant.Outlined"
+           Size="@Size"
+           Disabled="@Disabled"
+           title="@(Title ?? (IsPdf ? "Exportar a PDF" : "Exportar a Excel"))"
+           Click="@Click">
+    <ChildContent>
+        <span class="cds-export-button">
+            @if (IsPdf)
+            {
+                <svg class="cds-export-button__icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="var(--cds-pdf)" />
+                    <path d="M15 2v5h5" fill="var(--cds-pdf-dark)" />
+                    <text x="12" y="17.2" text-anchor="middle" fill="var(--cds-white)" font-size="6.4" font-weight="700">PDF</text>
+                </svg>
+            }
+            else
+            {
+                <svg class="cds-export-button__icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect x="8" y="3" width="14" height="18" rx="2" fill="var(--cds-excel-light)" />
+                    <path d="M15 3v18M8 9h14M8 15h14" stroke="var(--cds-white)" stroke-width="1.2" />
+                    <rect x="2" y="6" width="12" height="12" rx="1.8" fill="var(--cds-excel-dark)" />
+                    <path d="M5.3 9l5.4 6M10.7 9l-5.4 6" stroke="var(--cds-white)" stroke-width="1.9" stroke-linecap="round" />
+                </svg>
+            }
+            <span>@(Text ?? (IsPdf ? "PDF" : "Excel"))</span>
+        </span>
+    </ChildContent>
+</CdsButton>
+
+@code {
+    [Parameter] public CdsExportFormat Format { get; set; } = CdsExportFormat.Excel;
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Small;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> Click { get; set; }
+
+    private bool IsPdf => Format == CdsExportFormat.Pdf;
+}

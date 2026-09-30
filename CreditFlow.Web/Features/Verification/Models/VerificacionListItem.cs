@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using CreditFlow.Web.Core.Utils.Format;
 
 namespace CreditFlow.Web.Features.Verification.Models;
 
@@ -45,4 +46,16 @@ public class VerificacionListItem
 
     [JsonPropertyName("subproducto")]
     public string? SubProducto { get; set; }
+
+    /// <summary>Identificador visible del crédito: agencia-crédito (mismo formato que el Simulador).</summary>
+    [JsonIgnore]
+    public string CodigoCredito => $"{NCodAge}-{NCodCred}";
+
+    /// <summary>Nombre del cliente con solo la inicial de cada palabra en mayúscula.</summary>
+    [JsonIgnore]
+    public string NombreClienteVisible => NameFormatter.ToDisplayName(NombreCliente);
+
+    /// <summary>Agencia del crédito; "Sin Agencia" cuando no tiene una asignada.</summary>
+    [JsonIgnore]
+    public string AgenciaCredito => string.IsNullOrWhiteSpace(Agencia) ? "Sin Agencia" : Agencia;
 }

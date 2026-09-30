@@ -1,20 +1,102 @@
-::deep .fab-add-btn.rz-primary,
-::deep .fab-add-btn {
+/* Especificación de tabla (DESIGN.md §6 «Tablas»), aplicada mediante las variables de tema de Radzen. */
+.cds-grid {
+    --rz-grid-border: none;
+    --rz-grid-background-color: var(--cds-white);
+    --rz-grid-header-background-color: var(--cds-surface-subtle);
+    --rz-grid-header-color: var(--cds-color-content);
+    --rz-grid-header-font-size: var(--cds-font-size-small);
+    --rz-grid-header-font-weight: var(--cds-font-weight-strong);
+    --rz-grid-header-line-height: var(--cds-line-height);
+    --rz-grid-header-text-transform: none;
+    --rz-grid-header-cell-border: none;
+    --rz-grid-header-cell-border-bottom: 1px solid var(--cds-border-soft);
+    --rz-grid-header-sorted-background-color: var(--cds-surface-subtle);
+    --rz-grid-cell-color: var(--cds-color-label);
+    --rz-grid-cell-font-size: var(--cds-font-size-small);
+    --rz-grid-cell-line-height: var(--cds-line-height);
+    --rz-grid-cell-padding: var(--cds-space-cell-y) var(--cds-space-cell-x);
+    --rz-grid-cell-border: 1px solid var(--cds-surface-muted);
+    --rz-grid-right-cell-border: none;
+    --rz-grid-bottom-cell-border: 1px solid var(--cds-surface-muted);
+    --rz-grid-hover-background-color: var(--cds-surface-hover);
+    --rz-grid-hover-color: var(--cds-color-value);
+    --rz-grid-stripe-background-color: var(--cds-white);
+    --rz-grid-stripe-odd-background-color: var(--cds-white);
+    --rz-grid-frozen-cell-background-color: var(--cds-white);
+    --rz-grid-selected-background-color: var(--cds-surface-hover);
+    --rz-grid-selected-color: var(--cds-color-value);
+    --rz-pager-summary-color: var(--cds-color-label);
+    --rz-pager-summary-font-size: var(--cds-font-size-small);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Dentro de una tarjeta con altura definida: la grilla ocupa todo el espacio restante mediante flex
+   (no con height: 100%, que no se resuelve dentro de un ítem flex y deja el paginador fuera de la vista). */
+.cds-grid--fill {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.cds-grid--fill ::deep .rz-data-grid {
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+.cds-grid__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--cds-space-field);
+}
+
+.cds-grid ::deep .rz-data-grid {
+    border: none;
+    border-radius: 0;
+}
+
+/* Encabezados centrados sobre el ancho COMPLETO de la columna, sin importar la alineación de sus celdas
+   (p. ej. Nombre alinea sus celdas a la izquierda pero su título va centrado).
+   El ícono de filtro sale del flujo y se ancla a la derecha; el título reserva el mismo espacio a ambos
+   lados, así el texto queda alineado con el centro de los datos. */
+.cds-grid ::deep .rz-grid-table thead th > div:not(.rz-cell-filter) {
+    position: relative;
+}
+
+.cds-grid ::deep .rz-grid-table thead th .rz-column-title {
+    justify-content: center;
+    padding-inline: 1.75rem;
+}
+
+.cds-grid ::deep .rz-grid-table thead th .rz-grid-filter-icon {
+    position: absolute;
+    inset-inline-end: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+}
+
+.cds-grid ::deep .rz-pager {
+    border-top: 1px solid var(--cds-border-soft);
+}
+
+.cds-grid ::deep .fab-add-btn.rz-primary,
+.cds-grid ::deep .fab-add-btn {
     background-color: var(--cds-accent-gold) !important;
     border-color: var(--cds-accent-gold) !important;
     color: var(--cds-primary) !important;
 }
 
-::deep .fab-add-btn .rzi {
+.cds-grid ::deep .fab-add-btn .rzi {
     color: var(--cds-primary) !important;
 }
 
-::deep .fab-add-btn:hover,
-::deep .fab-add-btn:focus {
+.cds-grid ::deep .fab-add-btn:hover,
+.cds-grid ::deep .fab-add-btn:focus {
     background-color: var(--cds-accent-gold-hover) !important;
     border-color: var(--cds-accent-gold-hover) !important;
 }
 
-::deep .rz-frozen-cell-left-end {
+.cds-grid ::deep .rz-frozen-cell-left-end {
     box-shadow: 6px 0 6px -4px var(--cds-shadow-brand) !important;
 }

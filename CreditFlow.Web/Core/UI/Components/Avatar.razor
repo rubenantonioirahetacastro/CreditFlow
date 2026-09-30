@@ -1,11 +1,15 @@
-<div class="avatar-contenedor">
+<div class="avatar-contenedor @(Sutil ? "avatar-sutil" : null)" style="--avatar-size:@(Tamano)px">
     @if (UrlMostrada is not null)
     {
         <img src="@UrlMostrada" alt="Foto de @Iniciales" class="avatar-foto" />
     }
+    else if (string.IsNullOrWhiteSpace(Iniciales))
+    {
+        <span class="avatar-iniciales" style="@FondoStyle"><RadzenIcon Icon="person" class="avatar-icono" /></span>
+    }
     else
     {
-        <span class="avatar-iniciales" style="background-color:@Color">@Iniciales</span>
+        <span class="avatar-iniciales" style="@FondoStyle">@Iniciales</span>
     }
 
     @if (Editable)
@@ -25,6 +29,10 @@
     [Parameter] public string? PreviewUrl { get; set; }
     [Parameter] public string Iniciales { get; set; } = string.Empty;
     [Parameter] public string Color { get; set; } = "var(--cds-primary)";
+    /// <summary>Diámetro en píxeles.</summary>
+    [Parameter] public int Tamano { get; set; } = 46;
+    /// <summary>Estilo discreto: fondo claro e ícono/iniciales oscuros (ignora Color).</summary>
+    [Parameter] public bool Sutil { get; set; }
     [Parameter] public bool Editable { get; set; }
     [Parameter] public EventCallback<InputFileChangeEventArgs> OnFotoSeleccionada { get; set; }
 
@@ -34,6 +42,7 @@
     private int idCargado = -1;
 
     private string? UrlMostrada => PreviewUrl ?? fotoUrl;
+    private string? FondoStyle => Sutil ? null : $"background-color:{Color}";
 
     protected override async Task OnParametersSetAsync()
     {

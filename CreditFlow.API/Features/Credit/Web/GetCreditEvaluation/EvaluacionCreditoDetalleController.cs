@@ -82,6 +82,12 @@ namespace CreditFlow.API.Features.Credit.Web.GetCreditEvaluation
                 ? await _context.FotoNegocios.AsNoTracking().Where(f => f.IdNegocio == negocio.IdNegocio).ToListAsync()
                 : new List<Features.Credit.Shared.Domain.Models.FotoNegocio>();
 
+            var fotosDocumentoIdentidad = await _context.FotoIds.AsNoTracking()
+                .Where(f => f.IdPersona == persona.IdPersona)
+                .OrderBy(f => f.NTipoFoto)
+                .ThenBy(f => f.IdFoto)
+                .ToListAsync();
+
             var capacidadPago = credito.IdCapacidadPago.HasValue
                 ? await _context.CapacidadPagos.AsNoTracking().FirstOrDefaultAsync(c => c.IdCapacidadPago == credito.IdCapacidadPago.Value)
                 : null;
@@ -144,6 +150,9 @@ namespace CreditFlow.API.Features.Credit.Web.GetCreditEvaluation
                     CCorreo = persona.CCorreo,
                     CCelular = persona.CCelular,
                     FotoUrl = persona.VFotoPerfil,
+                    FotosDocumento = fotosDocumentoIdentidad
+                        .Select(f => new FotoEvaluacionDto { IdFoto = f.IdFoto, TipoFoto = f.NTipoFoto })
+                        .ToList(),
                 },
                 Credito = new CreditoEvaluacionDto
                 {

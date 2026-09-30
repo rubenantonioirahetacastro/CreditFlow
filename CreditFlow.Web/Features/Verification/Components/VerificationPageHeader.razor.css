@@ -1,5 +1,0 @@
-.verification-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
-.verification-header__eyebrow { color: var(--cds-text-subtle-alt); font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
-.verification-header__title { margin: 2px 0 0; font-size: 1.6rem; font-weight: 800; color: var(--cds-text-heading); }
-.verification-header__live { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--cds-border-neutral); border-radius: 999px; background: var(--cds-white); color: var(--cds-status-default-content); font-size: .8rem; font-weight: 600; }
-.verification-header__live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--cds-success-bright); }

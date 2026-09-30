@@ -1,256 +1,356 @@
 @page "/catalogos-codigos"
 @attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
+@using CreditFlow.Web.Features.Maintenance.Catalog.Components
+@using CreditFlow.Web.Features.Maintenance.Catalog.Models
+@using CreditFlow.Web.Features.Maintenance.Catalog.Services
+@using CreditFlow.Web.Shared.Catalog.Models
 
-<PageTitle>Mantenimiento de Catálogos de Códigos</PageTitle>
+<CdsPageHeader Title="Catálogos de códigos"
+               Icon="list_alt"
+               Path="@(new PagePathItem[] { "Mantenimientos" })"
+               Description="Administra los catálogos y los valores que usa el sistema." />
 
-<h3>Catálogos de Códigos</h3>
-<CdsFormMessage Message="@ValidationError" />
+@if (cargando && grupos.Count == 0)
+{
+    <CdsPageState Kind="CdsPageStateKind.Loading" Title="Cargando catálogos…" />
+}
+else if (errorCarga is not null && grupos.Count == 0)
+{
+    <CdsPageState Kind="CdsPageStateKind.Error"
+                  Title="No pudimos cargar los catálogos"
+                  Message="@errorCarga"
+                  OnAction="@(() => CargarAsync())" />
+}
+else
+{
+    <div class="cds-page cds-page--fill cat-page" @ref="paginaRootRef">
+        <div class="cat-layout">
+            <CatalogList Grupos="@grupos"
+                         SelectedCodigo="@codigoSeleccionado"
+                         OnSelect="@Seleccionar"
+                         OnNew="@(() => nuevoCatalogoAbierto = true)" />
 
-<GridEstandar TItem="CatalogoEdicionDto"
-              @ref="gridEstandar"
-              Data="@ListaCatalogos"
-              IsLoading="@Cargando"
-              LoadingText="Cargando catálogos…"
-              ErrorMessage="@ErrorCarga"
-              OnRetry="@CargarCatalogosAsync"
-              EmptyText="No hay códigos de catálogo registrados."
-              ExportFileName="catalogos-codigos"
-              EditMode="DataGridEditMode.Single"
-              RowRender="@OnRowRender"
-              AddDisabled="@(filaEnEdicion != null)"
-              AddButtonTitle="Nuevo código"
-              OnAdd="@NuevoCatalogoAsync">
-    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Title="" Sortable="false" Filterable="false" Width="90px" CssClass="celda-accion" Frozen="true">
-        <Template Context="catalogo">
-            <div class="d-flex gap-1">
-                <CdsButton Icon="edit"
-                              ButtonStyle="ButtonStyle.Primary"
-                              Variant="Variant.Outlined"
-                              Size="ButtonSize.ExtraSmall"
-                              Disabled="@(filaEnEdicion != null)"
-                              title="Editar código"
-                              Click="@(() => EditarAsync(catalogo))" />
-                <CdsButton Icon="delete"
-                              ButtonStyle="ButtonStyle.Danger"
-                              Variant="Variant.Outlined"
-                              Size="ButtonSize.ExtraSmall"
-                              Disabled="@(filaEnEdicion != null)"
-                              title="Eliminar código"
-                              Click="@(() => EliminarAsync(catalogo))" />
+            <div class="cat-detail">
+                @if (Seleccionado is not { } grupo)
+                {
+                    <CdsCard>
+                        <CdsPageState Kind="CdsPageStateKind.Empty"
+                                      Title="Selecciona un catálogo"
+                                      Message="Elige un catálogo de la lista para ver y administrar sus valores."
+                                      ShowSurface="false"
+                                      Compact="true" />
+                    </CdsCard>
+                }
+                else
+                {
+                    <CdsCard Padding="CdsCardPadding.None" Class="cat-detail-card">
+                        <CdsCardHeader Title="@grupo.Nombre"
+                                       Subtitle="@($"Clave {grupo.Clave} · {grupo.Activos} activos de {grupo.Valores.Count}")">
+                            <Lead>
+                                <span class="cat-code cds-mono">@grupo.Codigo</span>
+                            </Lead>
+                            <Actions>
+                                <CdsExportButton Format="CdsExportFormat.Excel"
+                                                 Disabled="@(grupo.Valores.Count == 0)"
+                                                 Click="@(() => ExportarAsync(grupo))" />
+                                <CdsButton Text="Nuevo valor"
+                                           Icon="add"
+                                           Size="ButtonSize.Small"
+                                           Click="@(() => AbrirValor(null))" />
+                            </Actions>
+                        </CdsCardHeader>
+
+                        <div class="cat-filters">
+                            <CdsTabs AriaLabel="Filtrar valores por estado">
+                                <CdsTab Text="Todos" Count="@grupo.Valores.Count" Selected="@(filtroEstado == FiltroEstado.Todos)" OnClick="@(() => filtroEstado = FiltroEstado.Todos)" />
+                                <CdsTab Text="Activos" Count="@grupo.Activos" Selected="@(filtroEstado == FiltroEstado.Activos)" OnClick="@(() => filtroEstado = FiltroEstado.Activos)" />
+                                <CdsTab Text="Inactivos" Count="@grupo.Inactivos" Selected="@(filtroEstado == FiltroEstado.Inactivos)" OnClick="@(() => filtroEstado = FiltroEstado.Inactivos)" />
+                            </CdsTabs>
+                            <div class="cat-filters__search">
+                                <CdsTextField NativeForm="true"
+                                              Value="@filtroTexto"
+                                              ValueChanged="@(v => filtroTexto = v)"
+                                              Placeholder="Filtrar valores"
+                                              aria-label="Filtrar valores" />
+                            </div>
+                        </div>
+
+                        <div class="cat-table">
+                            @if (ValoresFiltrados.Count == 0)
+                            {
+                                <CdsPageState Kind="CdsPageStateKind.Empty"
+                                              Title="@(grupo.Valores.Count == 0 ? "Este catálogo aún no tiene valores" : "No hay valores que coincidan")"
+                                              Message="@(grupo.Valores.Count == 0 ? "Crea el primero con «Nuevo valor»." : "Cambia el filtro o la búsqueda.")"
+                                              ShowSurface="false"
+                                              Compact="true" />
+                            }
+                            else
+                            {
+                                <CatalogValuesTable Valores="@ValoresFiltrados"
+                                                    OnToggle="@(args => CambiarEstadoAsync(args.Valor, args.Activo))"
+                                                    OnEdit="@(v => AbrirValor(v))"
+                                                    OnDelete="@EliminarAsync" />
+                            }
+                        </div>
+
+                        <div class="cat-footer">
+                            Mostrando @ValoresFiltrados.Count de @grupo.Valores.Count valores
+                        </div>
+                    </CdsCard>
+                }
             </div>
-        </Template>
-        <EditTemplate Context="catalogo">
-            <div class="d-flex gap-1">
-                <CdsButton Icon="save"
-                              ButtonStyle="ButtonStyle.Primary"
-                              Variant="Variant.Outlined"
-                              Size="ButtonSize.ExtraSmall"
-                              Disabled="@Guardando"
-                              title="Guardar cambios"
-                              Click="@(() => GuardarAsync(catalogo))" />
-                <CdsButton Icon="close"
-                              ButtonStyle="ButtonStyle.Secondary"
-                              Variant="Variant.Outlined"
-                              Size="ButtonSize.ExtraSmall"
-                              Disabled="@Guardando"
-                              title="Cancelar edición"
-                              Click="@(() => CancelarAsync(catalogo))" />
-            </div>
-        </EditTemplate>
-    </RadzenDataGridColumn>
+        </div>
+    </div>
+}
 
-    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Property="@nameof(CatalogoEdicionDto.NCodigo)" Title="Código" Width="100px">
-        <EditTemplate Context="catalogo">
-            <CdsNumericField TValue="int" @bind-Value="catalogo.NCodigo" Disabled="@(!catalogo.EsNueva)" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
+<CatalogValueDrawer Open="@valorAbierto"
+                    Grupo="@Seleccionado"
+                    Valor="@valorEnEdicion"
+                    Guardando="@guardando"
+                    OnClose="@(() => valorAbierto = false)"
+                    OnSave="@GuardarValorAsync" />
 
-    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Property="@nameof(CatalogoEdicionDto.NValor)" Title="Valor" Width="100px">
-        <EditTemplate Context="catalogo">
-            <CdsNumericField TValue="int" @bind-Value="catalogo.NValor" Disabled="@(!catalogo.EsNueva)" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
+<CatalogNewDrawer Open="@nuevoCatalogoAbierto"
+                  CodigosExistentes="@grupos.Select(g => g.Codigo).ToList()"
+                  Guardando="@guardando"
+                  OnClose="@(() => nuevoCatalogoAbierto = false)"
+                  OnSave="@CrearCatalogoAsync" />
 
-    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Property="@nameof(CatalogoEdicionDto.CNomCod)" Title="Nombre">
-        <EditTemplate Context="catalogo">
-            <CdsTextField @bind-Value="catalogo.CNomCod" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Property="@nameof(CatalogoEdicionDto.NEstados)" Title="Estado" Width="110px" Filterable="false">
-        <Template Context="catalogo">@(catalogo.NEstados?.ToString() ?? "-")</Template>
-        <EditTemplate Context="catalogo">
-            <CdsNumericField TValue="int?" @bind-Value="catalogo.NEstados" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="CatalogoEdicionDto" Property="@nameof(CatalogoEdicionDto.NTipoCodigo)" Title="Tipo código" Width="120px" Filterable="false">
-        <Template Context="catalogo">@(catalogo.NTipoCodigo?.ToString() ?? "-")</Template>
-        <EditTemplate Context="catalogo">
-            <CdsNumericField TValue="int?" @bind-Value="catalogo.NTipoCodigo" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-</GridEstandar>
+<CdsUndoToast Visible="@avisoVisible"
+              Version="@avisoVersion"
+              Message="@avisoMensaje"
+              OnUndo="@DeshacerAsync"
+              OnClose="@(() => avisoVisible = false)" />
 
 @code {
     [Inject] private ICatalogoCodigoService CatalogoCodigoService { get; set; } = default!;
     [Inject] private DialogService DialogService { get; set; } = default!;
     [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    private class CatalogoEdicionDto : CatalogoCodigoDto
+    private enum FiltroEstado { Todos, Activos, Inactivos }
+
+    private ElementReference paginaRootRef;
+
+    private List<CatalogoGrupo> grupos = [];
+    private int? codigoSeleccionado;
+    private bool cargando = true;
+    private string? errorCarga;
+    private bool guardando;
+
+    private FiltroEstado filtroEstado = FiltroEstado.Todos;
+    private string filtroTexto = string.Empty;
+
+    private bool valorAbierto;
+    private CatalogoCodigoDto? valorEnEdicion;
+    private bool nuevoCatalogoAbierto;
+
+    // Aviso con «Deshacer»: guarda la acción inversa del último cambio.
+    private bool avisoVisible;
+    private int avisoVersion;
+    private string avisoMensaje = string.Empty;
+    private Func<Task<(bool Exito, string? Mensaje)>>? accionDeshacer;
+
+    private CatalogoGrupo? Seleccionado => grupos.FirstOrDefault(g => g.Codigo == codigoSeleccionado);
+
+    private List<CatalogoCodigoDto> ValoresFiltrados =>
+        (Seleccionado?.Valores ?? [])
+            .Where(v => filtroEstado switch
+            {
+                FiltroEstado.Activos => CatalogoConvenciones.EsActivo(v),
+                FiltroEstado.Inactivos => !CatalogoConvenciones.EsActivo(v),
+                _ => true
+            })
+            .Where(v => string.IsNullOrWhiteSpace(filtroTexto) ||
+                        v.CNomCod.Contains(filtroTexto.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                        v.NValor.ToString().Contains(filtroTexto.Trim()))
+            .ToList();
+
+    protected override Task OnInitializedAsync() => CargarAsync();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        public bool EsNueva { get; set; }
+        await JS.FitAsync(paginaRootRef);
     }
 
-    private GridEstandar<CatalogoEdicionDto> gridEstandar = default!;
-
-    private List<CatalogoEdicionDto> ListaCatalogos { get; set; } = new();
-
-    private CatalogoEdicionDto? filaEnEdicion;
-    private CatalogoEdicionDto? backupOriginal;
-
-    private bool Cargando = true;
-    private bool Guardando;
-    private string? ErrorCarga;
-    private string? ValidationError;
-
-    protected override async Task OnInitializedAsync()
+    private async Task CargarAsync(int? seleccionar = null)
     {
-        await CargarCatalogosAsync();
-    }
-
-    private async Task CargarCatalogosAsync()
-    {
-        Cargando = true;
-        ErrorCarga = null;
+        cargando = true;
         var result = await CatalogoCodigoService.ObtenerTodosAsync();
         if (result.IsSuccess)
-            ListaCatalogos = (result.Data ?? []).Select(MapearAEdicion).ToList();
-        else if (ListaCatalogos.Count > 0)
+        {
+            grupos = CatalogoGrupo.Agrupar(result.Data ?? []);
+            errorCarga = null;
+            var destino = seleccionar ?? codigoSeleccionado;
+            codigoSeleccionado = grupos.Any(g => g.Codigo == destino) ? destino : grupos.FirstOrDefault()?.Codigo;
+        }
+        else if (grupos.Count > 0)
+        {
             Notifications.Error("No se pudieron actualizar los catálogos", result.Message);
+        }
         else
-            ErrorCarga = result.Message;
-        Cargando = false;
-    }
-
-    private static CatalogoEdicionDto MapearAEdicion(CatalogoCodigoDto c) => new()
-    {
-        NCodigo = c.NCodigo,
-        NValor = c.NValor,
-        CNomCod = c.CNomCod,
-        NEstados = c.NEstados,
-        NTipoCodigo = c.NTipoCodigo
-    };
-
-    private void OnRowRender(RowRenderEventArgs<CatalogoEdicionDto> args)
-    {
-        if (filaEnEdicion is not { } fila || !ReferenceEquals(args.Data, fila))
-            return;
-
-        args.Attributes["style"] = fila.EsNueva
-            ? "background-color: var(--cds-surface-table-success);"
-            : "background-color: var(--cds-surface-table-info);";
-    }
-
-    private async Task NuevoCatalogoAsync()
-    {
-        ValidationError = null;
-        var nuevo = new CatalogoEdicionDto { EsNueva = true };
-        filaEnEdicion = nuevo;
-        await gridEstandar.Grid.InsertRow(nuevo);
-    }
-
-    private async Task EditarAsync(CatalogoEdicionDto catalogo)
-    {
-        ValidationError = null;
-        backupOriginal = ClonarValores(catalogo);
-        filaEnEdicion = catalogo;
-        await gridEstandar.Grid.EditRow(catalogo);
-    }
-
-    private void CancelarAsync(CatalogoEdicionDto catalogo)
-    {
-        ValidationError = null;
-        gridEstandar.Grid.CancelEditRow(catalogo);
-
-        if (!catalogo.EsNueva && backupOriginal is not null)
         {
-            CopiarValores(backupOriginal, catalogo);
+            errorCarga = result.Message ?? "No se pudieron cargar los catálogos.";
         }
 
-        backupOriginal = null;
-        filaEnEdicion = null;
+        cargando = false;
     }
 
-    private async Task GuardarAsync(CatalogoEdicionDto catalogo)
+    private void Seleccionar(int codigo)
     {
-        var validation = CatalogValidator.Validate(catalogo, catalogo.EsNueva);
-        if (!validation.IsValid)
-        {
-            ValidationError = validation.Message;
-            return;
-        }
+        codigoSeleccionado = codigo;
+        filtroEstado = FiltroEstado.Todos;
+        filtroTexto = string.Empty;
+    }
 
-        ValidationError = null;
-        Guardando = true;
+    private void AbrirValor(CatalogoCodigoDto? valor)
+    {
+        valorEnEdicion = valor;
+        valorAbierto = true;
+    }
 
-        var (exito, mensaje) = catalogo.EsNueva
-            ? await CatalogoCodigoService.CrearAsync(catalogo)
-            : await CatalogoCodigoService.ActualizarAsync(catalogo);
-
-        Guardando = false;
+    private async Task GuardarValorAsync(CatalogoCodigoDto valor)
+    {
+        var anterior = valorEnEdicion is null ? null : Copiar(valorEnEdicion);
+        guardando = true;
+        var (exito, mensaje) = anterior is null
+            ? await CatalogoCodigoService.CrearAsync(valor)
+            : await CatalogoCodigoService.ActualizarAsync(valor);
+        guardando = false;
 
         if (!exito)
         {
-            Notifications.Error("No se pudo guardar el código", mensaje);
+            Notifications.Error("No se pudo guardar el valor", mensaje);
             return;
         }
 
-        await gridEstandar.Grid.UpdateRow(catalogo);
-        backupOriginal = null;
-        filaEnEdicion = null;
-
-        Notifications.Success(
-            catalogo.EsNueva ? "Código creado" : "Código actualizado",
-            "Los cambios se guardaron correctamente.");
-        await CargarCatalogosAsync();
+        valorAbierto = false;
+        await CargarAsync();
+        MostrarAviso(
+            anterior is null ? $"Valor «{valor.CNomCod}» creado" : $"Valor «{valor.CNomCod}» actualizado",
+            anterior is null
+                ? () => CatalogoCodigoService.EliminarAsync(valor.NCodigo, valor.NValor)
+                : () => CatalogoCodigoService.ActualizarAsync(anterior));
     }
 
-    private async Task EliminarAsync(CatalogoEdicionDto catalogo)
+    private async Task CambiarEstadoAsync(CatalogoCodigoDto valor, bool activo)
     {
-        var confirmado = await DialogService.Confirm(
-            $"¿Eliminar el código {catalogo.NValor} del catálogo {catalogo.NCodigo} ('{catalogo.CNomCod}')? Esta acción no se puede deshacer.",
-            "Confirmar eliminación",
-            new ConfirmOptions { OkButtonText = "Eliminar", CancelButtonText = "Cancelar" });
+        var anterior = Copiar(valor);
+        var actualizado = Copiar(valor);
+        actualizado.NEstados = activo ? CatalogoConvenciones.EstadoActivo : CatalogoConvenciones.EstadoInactivo;
 
-        if (confirmado != true)
-            return;
-
-        var (exito, mensaje) = await CatalogoCodigoService.EliminarAsync(catalogo.NCodigo, catalogo.NValor);
+        var (exito, mensaje) = await CatalogoCodigoService.ActualizarAsync(actualizado);
         if (!exito)
         {
-            Notifications.Error("No se pudo eliminar el código", mensaje);
+            Notifications.Error("No se pudo cambiar el estado", mensaje);
+            await CargarAsync();
             return;
         }
 
-        Notifications.Success("Código eliminado");
-        await CargarCatalogosAsync();
+        await CargarAsync();
+        MostrarAviso(
+            $"«{valor.CNomCod}» {(activo ? "activado" : "desactivado")}",
+            () => CatalogoCodigoService.ActualizarAsync(anterior));
     }
 
-    private static CatalogoEdicionDto ClonarValores(CatalogoEdicionDto origen) => new()
+    private async Task EliminarAsync(CatalogoCodigoDto valor)
+    {
+        var activo = CatalogoConvenciones.EsActivo(valor);
+        object? eleccion = await DialogService.OpenAsync<CatalogDeleteDialog>(
+            $"¿Eliminar «{valor.CNomCod}»?",
+            new Dictionary<string, object?>
+            {
+                [nameof(CatalogDeleteDialog.Nombre)] = valor.CNomCod,
+                [nameof(CatalogDeleteDialog.Valor)] = valor.NValor,
+                [nameof(CatalogDeleteDialog.PuedeDesactivar)] = activo
+            },
+            new DialogOptions { Width = "min(460px, 92vw)", CloseDialogOnOverlayClick = true });
+
+        if (eleccion is CatalogDeleteChoice.Desactivar)
+        {
+            await CambiarEstadoAsync(valor, false);
+            return;
+        }
+
+        if (eleccion is not CatalogDeleteChoice.Eliminar)
+            return;
+
+        var anterior = Copiar(valor);
+        var (exito, mensaje) = await CatalogoCodigoService.EliminarAsync(valor.NCodigo, valor.NValor);
+        if (!exito)
+        {
+            Notifications.Error("No se pudo eliminar el valor", mensaje);
+            return;
+        }
+
+        await CargarAsync();
+        MostrarAviso($"«{valor.CNomCod}» eliminado", () => CatalogoCodigoService.CrearAsync(anterior));
+    }
+
+    private async Task CrearCatalogoAsync((int Codigo, string Clave) nuevo)
+    {
+        guardando = true;
+        var (exito, mensaje) = await CatalogoCodigoService.CrearAsync(new CatalogoCodigoDto
+        {
+            // La fila Valor = Código es el encabezado del catálogo.
+            NCodigo = nuevo.Codigo,
+            NValor = nuevo.Codigo,
+            CNomCod = nuevo.Clave,
+            NEstados = CatalogoConvenciones.EstadoActivo,
+            NTipoCodigo = CatalogoConvenciones.TipoGeneral
+        });
+        guardando = false;
+
+        if (!exito)
+        {
+            Notifications.Error("No se pudo crear el catálogo", mensaje);
+            return;
+        }
+
+        nuevoCatalogoAbierto = false;
+        await CargarAsync(nuevo.Codigo);
+        MostrarAviso($"Catálogo «{nuevo.Clave}» creado", () => CatalogoCodigoService.EliminarAsync(nuevo.Codigo, nuevo.Codigo));
+    }
+
+    private void MostrarAviso(string mensaje, Func<Task<(bool Exito, string? Mensaje)>> deshacer)
+    {
+        avisoMensaje = mensaje;
+        accionDeshacer = deshacer;
+        avisoVersion++;
+        avisoVisible = true;
+    }
+
+    private async Task DeshacerAsync()
+    {
+        avisoVisible = false;
+        if (accionDeshacer is null)
+            return;
+
+        var (exito, mensaje) = await accionDeshacer();
+        accionDeshacer = null;
+        if (!exito)
+        {
+            Notifications.Error("No se pudo deshacer el cambio", mensaje);
+            return;
+        }
+
+        await CargarAsync();
+        Notifications.Info("Cambio deshecho");
+    }
+
+    private async Task ExportarAsync(CatalogoGrupo grupo)
+    {
+        var bytes = CatalogoExcelExporter.Exportar(grupo);
+        await JS.InvokeVoidAsync("Radzen.downloadFile", $"catalogo-{grupo.Codigo}-{grupo.Clave.ToLowerInvariant()}.xlsx", bytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }
+
+    private static CatalogoCodigoDto Copiar(CatalogoCodigoDto origen) => new()
     {
         NCodigo = origen.NCodigo,
         NValor = origen.NValor,
         CNomCod = origen.CNomCod,
         NEstados = origen.NEstados,
-        NTipoCodigo = origen.NTipoCodigo,
-        EsNueva = origen.EsNueva
+        NTipoCodigo = origen.NTipoCodigo
     };
-
-    private static void CopiarValores(CatalogoEdicionDto origen, CatalogoEdicionDto destino)
-    {
-        destino.CNomCod = origen.CNomCod;
-        destino.NEstados = origen.NEstados;
-        destino.NTipoCodigo = origen.NTipoCodigo;
-    }
 }

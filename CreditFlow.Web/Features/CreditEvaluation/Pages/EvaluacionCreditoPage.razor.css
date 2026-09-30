@@ -1,76 +1,336 @@
-.evaluation-page { min-height: 100vh; display: flex; flex-direction: column; background: var(--cds-surface-page); color: var(--cds-text-primary); font-family: var(--cds-font-family); }
-.evaluation-header { position: sticky; top: 0; z-index: 5; border-bottom: 1px solid var(--cds-border-default); background: var(--cds-white); }
-.evaluation-header__content { max-width: 1500px; margin: 0 auto; padding: 14px 28px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-.evaluation-back { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--cds-border-subtle); border-radius: 10px; color: var(--cds-text-secondary); text-decoration: none; font: 600 12.5px var(--cds-font-family); }
-.evaluation-client { display: flex; align-items: center; gap: 12px; min-width: 0; }
-.evaluation-client__avatar { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 999px; background: var(--cds-primary-accent); color: var(--cds-white); font: 700 13px var(--cds-font-family); }
-.evaluation-min-width { min-width: 0; }
-.evaluation-client__title-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
-.evaluation-client__title { margin: 0; overflow: hidden; color: inherit; font: 700 18px/1.25 var(--cds-font-family); letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
-.evaluation-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border: 1px solid var(--cds-accent-orange-border); border-radius: 8px; background: var(--cds-accent-orange-soft); color: var(--cds-accent-orange-text); font: 600 11.5px var(--cds-font-family); }
-.evaluation-status__dot { width: 6px; height: 6px; border-radius: 99px; background: var(--cds-accent-orange); }
-.evaluation-client__meta { color: var(--cds-text-subtle); font: 500 11.5px/1.5 var(--cds-font-family); }
-.evaluation-header__actions { margin-left: auto; display: flex; align-items: center; gap: 9px; }
-.evaluation-layout { width: 100%; max-width: 1500px; margin: 0 auto; box-sizing: border-box; padding: 22px 28px 40px; display: grid; grid-template-columns: minmax(0, 1fr) 384px; gap: 20px; align-items: start; }
-.evaluation-content { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-::deep .evaluation-overview-card { display: grid; grid-template-columns: minmax(0, 1.15fr) 1px minmax(0, 1fr); gap: 24px; }
-.evaluation-stack-14, .evaluation-stack-16 { display: flex; flex-direction: column; min-width: 0; }
-.evaluation-stack-14 { gap: 14px; }
-.evaluation-stack-16 { gap: 16px; }
-.evaluation-kick, .evaluation-field-label { color: var(--cds-text-subtle); font: 600 11px var(--cds-font-family); letter-spacing: .09em; text-transform: uppercase; }
-.evaluation-field-label { font-size: 10.5px; letter-spacing: .07em; }
-.evaluation-flow { display: flex; flex-direction: column; gap: 2px; }
-.evaluation-flow__row { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
-.evaluation-flow__label { flex: 1; color: var(--cds-text-secondary); font: 500 12.5px var(--cds-font-family); }
-.evaluation-flow__value { font: 500 13px var(--cds-font-family); }
-.evaluation-flow__value--income { color: var(--cds-success); }
-.evaluation-flow__value--expense { color: var(--cds-danger-text-strong); }
-.evaluation-empty { color: var(--cds-text-subtle); font: 500 12.5px var(--cds-font-family); }
-.evaluation-divider-vertical { background: var(--cds-border-soft); }
-.evaluation-divider { height: 1px; background: var(--cds-border-soft); }
-.evaluation-request-amount { display: flex; align-items: flex-end; gap: 10px; }
-.evaluation-request-amount__value { font: 600 34px/1 var(--cds-font-family); letter-spacing: -.03em; }
-.evaluation-request-amount__label { padding-bottom: 5px; color: var(--cds-text-muted); font: 500 12.5px var(--cds-font-family); }
-.evaluation-grid-2, .evaluation-grid-3, .evaluation-grid-fields, .evaluation-photo-grid { display: grid; gap: 13px 12px; }
-.evaluation-grid-2 { grid-template-columns: 1fr 1fr; }
-.evaluation-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.evaluation-grid-fields { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-.evaluation-photo-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-.evaluation-photo-grid--spaced { margin-top: 6px; }
-::deep .evaluation-tabs-card { overflow: hidden; }
-.evaluation-tabs { display: flex; gap: 2px; padding: 0 10px; overflow-x: auto; border-bottom: 1px solid var(--cds-border-soft); }
-.evaluation-tab-content { padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
-.evaluation-coverage { color: var(--cds-text-secondary); font: 600 12.5px var(--cds-font-family); }
-.evaluation-verification-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px 130px; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--cds-surface-muted); }
-.evaluation-verification-row__name { font: 600 13px var(--cds-font-family); }
-.evaluation-verification-row__date { color: var(--cds-text-secondary); font: 500 12.5px var(--cds-font-family); }
-.evaluation-link { font: 600 12px var(--cds-font-family); }
-.evaluation-address { display: flex; flex-direction: column; gap: 2px; }
-.evaluation-address__link { color: var(--cds-link); text-decoration: none; font: 600 13px var(--cds-font-family); }
-.evaluation-address__value { color: var(--cds-text-primary); font: 500 13px var(--cds-font-family); }
-.evaluation-lower-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: start; }
-::deep .evaluation-client-card { display: flex; flex-direction: column; gap: 13px; }
-::deep .evaluation-history-card { display: flex; flex-direction: column; gap: 12px; }
-.evaluation-history { max-height: 112px; overflow-y: auto; scrollbar-gutter: stable; padding-right: 6px; }
-.evaluation-history__row { min-height: 56px; box-sizing: border-box; display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 11px; align-items: start; }
-.evaluation-history__marker-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; padding-top: 4px; }
-.evaluation-history__marker { width: 11px; height: 11px; border: 2px solid var(--cds-accent-orange); border-radius: 99px; background: var(--cds-accent-orange); }
-.evaluation-history__content { padding-bottom: 11px; }
-.evaluation-history__name { font: 600 13px var(--cds-font-family); }
-.evaluation-history__date { color: var(--cds-text-subtle); font: 500 11.5px var(--cds-font-family); }
-.evaluation-sidebar { position: sticky; top: 88px; max-height: calc(100vh - 108px); overflow: auto; padding-right: 2px; display: flex; flex-direction: column; gap: 20px; }
-::deep .evaluation-decision-card { display: flex; flex-direction: column; gap: 14px; }
-.evaluation-decision-list { display: flex; flex-direction: column; gap: 6px; }
-
-@media (max-width: 980px) {
-    .evaluation-layout { grid-template-columns: 1fr; padding-inline: 16px; }
-    .evaluation-sidebar { position: static; max-height: none; }
+/* Distribución de la evaluación. Tipografía y colores vienen de .cds-page y de los componentes compartidos. */
+.eva-page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: var(--cds-space-columns);
+    align-items: start;
+    padding: var(--cds-space-page-y) var(--cds-space-page-x);
 }
 
-@media (max-width: 640px) {
-    .evaluation-header__content { padding-inline: 16px; }
-    ::deep .evaluation-overview-card { grid-template-columns: 1fr; }
-    .evaluation-divider-vertical { height: 1px; }
-    .evaluation-grid-3, .evaluation-grid-2 { grid-template-columns: 1fr; }
-    .evaluation-verification-row { grid-template-columns: 1fr; }
+.eva-main,
+.eva-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-space-card);
+    min-width: 0;
+}
+
+/* El panel de decisión acompaña al desplazamiento. */
+.eva-side {
+    position: sticky;
+    top: var(--cds-space-page-y);
+}
+
+::deep .eva-section {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.eva-section__body {
+    padding: 16px 20px 20px;
+}
+
+.eva-empty {
+    color: var(--cds-color-label);
+}
+
+/* ── Ficha del cliente ───────────────────────────── */
+.eva-client {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+    .eva-client ::deep .avatar-contenedor {
+        flex: none;
+        margin: 0;
+    }
+
+.eva-client__info {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.eva-client__title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.eva-client__name {
+    font-size: var(--cds-font-size-title);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-value);
+}
+
+.eva-client__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: var(--cds-font-size-small);
+    color: var(--cds-color-label);
+}
+
+    .eva-client__meta strong {
+        font-weight: var(--cds-font-weight-strong);
+        color: var(--cds-color-content);
+    }
+
+.eva-client__sep {
+    color: var(--cds-color-hint);
+}
+
+.eva-client__actions {
+    flex: none;
+}
+
+/* ── Solicitud (mismo patrón que el resumen de la Bandeja) ── */
+.eva-kpis {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+    .eva-kpis ::deep .cds-kpi {
+        padding: 2px 18px;
+    }
+
+        .eva-kpis ::deep .cds-kpi:first-child {
+            padding-left: 0;
+        }
+
+        .eva-kpis ::deep .cds-kpi + .cds-kpi {
+            border-left: 1px solid var(--cds-border-soft);
+        }
+
+/* ── Capacidad de pago + Cliente ─────────────────── */
+.eva-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--cds-space-card);
+    align-items: stretch;
+}
+
+.eva-flow {
+    display: flex;
+    flex-direction: column;
+}
+
+.eva-flow__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--cds-surface-muted);
+}
+
+    .eva-flow__row:last-child {
+        border-bottom: none;
+    }
+
+.eva-flow__label {
+    color: var(--cds-color-content);
+}
+
+.eva-flow__value {
+    font-weight: var(--cds-font-weight-strong);
+    font-variant-numeric: tabular-nums;
+}
+
+.eva-flow__value--income {
+    color: var(--cds-success-text-alt);
+}
+
+.eva-flow__value--expense {
+    color: var(--cds-danger-text);
+}
+
+.eva-fields {
+    display: grid;
+    gap: var(--cds-space-stack) 24px;
+}
+
+.eva-fields--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.eva-fields--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.eva-fields--4 {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+/* Botón del documento de identidad dentro de la tarjeta Cliente. */
+.eva-id-docs {
+    display: flex;
+    margin-top: var(--cds-space-card);
+    padding-top: var(--cds-space-card);
+    border-top: 1px solid var(--cds-surface-muted);
+}
+
+/* ── Expediente ──────────────────────────────────── */
+.eva-tab-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--cds-space-field);
+}
+.eva-tabs {
+    padding: 0 12px;
+    border-bottom: 1px solid var(--cds-border-soft);
+}
+
+.eva-photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: var(--cds-space-card);
+}
+
+    .eva-empty + .eva-photos,
+    .eva-photos:first-child {
+        margin-top: 0;
+    }
+
+.eva-fields + .eva-empty {
+    margin-top: var(--cds-space-card);
+}
+
+.eva-verifications {
+    display: flex;
+    flex-direction: column;
+}
+
+.eva-verification {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 150px auto;
+    align-items: center;
+    gap: 12px;
+    padding: var(--cds-space-cell-y) 0;
+    border-bottom: 1px solid var(--cds-surface-muted);
+    font-size: var(--cds-font-size-small);
+}
+
+    .eva-verification:last-child {
+        border-bottom: none;
+    }
+
+.eva-verification__name {
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-value);
+}
+
+.eva-verification__date {
+    color: var(--cds-color-label);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Decisión ────────────────────────────────────── */
+.eva-decision {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-space-stack);
+}
+
+.eva-decision__options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ── Historial ───────────────────────────────────── */
+.eva-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.eva-timeline__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr);
+    column-gap: 12px;
+    padding-bottom: 14px;
+}
+
+    .eva-timeline__item:last-child {
+        padding-bottom: 0;
+    }
+
+    /* Línea que une los hitos. */
+    .eva-timeline__item:not(:last-child)::before {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 16px;
+        bottom: 0;
+        width: 2px;
+        background: var(--cds-border-soft);
+    }
+
+.eva-timeline__marker {
+    grid-row: 1 / span 2;
+    width: 12px;
+    height: 12px;
+    margin-top: 4px;
+    border-radius: 50%;
+    background: var(--cds-primary);
+    box-shadow: 0 0 0 3px var(--cds-surface-selected);
+}
+
+.eva-timeline__name {
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-value);
+}
+
+.eva-timeline__date {
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-color-label);
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1280px) {
+    .eva-kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        row-gap: var(--cds-space-card);
+    }
+
+        .eva-kpis ::deep .cds-kpi:nth-child(3n + 1) {
+            padding-left: 0;
+            border-left: none;
+        }
+}
+
+@media (max-width: 1100px) {
+    .eva-page {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .eva-side {
+        position: static;
+    }
+}
+
+@media (max-width: 760px) {
+    .eva-client {
+        flex-wrap: wrap;
+    }
+
+    .eva-row,
+    .eva-fields--2,
+    .eva-fields--3 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .eva-verification {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }

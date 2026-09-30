@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="310" height="72" viewBox="14 14 310 72" fill="none" role="img" aria-label="CrediFlow">
+  <g transform="translate(18 18)">
+    <path d="M51.92 15.28A26 26 0 1 0 51.92 48.72" stroke="#3061F2" stroke-width="6" stroke-linecap="round"/>
+    <path d="M42.33 17.26A18 18 0 1 0 42.33 46.74" stroke="#4973F2" stroke-width="6" stroke-linecap="round"/>
+    <path d="M35.42 22.6A10 10 0 1 0 35.42 41.4" stroke="#809DF2" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <text x="102" y="66" font-family="'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif" font-weight="700" font-size="44" letter-spacing="-1.76" fill="#0E1B3D">Credi<tspan fill="#3061F2">Flow</tspan></text>
+</svg>

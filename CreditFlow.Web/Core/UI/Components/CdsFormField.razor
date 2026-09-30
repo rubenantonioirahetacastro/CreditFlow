@@ -1,0 +1,33 @@
+@* Campo de formulario: rótulo, control, y debajo el error (si lo hay) o una ayuda. *@
+<div class="cds-form-field">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="cds-form-field__label" for="@For">@Label</label>
+    }
+    @ChildContent
+    @if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <span class="cds-form-field__error" role="alert">
+            <RadzenIcon Icon="error" />
+            @Error
+        </span>
+    }
+    else if (!string.IsNullOrWhiteSpace(Hint))
+    {
+        <span class="cds-form-field__hint">@Hint</span>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Id del control, para asociar el rótulo.</summary>
+    [Parameter] public string? For { get; set; }
+
+    [Parameter] public string? Hint { get; set; }
+
+    /// <summary>Mensaje de validación; reemplaza a la ayuda mientras exista.</summary>
+    [Parameter] public string? Error { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

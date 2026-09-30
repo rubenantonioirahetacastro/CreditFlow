@@ -1,0 +1,15 @@
+.cds-export-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cds-export-button__icon {
+    width: 18px;
+    height: 18px;
+    flex: none;
+}
+
+.cds-export-button__icon text {
+    font-family: var(--cds-font-family);
+}

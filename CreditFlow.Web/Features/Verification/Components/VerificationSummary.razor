@@ -1,14 +1,17 @@
-<div class="verification-summary">
-    <VerificationSummaryCard Label="En cola" Value="@QueueCount.ToString()" Description="@($"{NewToday} nuevos hoy")" />
-    <VerificationSummaryCard Label="Monto solicitado" Value="@TotalAmount.ToString("C2")" Description="@($"prom. {AverageAmount:C2}")" />
-    <VerificationSummaryCard Label="Nuevos" Value="@NewToday.ToString()" Description="hoy" />
-    <VerificationSummaryCard Label="Con représtamo" Value="@RepeatLoans.ToString()" Description="pagó ≥50% del anterior" />
-</div>
+<CdsCard>
+    <div class="verification-summary">
+        <CdsKpi Icon="pending_actions" Label="En cola" Value="@QueueCount.ToString()" Strong="true" />
+        <CdsKpi Icon="payments" Label="Monto solicitado" Value="@Money(TotalAmount)" Strong="true" />
+        <CdsKpi Icon="today" Label="Nuevos" Value="@NewToday.ToString()" Strong="true" />
+        <CdsKpi Icon="autorenew" Label="Con représtamo" Value="@RepeatLoans.ToString()" Strong="true" />
+    </div>
+</CdsCard>
 
 @code {
     [Parameter] public int QueueCount { get; set; }
     [Parameter] public int NewToday { get; set; }
     [Parameter] public int RepeatLoans { get; set; }
     [Parameter] public decimal TotalAmount { get; set; }
-    [Parameter] public decimal AverageAmount { get; set; }
+
+    private static string Money(decimal value) => value.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-SV"));
 }

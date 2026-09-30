@@ -1,0 +1,42 @@
+@* Encabezado de una CdsCard sin relleno (p. ej. tarjeta de tabla): título + badge de conteo a la izquierda,
+   acciones a la derecha (estado, Excel, PDF). Las acciones toman el alto del botón más alto.
+   Opcional: Lead (p. ej. insignia de código antes del título) y Subtitle (línea de detalle bajo el título). *@
+<div class="cds-card-header">
+    <div class="cds-card-header__main">
+        @Lead
+        <div class="cds-card-header__text">
+            <div class="cds-card-header__title">
+                @Title
+                @if (!string.IsNullOrWhiteSpace(Badge))
+                {
+                    <span class="cds-card-header__badge">@Badge</span>
+                }
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Subtitle))
+            {
+                <div class="cds-card-header__subtitle">@Subtitle</div>
+            }
+        </div>
+    </div>
+    @if (Actions is not null)
+    {
+        <div class="cds-card-header__actions">
+            @Actions
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    /// <summary>Texto corto informativo junto al título, p. ej. "12 pagos".</summary>
+    [Parameter] public string? Badge { get; set; }
+
+    /// <summary>Línea de detalle bajo el título, p. ej. "Clave TIPO_DOCUMENTO · 4 activos de 5".</summary>
+    [Parameter] public string? Subtitle { get; set; }
+
+    /// <summary>Contenido antes del título, p. ej. una insignia con el código.</summary>
+    [Parameter] public RenderFragment? Lead { get; set; }
+
+    [Parameter] public RenderFragment? Actions { get; set; }
+}

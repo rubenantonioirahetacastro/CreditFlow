@@ -1,0 +1,317 @@
+/* Barra superior (DESIGN.md §9). Zona izquierda del mismo ancho que el menú lateral. */
+.topbar {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    height: var(--cds-header-height);
+    background: var(--cds-white);
+    color: var(--cds-color-value);
+    font-family: var(--cds-font-family);
+    line-height: var(--cds-line-height);
+    --rz-icon-weight: var(--cds-icon-weight);
+    --rz-icon-grade: var(--cds-icon-grade);
+}
+
+/* ── Marca ─────────────────────────────── */
+.topbar-brand {
+    flex: 0 0 var(--rz-sidebar-width);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    border-right: 1px solid var(--cds-border-neutral);
+}
+
+.topbar-logo {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    height: 48px;
+    padding: 0 4px;
+    border: none;
+    border-radius: var(--cds-radius-control);
+    background: none;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+    .topbar-logo:hover,
+    .topbar-logo:focus-visible {
+        background: var(--cds-surface-hover);
+    }
+
+.topbar-logo-image {
+    display: block;
+    height: 35px;
+    width: auto;
+}
+
+/* Menú oculto: el contenido empieza a --cds-content-inset del borde de la ventana. La zona de marca ocupa
+   exactamente ese ancho (solo el símbolo) y el título arranca justo donde empiezan las tarjetas. */
+.topbar--collapsed .topbar-brand {
+    flex-basis: var(--cds-content-inset);
+    justify-content: center;
+    padding: 0;
+    border-right: none;
+}
+
+.topbar--collapsed .topbar-title {
+    padding-left: 0;
+}
+
+/* ── Título de la página ──────────────────────────── */
+.topbar-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* Mismo inicio que el contenido de la página, para que ícono y título queden alineados con las tarjetas. */
+    padding: 0 var(--cds-space-page-x) 0 var(--cds-content-inset);
+}
+
+    /* Botón «Atrás» (<), primer elemento del título. */
+    .topbar-back {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        margin-right: 2px;
+        padding: 0;
+        border: 1px solid var(--cds-border-neutral);
+        border-radius: var(--cds-radius-control);
+        background: var(--cds-white);
+        color: var(--cds-color-content);
+        cursor: pointer;
+        transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    }
+
+        .topbar-back:hover,
+        .topbar-back:focus-visible {
+            outline: none;
+            border-color: var(--cds-border-selected);
+            background: var(--cds-surface-selected);
+            color: var(--cds-primary);
+        }
+
+        .topbar-back ::deep .rzi {
+            font-size: 22px;
+        }
+
+    .topbar-title ::deep .topbar-title-icon {
+        flex: none;
+        font-size: 22px;
+        color: var(--cds-primary-accent-light);
+    }
+
+.topbar-title-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.topbar-path {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.topbar-path-link,
+.topbar-path-level {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: var(--cds-font-size-small);
+    font-weight: var(--cds-font-weight-regular);
+    color: var(--cds-color-label);
+}
+
+.topbar-path-link {
+    text-decoration: none;
+}
+
+    .topbar-path-link:hover,
+    .topbar-path-link:focus-visible {
+        color: var(--cds-link);
+        text-decoration: underline;
+    }
+
+.topbar-path-sep {
+    flex: none;
+    font-size: var(--cds-font-size-small);
+    color: var(--cds-color-hint);
+}
+
+.topbar-title-main {
+    flex: 0 0 auto;
+    max-width: 100%;
+    font-size: var(--cds-font-size-title);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-value);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.topbar-title-desc {
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-regular);
+    color: var(--cds-color-label);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Acciones y usuario ───────────────────────────── */
+.topbar-actions {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px 0 0;
+}
+
+.topbar-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--cds-border-neutral);
+    border-radius: var(--cds-radius-control);
+    background: var(--cds-white);
+    color: var(--cds-color-content);
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+    .topbar-icon-button:hover,
+    .topbar-icon-button:focus-visible {
+        background: var(--cds-surface-hover);
+    }
+
+    .topbar-icon-button ::deep .rzi {
+        font-size: 20px;
+    }
+
+.topbar-user {
+    position: relative;
+    margin-left: 8px;
+}
+
+.topbar-user-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 6px 4px 4px;
+    border: none;
+    border-radius: 12px;
+    background: none;
+    color: inherit;
+    font-family: var(--cds-font-family);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color .15s ease;
+}
+
+    .topbar-user-trigger:hover,
+    .topbar-user-trigger:focus-visible {
+        background: var(--cds-surface-hover);
+    }
+
+    .topbar-user-trigger ::deep .avatar-contenedor {
+        flex: none;
+        margin: 0;
+    }
+
+.topbar-user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.topbar-user-name {
+    font-size: var(--cds-font-size-small);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-value);
+    white-space: nowrap;
+}
+
+.topbar-user-role {
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-regular);
+    color: var(--cds-color-label);
+    white-space: nowrap;
+}
+
+.topbar-user ::deep .topbar-user-chevron {
+    font-size: 18px;
+    color: var(--cds-color-label);
+}
+
+.topbar-user-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+}
+
+.topbar-user-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 1001;
+    min-width: 200px;
+    padding: 6px;
+    border: 1px solid var(--cds-border-neutral);
+    border-radius: 12px;
+    background: var(--cds-white);
+    box-shadow: 0 10px 24px var(--cds-shadow-medium);
+}
+
+    .topbar-user-menu form {
+        margin: 0;
+    }
+
+.topbar-user-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: var(--cds-color-content);
+    font-family: var(--cds-font-family);
+    font-size: var(--cds-font-size-small);
+    text-align: left;
+    cursor: pointer;
+}
+
+    .topbar-user-item:hover,
+    .topbar-user-item:focus-visible {
+        background: var(--cds-danger-surface);
+        color: var(--cds-danger-text);
+    }
+
+    .topbar-user-item ::deep .rzi {
+        font-size: 18px;
+    }
+
+@media (max-width: 900px) {
+    .topbar-brand {
+        flex-basis: auto;
+        border-right: none;
+    }
+
+    .topbar-title-desc,
+    .topbar-user-info {
+        display: none;
+    }
+}

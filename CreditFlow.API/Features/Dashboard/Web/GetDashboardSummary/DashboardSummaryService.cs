@@ -118,6 +118,8 @@ public class DashboardSummaryService : IDashboardSummaryService
             colocacionMensual.Add(new SerieMensualItem
             {
                 Periodo = mes.ToString("MMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("es-ES")),
+                Anio = mes.Year,
+                Mes = mes.Month,
                 Monto = delMes.Sum(c => c.NPrestamo),
                 Cantidad = delMes.Count
             });

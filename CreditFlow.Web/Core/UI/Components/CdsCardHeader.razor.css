@@ -1,0 +1,55 @@
+.cds-card-header {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--cds-border-soft);
+}
+
+.cds-card-header__main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.cds-card-header__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cds-card-header__subtitle {
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-color-label);
+    line-height: var(--cds-line-height);
+}
+
+.cds-card-header__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--cds-font-size-title);
+    font-weight: var(--cds-font-weight-strong);
+    line-height: var(--cds-line-height);
+    color: var(--cds-color-value);
+}
+
+.cds-card-header__badge {
+    padding: 2px 8px;
+    border-radius: var(--cds-radius-badge);
+    background: var(--cds-surface-table-header);
+    color: var(--cds-color-content);
+    font-size: var(--cds-font-size-small);
+    font-weight: var(--cds-font-weight-strong);
+}
+
+.cds-card-header__actions {
+    display: flex;
+    /* stretch: un chip de estado toma exactamente el alto de los botones vecinos. */
+    align-items: stretch;
+    gap: 9px;
+}

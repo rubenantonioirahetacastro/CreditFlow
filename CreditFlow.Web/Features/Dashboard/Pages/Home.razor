@@ -1,195 +1,206 @@
 @page "/"
 @attribute [Authorize]
-@implements IDisposable
+@using System.Globalization
+@using CreditFlow.Web.Core.Utils.Format
 @using CreditFlow.Web.Features.Dashboard.Models
 @using CreditFlow.Web.Features.Dashboard.Services
+@using CreditFlow.Web.Features.Dashboard.Components
 @inject IDashboardService DashboardService
-@inject CreditFlow.Web.Core.Navigation.PageHeaderService Header
 @inject ICdsNotificationService Notifications
 
-<PageTitle>Home</PageTitle>
+<CdsPageHeader Title="Panel de control"
+               Icon="home"
+               ShowHome="false"
+               Description="Indicadores clave de la cartera de créditos." />
 
-<div class="home-page">
-
-  @if (cargando && resumen is null)
-  {
+@if (cargando && resumen is null)
+{
     <CdsPageState Kind="CdsPageStateKind.Loading"
                   Title="Cargando panel de control…" />
-  }
-  else if (resumen is null)
-  {
+}
+else if (resumen is null)
+{
     <CdsPageState Kind="CdsPageStateKind.Error"
                   Title="No pudimos cargar el panel"
                   Message="@errorCarga"
                   OnAction="@CargarAsync" />
-  }
-  else
-  {
-    <div class="home-toolbar">
-      <span class="home-subtitle">Cartera de créditos · actualizado @ultimaActualizacion.ToString("dd MMM yyyy, HH:mm")</span>
-      <CdsButton Text="@(cargando ? "Actualizando…" : "Actualizar")"
-                 Icon="refresh"
-                 Variant="Variant.Outlined"
-                 ButtonStyle="ButtonStyle.Secondary"
-                 Size="ButtonSize.Small"
-                 Disabled="@cargando"
-                 Click="@CargarAsync" />
-    </div>
+}
+else
+{
+    <div class="cds-page home-page">
 
-    <div class="home-kpi-grid">
-      <CdsCard Padding="CdsCardPadding.Compact" Interactive="true" Class="home-kpi-card home-delay-0">
-        <span class="home-kpi-label">Cartera vigente</span>
-        <span class="home-kpi-value">@Money((decimal)animCarteraVigente)</span>
-        <span class="home-kpi-note">@resumen.Kpis.CreditosActivos créditos activos</span>
-      </CdsCard>
-      <CdsCard Padding="CdsCardPadding.Compact" Interactive="true" Class="home-kpi-card home-delay-1">
-        <span class="home-kpi-label">Monto colocado (histórico)</span>
-        <span class="home-kpi-value">@Money((decimal)animMontoColocado)</span>
-        <span class="home-kpi-note">@resumen.Kpis.CreditosTotales créditos totales</span>
-      </CdsCard>
-      <CdsCard Padding="CdsCardPadding.Compact" Interactive="true" Class="@(resumen.Kpis.PorcentajeMorosidad > 5 ? "home-kpi-card warn home-delay-2" : "home-kpi-card home-delay-2")">
-        <span class="home-kpi-label">Cartera en riesgo</span>
-        <span class="home-kpi-value">@Money((decimal)animCarteraRiesgo)</span>
-        <span class="home-kpi-note">@animPorcentajeMorosidad.ToString("0.00") % de morosidad</span>
-      </CdsCard>
-      <CdsCard Padding="CdsCardPadding.Compact" Interactive="true" Class="home-kpi-card home-delay-3">
-        <span class="home-kpi-label">Tasa promedio ponderada</span>
-        <span class="home-kpi-value">@animTasa.ToString("0.00") %</span>
-        <span class="home-kpi-note">sobre saldo vigente</span>
-      </CdsCard>
-      <CdsCard Padding="CdsCardPadding.Compact" Interactive="true" Class="home-kpi-card home-delay-4">
-        <span class="home-kpi-label">Nuevos últimos 30 días</span>
-        <span class="home-kpi-value">@((int)Math.Round(animNuevos30))</span>
-        <span class="home-kpi-note">@Money((decimal)animMonto30) colocados</span>
-      </CdsCard>
-    </div>
-
-    <div class="home-grid-2">
-      <CdsCard Class="home-card">
-        <div class="home-card-head">
-          <span class="home-card-title">Colocación mensual</span>
-          <span class="home-card-sub">Últimos 12 meses</span>
-        </div>
-        <RadzenChart class="home-chart" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
-          <RadzenColumnSeries Data="@resumen.ColocacionMensual" CategoryProperty="Periodo" ValueProperty="Monto" Title="Monto colocado" Fill="var(--cds-primary-accent)">
-            <RadzenColumnOptions Radius="4" />
-            <RadzenSeriesDataLabels Visible="false" />
-          </RadzenColumnSeries>
-          <RadzenCategoryAxis />
-          <RadzenValueAxis FormatString="{0:C0}">
-            <RadzenGridLines Visible="true" />
-          </RadzenValueAxis>
-        </RadzenChart>
-      </CdsCard>
-
-      <CdsCard Class="home-card">
-        <div class="home-card-head">
-          <span class="home-card-title">Cartera por estado</span>
-          <span class="home-card-sub">Monto colocado</span>
-        </div>
-        <RadzenChart class="home-chart" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
-          <RadzenDonutSeries Data="@resumen.PorEstado" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Estado"
-                             Fills="@paletaMarca" StrokeWidth="0">
-            <RadzenSeriesDataLabels Visible="true" />
-          </RadzenDonutSeries>
-          <RadzenLegend Position="LegendPosition.Bottom" />
-        </RadzenChart>
-      </CdsCard>
-    </div>
-
-    <div class="home-grid-2">
-      <CdsCard Class="home-card">
-        <div class="home-card-head">
-          <span class="home-card-title">Por subproducto</span>
-          <span class="home-card-sub">Diario / Semanal / Quincenal / Mensual</span>
-        </div>
-        <RadzenChart class="home-chart" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
-          <RadzenColumnSeries Data="@resumen.PorSubProducto" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Monto" Fill="var(--cds-accent-orange)">
-            <RadzenColumnOptions Radius="4" />
-            <RadzenSeriesDataLabels Visible="false" />
-          </RadzenColumnSeries>
-          <RadzenCategoryAxis />
-          <RadzenValueAxis FormatString="{0:C0}">
-            <RadzenGridLines Visible="true" />
-          </RadzenValueAxis>
-        </RadzenChart>
-      </CdsCard>
-
-      <CdsCard Class="home-card">
-        <div class="home-card-head">
-          <span class="home-card-title">Por agencia</span>
-          <span class="home-card-sub">Monto colocado</span>
-        </div>
-        <RadzenChart class="home-chart" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
-          <RadzenColumnSeries Data="@resumen.PorAgencia" CategoryProperty="Etiqueta" ValueProperty="Monto" Title="Monto" Fill="var(--cds-accent-purple)">
-            <RadzenColumnOptions Radius="4" />
-            <RadzenSeriesDataLabels Visible="false" />
-          </RadzenColumnSeries>
-          <RadzenCategoryAxis />
-          <RadzenValueAxis FormatString="{0:C0}">
-            <RadzenGridLines Visible="true" />
-          </RadzenValueAxis>
-        </RadzenChart>
-      </CdsCard>
-    </div>
-
-    <div class="home-grid-2">
-      <CdsCard Class="home-card">
-        <div class="home-card-head">
-          <span class="home-card-title">Distribución de mora</span>
-          <span class="home-card-sub">Créditos activos, por rango de días de atraso</span>
-        </div>
-        <RadzenChart class="home-chart" Animate="true" AnimationDuration="900" AnimateDataUpdates="true">
-          <RadzenColumnSeries Data="@resumen.DistribucionMora" CategoryProperty="Rango" ValueProperty="Cantidad" Title="Créditos" Fill="var(--cds-danger)">
-            <RadzenColumnOptions Radius="4" />
-            <RadzenSeriesDataLabels Visible="true" />
-          </RadzenColumnSeries>
-          <RadzenCategoryAxis />
-          <RadzenValueAxis>
-            <RadzenGridLines Visible="true" />
-          </RadzenValueAxis>
-        </RadzenChart>
-      </CdsCard>
-
-      <CdsCard Class="home-card">
-        <div class="home-card-head">
-          <span class="home-card-title">Top créditos por monto</span>
-          <span class="home-card-sub">Los 8 más altos</span>
-        </div>
-        <div class="home-top-list">
-          @if (resumen.TopCreditos.Count == 0)
-          {
-            <div class="home-empty">Sin créditos registrados.</div>
-          }
-          else
-          {
-            @for (var i = 0; i < resumen.TopCreditos.Count; i++)
-            {
-              var t = resumen.TopCreditos[i];
-              <div class="home-top-row @HomeDelayClass(i)">
-                <div class="home-top-info">
-                  <span class="home-top-cliente">@t.Cliente</span>
-                  <span class="home-top-meta">@t.Agencia · @t.Estado · #@t.NCodAge-@t.NCodCred</span>
+        @* Resumen: mismo patrón de indicadores con ícono que la Bandeja y la Evaluación. *@
+        <CdsCard Padding="CdsCardPadding.None" Class="home-section">
+            <CdsCardHeader Title="Resumen de cartera" Badge="@($"Actualizado {ultimaActualizacion.ToString("d MMM, HH:mm", Cultura)}")">
+                <Actions>
+                    <CdsButton Text="@(cargando ? "Actualizando…" : "Actualizar")"
+                               Icon="refresh"
+                               Variant="Variant.Outlined"
+                               ButtonStyle="ButtonStyle.Base"
+                               Size="ButtonSize.Small"
+                               Disabled="@cargando"
+                               Click="@CargarAsync" />
+                </Actions>
+            </CdsCardHeader>
+            <div class="home-section__body">
+                <div class="home-kpis">
+                    <CdsKpi Icon="account_balance_wallet" Label="Cartera vigente" Value="@Money((decimal)animCarteraVigente)"
+                            Description="@($"{resumen.Kpis.CreditosActivos} créditos activos")" Strong="true" />
+                    <CdsKpi Icon="savings" Label="Monto colocado (histórico)" Value="@Money((decimal)animMontoColocado)"
+                            Description="@($"{resumen.Kpis.CreditosTotales} créditos totales")" Strong="true" />
+                    <CdsKpi Icon="warning" Label="Cartera en riesgo" Value="@Money((decimal)animCarteraRiesgo)"
+                            Description="@($"{animPorcentajeMorosidad:0.00} % de morosidad")" Strong="true" />
+                    <CdsKpi Icon="percent" Label="Tasa promedio ponderada" Value="@($"{animTasa:0.00} %")"
+                            Description="Sobre saldo vigente" Strong="true" />
+                    <CdsKpi Icon="trending_up" Label="Nuevos últimos 30 días" Value="@(((int)Math.Round(animNuevos30)).ToString())"
+                            Description="@($"{Money((decimal)animMonto30)} colocados")" Strong="true" />
                 </div>
-                <span class="home-top-monto">@Money(t.Monto)</span>
-              </div>
-            }
-          }
+            </div>
+        </CdsCard>
+
+        <div class="home-grid">
+            <CdsCard Padding="CdsCardPadding.None" Class="home-section">
+                <CdsCardHeader Title="Colocación mensual" Badge="Últimos 12 meses" />
+                <div class="home-section__body">
+                    <RadzenChart class="home-chart" Culture="@Cultura" Animate="true" AnimationDuration="700" AnimateDataUpdates="true">
+                        <RadzenColumnSeries Data="@ColocacionMensual()" CategoryProperty="Etiqueta" ValueProperty="Monto"
+                                            Title="Monto colocado" Fill="var(--cds-primary)" StrokeWidth="0">
+                            <RadzenColumnOptions Radius="4" Margin="6" />
+                            <RadzenSeriesDataLabels Visible="true" />
+                        </RadzenColumnSeries>
+                        @* Polígono de frecuencias: une el extremo de cada columna; misma medida y mismo eje. *@
+                        <RadzenLineSeries Data="@ColocacionMensual()" CategoryProperty="Etiqueta" ValueProperty="Monto"
+                                          Title="Polígono de frecuencias" Stroke="var(--cds-primary-dark)" StrokeWidth="2"
+                                          Interpolation="Interpolation.Spline">
+                            <RadzenMarkers MarkerType="MarkerType.Circle" Size="8" Fill="var(--cds-white)" Stroke="var(--cds-primary-dark)" StrokeWidth="2" />
+                            <RadzenSeriesDataLabels Visible="false" />
+                        </RadzenLineSeries>
+                        <RadzenCategoryAxis />
+                        <RadzenValueAxis Formatter="@FormatoMonto">
+                            <RadzenAxisTitle Text="Monto colocado (USD)" />
+                            <RadzenGridLines Visible="true" />
+                        </RadzenValueAxis>
+                        <RadzenLegend Position="LegendPosition.Bottom" />
+                    </RadzenChart>
+                </div>
+            </CdsCard>
+
+            <CdsCard Padding="CdsCardPadding.None" Class="home-section">
+                <CdsCardHeader Title="Cartera por estado" Badge="Monto colocado" />
+                <div class="home-section__body">
+                    <RadzenChart class="home-chart" Culture="@Cultura" Animate="true" AnimationDuration="700" AnimateDataUpdates="true">
+                        <RadzenBarSeries Data="@Ordenado(resumen.PorEstado)" CategoryProperty="Etiqueta" ValueProperty="Monto"
+                                         Title="Monto" Fill="var(--cds-primary)" StrokeWidth="0">
+                            <RadzenBarOptions Radius="4" Margin="6" />
+                            <RadzenSeriesDataLabels Visible="false" />
+                        </RadzenBarSeries>
+                        <RadzenCategoryAxis />
+                        <RadzenValueAxis Formatter="@FormatoMonto">
+                            <RadzenGridLines Visible="true" />
+                        </RadzenValueAxis>
+                        <RadzenLegend Visible="false" />
+                    </RadzenChart>
+                </div>
+            </CdsCard>
+
+            <CdsCard Padding="CdsCardPadding.None" Class="home-section">
+                <CdsCardHeader Title="Por subproducto" Badge="Monto colocado" />
+                <div class="home-section__body">
+                    <RadzenChart class="home-chart" Culture="@Cultura" Animate="true" AnimationDuration="700" AnimateDataUpdates="true">
+                        <RadzenColumnSeries Data="@resumen.PorSubProducto" CategoryProperty="Etiqueta" ValueProperty="Monto"
+                                            Title="Monto colocado" Fill="var(--cds-primary)" StrokeWidth="0">
+                            <RadzenColumnOptions Radius="4" Margin="6" />
+                            <RadzenSeriesDataLabels Visible="true" />
+                        </RadzenColumnSeries>
+                        @* Polígono de frecuencias: une el extremo de cada columna; misma medida y mismo eje. *@
+                        <RadzenLineSeries Data="@resumen.PorSubProducto" CategoryProperty="Etiqueta" ValueProperty="Monto"
+                                          Title="Polígono de frecuencias" Stroke="var(--cds-primary-dark)" StrokeWidth="2"
+                                          Interpolation="Interpolation.Spline">
+                            <RadzenMarkers MarkerType="MarkerType.Circle" Size="8" Fill="var(--cds-white)" Stroke="var(--cds-primary-dark)" StrokeWidth="2" />
+                            <RadzenSeriesDataLabels Visible="false" />
+                        </RadzenLineSeries>
+                        <RadzenCategoryAxis />
+                        <RadzenValueAxis Formatter="@FormatoMonto">
+                            <RadzenAxisTitle Text="Monto colocado (USD)" />
+                            <RadzenGridLines Visible="true" />
+                        </RadzenValueAxis>
+                        <RadzenLegend Position="LegendPosition.Bottom" />
+                    </RadzenChart>
+                </div>
+            </CdsCard>
+
+            <CdsCard Padding="CdsCardPadding.None" Class="home-section">
+                <CdsCardHeader Title="Por agencia" Badge="@($"Monto colocado · {resumen.PorAgencia.Count} agencias")" />
+                <div class="home-section__body">
+                    @* Hasta ~30 agencias: ranking con barras en lugar de gráfico, para que todas sean legibles. *@
+                    <RankingList Items="@resumen.PorAgencia.Select(a => new RankingItem(string.IsNullOrWhiteSpace(a.Etiqueta) ? "Sin Agencia" : a.Etiqueta, a.Monto))"
+                                 Format="@(v => v.ToString("C0", Cultura))"
+                                 AriaLabel="Monto colocado por agencia" />
+                </div>
+            </CdsCard>
+
+            <CdsCard Padding="CdsCardPadding.None" Class="home-section">
+                <CdsCardHeader Title="Distribución de mora" Badge="Créditos activos por días de atraso" />
+                <div class="home-section__body">
+                    <RadzenChart class="home-chart" Culture="@Cultura" Animate="true" AnimationDuration="700" AnimateDataUpdates="true">
+                        <RadzenColumnSeries Data="@resumen.DistribucionMora" CategoryProperty="Rango" ValueProperty="Cantidad"
+                                            Title="Créditos" Fill="var(--cds-primary)" StrokeWidth="0">
+                            <RadzenColumnOptions Radius="4" Margin="6" />
+                            <RadzenSeriesDataLabels Visible="true" />
+                        </RadzenColumnSeries>
+                        @* Polígono de frecuencias sobre el histograma de días de atraso. *@
+                        <RadzenLineSeries Data="@resumen.DistribucionMora" CategoryProperty="Rango" ValueProperty="Cantidad"
+                                          Title="Polígono de frecuencias" Stroke="var(--cds-primary-dark)" StrokeWidth="2"
+                                          Interpolation="Interpolation.Spline">
+                            <RadzenMarkers MarkerType="MarkerType.Circle" Size="8" Fill="var(--cds-white)" Stroke="var(--cds-primary-dark)" StrokeWidth="2" />
+                            <RadzenSeriesDataLabels Visible="false" />
+                        </RadzenLineSeries>
+                        <RadzenCategoryAxis />
+                        <RadzenValueAxis>
+                            <RadzenAxisTitle Text="Cantidad de créditos" />
+                            <RadzenGridLines Visible="true" />
+                        </RadzenValueAxis>
+                        <RadzenLegend Position="LegendPosition.Bottom" />
+                    </RadzenChart>
+                </div>
+            </CdsCard>
+
+            <CdsCard Padding="CdsCardPadding.None" Class="home-section">
+                <CdsCardHeader Title="Créditos de mayor monto" Badge="@($"Top {resumen.TopCreditos.Count}")" />
+                <div class="home-section__body">
+                    @if (resumen.TopCreditos.Count == 0)
+                    {
+                        <div class="home-empty">Sin créditos registrados.</div>
+                    }
+                    else
+                    {
+                        <ol class="home-top">
+                            @foreach (var t in resumen.TopCreditos)
+                            {
+                                <li class="home-top__row">
+                                    <a class="cds-link home-top__code" href="@($"/otorgamiento/evaluacion/{t.NCodAge}/{t.NCodCred}")">@t.NCodAge-@t.NCodCred</a>
+                                    <span class="home-top__info">
+                                        <span class="home-top__name">@NameFormatter.ToDisplayName(t.Cliente)</span>
+                                        <span class="home-top__meta">@(string.IsNullOrWhiteSpace(t.Agencia) ? "Sin Agencia" : t.Agencia) · @(t.Estado ?? "Sin estado")</span>
+                                    </span>
+                                    <span class="home-top__amount">@Money(t.Monto)</span>
+                                </li>
+                            }
+                        </ol>
+                    }
+                </div>
+            </CdsCard>
         </div>
-      </CdsCard>
     </div>
-  }
-</div>
+}
 
 @code {
+    private static readonly CultureInfo Cultura = CultureInfo.GetCultureInfo("es-SV");
+
     private DashboardResumenResponse? resumen;
     private bool cargando = true;
     private string? errorCarga;
     private DateTime ultimaActualizacion;
-
-    private static readonly string[] paletaMarca = { "var(--cds-primary-accent)", "var(--cds-accent-orange)", "var(--cds-accent-purple)", "var(--cds-success)", "var(--cds-border-strong)", "var(--cds-danger)" };
-
-    private static string HomeDelayClass(int index) => $"home-delay-{Math.Clamp(index, 0, 7)}";
 
     private double animCarteraVigente;
     private double animMontoColocado;
@@ -201,13 +212,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Header.Set("Panel de control");
         await CargarAsync();
-    }
-
-    public void Dispose()
-    {
-        Header.Clear();
     }
 
     private async Task CargarAsync()
@@ -241,6 +246,27 @@
         }
     }
 
+    private static readonly string[] MesesCortos = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+    private sealed record MesColocacion(string Etiqueta, decimal Monto);
+
+    /// <summary>
+    /// Eje de meses con el año separado: cada mes muestra su nombre corto y el año solo aparece donde empieza
+    /// (primer mes del gráfico y cada enero): «Sep 2025, Oct, Nov, Dic, Ene 2026, Feb…».
+    /// </summary>
+    private List<MesColocacion> ColocacionMensual() =>
+        (resumen?.ColocacionMensual ?? [])
+            .Select((m, i) => new MesColocacion(
+                m.Mes is >= 1 and <= 12
+                    ? (i == 0 || m.Mes == 1 ? $"{MesesCortos[m.Mes - 1]} {m.Anio}" : MesesCortos[m.Mes - 1])
+                    : m.Periodo,
+                m.Monto))
+            .ToList();
+
+    // Barras horizontales: de mayor a menor, leídas de arriba hacia abajo.
+    private static List<DistribucionItem> Ordenado(IEnumerable<DistribucionItem> items) =>
+        items.OrderBy(i => i.Monto).ToList();
+
     private async Task AnimarKpisAsync(DashboardResumenResponse datos)
     {
         var kpis = datos.Kpis;
@@ -270,5 +296,9 @@
         StateHasChanged();
     }
 
-    private static string Money(decimal v) => v.ToString("C2", System.Globalization.CultureInfo.GetCultureInfo("es-SV"));
+    private static string Money(decimal v) => v.ToString("C2", Cultura);
+
+    // Radzen formatea las etiquetas de datos con la cultura invariante («¤»); este formateador fija «$» (es-SV)
+    // para el eje, las etiquetas y los tooltips.
+    private static string FormatoMonto(object valor) => Convert.ToDecimal(valor, Cultura).ToString("C0", Cultura);
 }

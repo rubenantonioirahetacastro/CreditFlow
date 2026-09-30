@@ -1,0 +1,50 @@
+@using CreditFlow.Web.Features.Maintenance.Catalog.Models
+@using CreditFlow.Web.Shared.Catalog.Models
+
+@* Tabla de valores de un catálogo. Sin paginación: un catálogo tiene pocos valores. *@
+<div class="catalog-values" role="table" aria-label="Valores del catálogo">
+    <div class="catalog-values__row catalog-values__head" role="row">
+        <span role="columnheader">Valor</span>
+        <span role="columnheader" class="catalog-values__left">Nombre del catálogo</span>
+        <span role="columnheader">Tipo</span>
+        <span role="columnheader">Estado</span>
+        <span role="columnheader">Acciones</span>
+    </div>
+
+    @foreach (var valor in Valores)
+    {
+        var activo = CatalogoConvenciones.EsActivo(valor);
+        <div class="catalog-values__row @(activo ? null : "catalog-values__row--inactive")" role="row" @key="valor.NValor">
+            <span role="cell" class="cds-mono catalog-values__value">@valor.NValor</span>
+            <span role="cell" class="catalog-values__left catalog-values__name" title="@valor.CNomCod">@valor.CNomCod</span>
+            <span role="cell">
+                <span class="catalog-values__type @(CatalogoConvenciones.EsSistema(valor) ? "catalog-values__type--system" : null)">
+                    @(CatalogoConvenciones.EsSistema(valor) ? "Sistema" : "General")
+                </span>
+            </span>
+            <span role="cell">
+                <CdsSwitch Value="@activo"
+                           Text="@(activo ? "Activo" : "Inactivo")"
+                           AriaLabel="@($"Estado de {valor.CNomCod}")"
+                           ValueChanged="@(nuevo => OnToggle.InvokeAsync((valor, nuevo)))" />
+            </span>
+            <span role="cell" class="catalog-values__actions">
+                <button type="button" class="catalog-values__icon" title="Editar" aria-label="@($"Editar {valor.CNomCod}")"
+                        @onclick="() => OnEdit.InvokeAsync(valor)">
+                    <RadzenIcon Icon="edit" />
+                </button>
+                <button type="button" class="catalog-values__icon catalog-values__icon--danger" title="Eliminar" aria-label="@($"Eliminar {valor.CNomCod}")"
+                        @onclick="() => OnDelete.InvokeAsync(valor)">
+                    <RadzenIcon Icon="delete" />
+                </button>
+            </span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<CatalogoCodigoDto> Valores { get; set; } = [];
+    [Parameter] public EventCallback<(CatalogoCodigoDto Valor, bool Activo)> OnToggle { get; set; }
+    [Parameter] public EventCallback<CatalogoCodigoDto> OnEdit { get; set; }
+    [Parameter] public EventCallback<CatalogoCodigoDto> OnDelete { get; set; }
+}

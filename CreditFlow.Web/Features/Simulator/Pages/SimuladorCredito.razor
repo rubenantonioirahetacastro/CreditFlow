@@ -5,12 +5,12 @@
 @using CreditFlow.Web.Features.Simulator.Models
 @using CreditFlow.Web.Features.Simulator.Services
 @using CreditFlow.Web.Features.Simulator.Components
-@implements IDisposable
-@inject CreditFlow.Web.Core.Navigation.PageHeaderService Header
 
-<PageTitle>Simulador de Crédito</PageTitle>
+<CdsPageHeader Title="@TituloPagina"
+               Icon="calculate"
+               Description="Calcula la cuota y el cronograma de pagos de un crédito." />
 
-<div class="sim-page" @ref="paginaRootRef">
+<div class="cds-page cds-page--fill sim-page" @ref="paginaRootRef">
 
   <div class="sim-body">
 
@@ -51,10 +51,7 @@
             <div class="sim-summary-grid">
               @foreach (var s in ResumenItems())
               {
-                <div class="sim-summary-item">
-                  <div class="sim-summary-key">@s.Key</div>
-                  <div class="sim-num @(s.Strong ? "sim-summary-val-strong" : "sim-summary-val")">@s.Value</div>
-                </div>
+                <CdsKpi Label="@s.Key" Value="@s.Value" Strong="@s.Strong" />
               }
             </div>
           </div>
@@ -67,24 +64,20 @@
         </CdsCard>
 
         <CdsCard Padding="CdsCardPadding.None" Class="sim-card sim-table-card">
-          <div class="sim-table-head">
-            <div class="sim-table-title">
-              Detalle de cuotas
-              <span class="sim-badge">@resultado.Cronograma.Count pagos</span>
-            </div>
-            <div class="sim-status-wrap">
-              <span class="sim-status @(EstaCuadrado ? "ok" : "bad")">
-                <span class="sim-status-dot"></span>
-                @(EstaCuadrado ? "Cronograma cuadrado" : $"Descuadre de {Money(SaldoFinal)}")
-              </span>
-              <CdsButton Text="Exportar CSV"
-                         Icon="download"
-                         Variant="Variant.Outlined"
-                         ButtonStyle="ButtonStyle.Secondary"
-                         Size="ButtonSize.Small"
-                         Click="@ExportarCsvAsync" />
-            </div>
-          </div>
+          <CdsCardHeader Title="Detalle de cuotas" Badge="@($"{resultado.Cronograma.Count} pagos")">
+            <Actions>
+              @* @key reinicia la animación de confirmación en cada simulación exitosa. *@
+              <CdsStatusBadge @key="paginaKey"
+                              Variant="CdsStatusBadgeVariant.Chip"
+                              Appearance="@(EstaCuadrado ? CdsStatusAppearance.Success : CdsStatusAppearance.Danger)"
+                              Icon="@(EstaCuadrado ? "check_circle" : "error")"
+                              Celebrate="@EstaCuadrado"
+                              Text="@(EstaCuadrado ? "Cronograma cuadrado" : $"Descuadre de {Money(SaldoFinal)}")"
+                              role="status" />
+              <CdsExportButton Format="CdsExportFormat.Excel" Click="@ExportarExcelAsync" />
+              <CdsExportButton Format="CdsExportFormat.Pdf" Click="@ExportarPdf" />
+            </Actions>
+          </CdsCardHeader>
 
           <div class="sim-table-scroll">
             <div class="sim-table-grid sim-table-header">
@@ -103,11 +96,11 @@
               <div class="sim-table-grid sim-table-row">
                 <div class="sim-td muted">@r.NroCuota</div>
                 <div class="sim-td">@r.FechaVencimiento.ToString("dd MMM yy")</div>
-                <div class="sim-td strong">@Money(r.Capital)</div>
+                <div class="sim-td">@Money(r.Capital)</div>
                 <div class="sim-td">@Money(r.Interes)</div>
                 <div class="sim-td">@Money(r.Iva)</div>
                 <div class="sim-td">@Money(r.Gasto)</div>
-                <div class="sim-td strong verde">@Money(r.TotalCuota)</div>
+                <div class="sim-td strong">@Money(r.TotalCuota)</div>
                 <div class="sim-td @(r.SaldoDespues == 0 ? "verde" : "")">@Money(r.SaldoDespues)</div>
               </div>
             }
@@ -158,6 +151,8 @@
     [Inject] private IAgenciaService AgenciaService { get; set; } = default!;
     [Inject] private ISimulacionCalendarioService SimulacionService { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private ICronogramaExcelExporter ExcelExporter { get; set; } = default!;
+    [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
 
     private ElementReference paginaRootRef;
 
@@ -191,7 +186,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ActualizarTituloPagina();
 
         var agenciasResult = await AgenciaService.ObtenerTodasAsync();
         agencias = agenciasResult.Data ?? [];
@@ -211,20 +205,12 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JS.InvokeVoidAsync("simuladorFitViewport", paginaRootRef);
+        await JS.FitAsync(paginaRootRef);
     }
 
-    private void ActualizarTituloPagina()
-    {
-        Header.Set(TieneContextoCredito
-            ? $"Configurar calendario · Crédito {AgencyCode}-{CreditCode}"
-            : "Simulador de cronograma de cuotas");
-    }
-
-    public void Dispose()
-    {
-        Header.Clear();
-    }
+    private string TituloPagina => TieneContextoCredito
+        ? $"Configurar calendario · Crédito {AgencyCode}-{CreditCode}"
+        : "Simulador de cronograma de cuotas";
 
     private static string PeriodicidadLabel(int nSubProd) =>
         SimulatorOptions.Periodicities.FirstOrDefault(p => p.SubProductCode == nSubProd)?.Label ?? "Mensual";
@@ -233,7 +219,6 @@
     {
         if (AplicarContextoCredito())
         {
-            ActualizarTituloPagina();
             await SimularAsync();
             return;
         }
@@ -248,7 +233,6 @@
         bRefinanciado = false;
         tasaOverrideStr = null;
         gastoOverrideStr = null;
-        ActualizarTituloPagina();
         await SimularAsync();
     }
 
@@ -344,8 +328,7 @@
             new("Capital", Money(resultado.MontoSolicitado), false),
             new("Costo del crédito", Money(resultado.CostoTotalCredito), false),
             new("Tasa mensual", resultado.TasaNominalMensual.ToString("0.00") + " %", false),
-            new("TEA real", (resultado.TeaReal * 100).ToString("0.00") + " %", false),
-            new("Saldo final", Money(SaldoFinal), false),
+            new("TEA real", (resultado.TeaReal * 100).ToString("0.00") + " %", false)
         };
     }
 
@@ -360,18 +343,16 @@
         paginaSkip = args.Skip;
     }
 
-    private async Task ExportarCsvAsync()
+    // Pendiente: el PDF se generará en el servicio de reportes (CreditFlow.Reports).
+    private void ExportarPdf() =>
+        Notifications.Info("Exportación a PDF", "Esta opción estará disponible próximamente.");
+
+    private async Task ExportarExcelAsync()
     {
         if (resultado is null) return;
 
-        var sb = new System.Text.StringBuilder();
-        sb.AppendLine("Cuota,Vencimiento,Capital,Interes,IVA,Gasto,Total,Saldo");
-        foreach (var r in resultado.Cronograma)
-        {
-            sb.AppendLine($"{r.NroCuota},{r.FechaVencimiento:dd/MM/yyyy},{r.Capital},{r.Interes},{r.Iva},{r.Gasto},{r.TotalCuota},{r.SaldoDespues}");
-        }
-
-        var bytes = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetBytes(sb.ToString());
-        await JS.InvokeVoidAsync("Radzen.downloadFile", "cronograma.csv", bytes, "text/csv");
+        var bytes = ExcelExporter.Exportar(resultado, PeriodicidadLabel(nSubProd));
+        await JS.InvokeVoidAsync("Radzen.downloadFile", "cronograma.xlsx", bytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     }
 }

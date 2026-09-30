@@ -1,0 +1,20 @@
+@using Radzen
+@* Interruptor con texto opcional a la derecha (p. ej. «Activo / Inactivo»). *@
+<label class="cds-switch @(Disabled ? "cds-switch--disabled" : null)" title="@Title">
+    <RadzenSwitch Value="@Value" ValueChanged="@OnChanged" Disabled="@Disabled" aria-label="@(AriaLabel ?? Text)" />
+    @if (!string.IsNullOrWhiteSpace(Text))
+    {
+        <span class="cds-switch__text">@Text</span>
+    }
+</label>
+
+@code {
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private Task OnChanged(bool value) => ValueChanged.InvokeAsync(value);
+}

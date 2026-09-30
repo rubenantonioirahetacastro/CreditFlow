@@ -1,0 +1,53 @@
+.value-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Tarjeta de solo lectura con el catálogo actual. */
+.value-form__catalog {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--cds-border-soft);
+    border-radius: 12px;
+    background: var(--cds-surface-subtle);
+}
+
+.value-form__code {
+    min-width: 42px;
+    padding: 2px 6px;
+    border-radius: var(--cds-radius-badge);
+    background: var(--cds-primary);
+    color: var(--cds-white);
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-strong);
+    text-align: center;
+}
+
+.value-form__catalog-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.value-form__catalog-name {
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-value);
+}
+
+.value-form__catalog-key {
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-color-label);
+}
+
+.value-form__types {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.value-form__switch {
+    padding-top: 4px;
+}

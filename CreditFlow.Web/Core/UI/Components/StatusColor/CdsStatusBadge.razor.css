@@ -5,11 +5,11 @@
     border-radius: 999px;
     color: var(--cds-status-color);
     display: inline-flex;
-    font-size: .8rem;
-    font-weight: 600;
+    font-size: var(--cds-font-size-small);
+    font-weight: var(--cds-font-weight-strong);
     gap: 6px;
-    line-height: 1.4;
-    padding: 3px 12px;
+    line-height: var(--cds-line-height);
+    padding: 2px 10px;
     white-space: nowrap;
 }
 
@@ -22,7 +22,61 @@
     width: 7px;
 }
 
-.cds-status-badge__icon {
+::deep .cds-status-badge__icon {
     color: currentColor;
-    font-size: 1rem;
+    display: inline-block;
+    font-size: 17px;
+    line-height: var(--cds-line-height-tight);
+}
+
+/* Chip: misma caja que un botón pequeño vecino (el contenedor usa align-items: stretch). */
+.cds-status-badge--chip {
+    box-sizing: border-box;
+    min-height: var(--rz-button-size-sm);
+    padding: 0 .75rem 0 .6rem;
+    border-width: var(--rz-border-width);
+    border-radius: var(--rz-border-radius);
+}
+
+/* Sutil: etiqueta neutra de marca, sin colores de estado (el nombre del estado ya lo comunica). */
+.cds-status-badge--subtle {
+    padding: 2px 10px 2px 8px;
+    border-color: var(--cds-border-default);
+    border-radius: var(--cds-radius-badge);
+    background: var(--cds-white);
+    color: var(--cds-color-content);
+    font-weight: var(--cds-font-weight-strong);
+}
+
+    .cds-status-badge--subtle .cds-status-badge__dot {
+        width: 7px;
+        height: 7px;
+        background: var(--cds-primary);
+        box-shadow: 0 0 0 3px var(--cds-surface-selected);
+    }
+
+.cds-status-badge--celebrate {
+    animation: cds-status-celebrate .9s ease-out both;
+}
+
+.cds-status-badge--celebrate ::deep .cds-status-badge__icon {
+    animation: cds-status-icon-pop .55s .1s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+@keyframes cds-status-celebrate {
+    0% { opacity: 0; transform: translateY(3px); box-shadow: 0 0 0 0 var(--cds-status-border); }
+    45% { opacity: 1; transform: none; box-shadow: 0 0 0 0 var(--cds-status-border); }
+    100% { box-shadow: 0 0 0 7px transparent; }
+}
+
+@keyframes cds-status-icon-pop {
+    0% { transform: scale(0) rotate(-45deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cds-status-badge--celebrate,
+    .cds-status-badge--celebrate ::deep .cds-status-badge__icon {
+        animation: none;
+    }
 }

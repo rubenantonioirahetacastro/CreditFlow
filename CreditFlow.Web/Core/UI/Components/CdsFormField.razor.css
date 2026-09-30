@@ -1,0 +1,33 @@
+.cds-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-space-field);
+    font-family: var(--cds-font-family);
+    line-height: var(--cds-line-height);
+}
+
+.cds-form-field__label {
+    margin: 0;
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-regular);
+    letter-spacing: var(--cds-letter-spacing-label);
+    color: var(--cds-color-label);
+}
+
+.cds-form-field__hint {
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-color-label);
+}
+
+.cds-form-field__error {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-danger-text);
+}
+
+    .cds-form-field__error ::deep .rzi {
+        font-size: 15px;
+    }

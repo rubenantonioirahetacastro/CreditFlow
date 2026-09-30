@@ -1,0 +1,16 @@
+@* Pestaña con subrayado: la activa se marca con la línea de marca sobre el borde del contenedor; contador opcional. *@
+<button type="button" role="tab" aria-selected="@Selected"
+        class="cds-tab @(Selected ? "cds-tab--selected" : null)" @onclick="OnClick">
+    <span>@Text</span>
+    @if (Count is not null)
+    {
+        <span class="cds-tab__count">@Count</span>
+    }
+</button>
+
+@code {
+    [Parameter, EditorRequired] public string Text { get; set; } = string.Empty;
+    [Parameter] public int? Count { get; set; }
+    [Parameter] public bool Selected { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+}

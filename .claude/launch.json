@@ -1,0 +1,21 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "CreditFlow.API", "--launch-profile", "http"],
+      "env": {},
+      "port": 5006,
+      "url": "http://localhost:5006"
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "CreditFlow.Web", "--launch-profile", "http"],
+      "env": { "CreditFlowApi__BaseUrl": "http://localhost:5006/" },
+      "port": 5273,
+      "url": "http://localhost:5273"
+    }
+  ]
+}

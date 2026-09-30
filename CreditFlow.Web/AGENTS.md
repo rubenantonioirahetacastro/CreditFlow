@@ -1,6 +1,8 @@
 # Instrucciones para asistentes
 
-Antes de modificar `CreditFlow.Web`, leer completamente `ARCHITECTURE.md` y revisar una implementación vecina dentro de la misma feature.
+Antes de modificar `CreditFlow.Web`, leer completamente `ARCHITECTURE.md` y `DESIGN.md`, y revisar una implementación vecina dentro de la misma feature.
+
+Toda página debe verse idéntica a la pantalla de referencia (Simulador de cronograma de cuotas): tipografía, tamaños, pesos, interlineado, colores por rol, espaciados y radios se toman exclusivamente de los tokens `--cds-*` descritos en `DESIGN.md`. El título de cada página se declara con `<CdsPageHeader Title="..." />` y se muestra solo en la barra superior; no usar `<h1>`–`<h3>` como título ni `<PageTitle>` directo.
 
 Toda implementación debe conservar la organización feature-first, utilizar `IApiClient`, registrar dependencias desde la feature y mantener la autorización basada en IDs de rol. No crear carpetas globales de modelos o servicios ni usar `Maintenance` como contenedor genérico.
 

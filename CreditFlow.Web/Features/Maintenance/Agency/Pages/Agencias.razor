@@ -1,9 +1,11 @@
 @page "/agencias"
 @attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
 
-<PageTitle>Mantenimiento de Agencias</PageTitle>
+<CdsPageHeader Title="Agencias"
+               Icon="storefront"
+               Path="@(new PagePathItem[] { "Mantenimientos" })"
+               Description="Administra las agencias y sus datos de contacto." />
 
-<h3>Agencias</h3>
 <CdsFormMessage Message="@ValidationError" />
 
 <GridEstandar TItem="AgenciaEdicionDto"

@@ -1,9 +1,11 @@
 @page "/lineas-credito"
 @attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
 
-<PageTitle>Mantenimiento de Líneas de Crédito</PageTitle>
+<CdsPageHeader Title="Líneas de crédito"
+               Icon="credit_card"
+               Path="@(new PagePathItem[] { "Mantenimientos" })"
+               Description="Administra las líneas de crédito, tasas y condiciones." />
 
-<h3>Líneas de Crédito</h3>
 <CdsFormMessage Message="@ValidationError" />
 
 <GridEstandar TItem="LineaCreditoDto"

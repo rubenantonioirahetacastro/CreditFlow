@@ -1,55 +1,11 @@
-.sim-page {
-    height: calc(100vh - 3.5rem - 1.1rem);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    font-family: var(--cds-font-family);
-    color: var(--cds-text-primary);
-}
-
-.sim-status-wrap {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-}
-
-.sim-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 7px 11px;
-    border-radius: 9px;
-    font: 600 12px/1 inherit;
-    border: 1px solid transparent;
-}
-
-.sim-status.ok {
-    background: var(--cds-success-surface);
-    border-color: var(--cds-success-border);
-    color: var(--cds-success-text);
-}
-
-.sim-status.bad {
-    background: var(--cds-danger-surface);
-    border-color: var(--cds-danger-border);
-    color: var(--cds-danger-text);
-}
-
-.sim-status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 99px;
-    background: currentColor;
-}
-
 .sim-body {
     width: 100%;
     box-sizing: border-box;
-    padding: 20px 24px;
+    padding: var(--cds-space-page-y) var(--cds-space-page-x);
     display: grid;
     grid-template-columns: 360px minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
-    gap: 20px;
+    gap: var(--cds-space-columns);
     align-items: stretch;
     flex: 1 1 auto;
     min-height: 0;
@@ -63,29 +19,21 @@
 ::deep .sim-card {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--cds-space-card);
 }
 
 .sim-kick {
-    font: 600 11px/1 inherit;
-    letter-spacing: .02em;
-    color: var(--cds-text-subtle);
-}
-
-.sim-num {
-    font-family: var(--cds-font-family);
-    font-variant-numeric: tabular-nums;
-}
-
-.sim-num-strong {
-    font: 600 14px/1 inherit;
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-regular);
+    letter-spacing: var(--cds-letter-spacing-label);
+    color: var(--cds-color-label);
 }
 
 .sim-main {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--cds-space-card);
     min-width: 0;
     min-height: 0;
 }
@@ -102,8 +50,8 @@
     background: var(--cds-backdrop-soft);
     backdrop-filter: blur(1.5px);
     border-radius: 16px;
-    font: 600 13px/1 inherit;
-    color: var(--cds-text-body);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-content);
 }
 
 .sim-spinner {
@@ -126,8 +74,7 @@
 ::deep .sim-loading {
     align-items: center;
     justify-content: center;
-    color: var(--cds-text-muted);
-    font: 500 13px/1.4 inherit;
+    color: var(--cds-color-content);
     padding: 40px;
     text-align: center;
 }
@@ -141,7 +88,6 @@
     background: var(--cds-danger-surface);
     border: 1px solid var(--cds-danger-border);
     color: var(--cds-danger-text);
-    font: 500 12.5px/1.5 inherit;
 }
 
 .sim-alert-dot {
@@ -169,8 +115,10 @@
 }
 
 .sim-cuota-num {
-    font: 600 40px/1 var(--cds-font-family);
-    letter-spacing: -.04em;
+    font-size: var(--cds-font-size-hero);
+    font-weight: var(--cds-font-weight-strong);
+    line-height: var(--cds-line-height-tight);
+    letter-spacing: var(--cds-letter-spacing-hero);
 }
 
 .sim-summary-grid {
@@ -179,28 +127,6 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(122px, 1fr));
     gap: 12px 24px;
-}
-
-.sim-summary-item {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.sim-summary-key {
-    font: 600 10.5px/1 inherit;
-    letter-spacing: .02em;
-    color: var(--cds-text-subtle);
-}
-
-.sim-summary-val {
-    font: 500 14px/1.2 inherit;
-    color: var(--cds-text-primary);
-}
-
-.sim-summary-val-strong {
-    font: 600 16px/1.2 inherit;
-    color: var(--cds-text-primary);
 }
 
 ::deep .sim-table-card {
@@ -212,35 +138,13 @@
     flex-direction: column;
 }
 
-.sim-table-head {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--cds-border-soft);
-}
-
-.sim-table-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font: 700 14.5px/1 inherit;
-}
-
-.sim-badge {
-    padding: 3px 8px;
-    border-radius: 7px;
-    background: var(--cds-surface-table-header);
-    color: var(--cds-text-secondary);
-    font: 600 11px/1.4 var(--cds-font-family);
-}
-
 .sim-table-scroll {
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
+    /* Columna flex para anclar la fila de totales al fondo aunque la página tenga pocas cuotas. */
+    display: flex;
+    flex-direction: column;
 }
 
 .sim-table-grid {
@@ -259,10 +163,10 @@
 }
 
 .sim-th {
-    padding: 11px 12px;
-    font: 700 10.5px/1 inherit;
-    letter-spacing: .03em;
-    color: var(--cds-text-subtle);
+    padding: var(--cds-space-cell-y) var(--cds-space-cell-x);
+    font-size: var(--cds-font-size-small);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-content);
     text-align: center;
 }
 
@@ -275,22 +179,20 @@
 }
 
 .sim-td {
-    padding: 12px;
-    font: 500 13px/1.35 var(--cds-font-family);
-    color: var(--cds-text-muted);
+    padding: var(--cds-space-cell-y) var(--cds-space-cell-x);
+    font-size: var(--cds-font-size-small);
+    color: var(--cds-color-label);
     text-align: center;
-    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
 }
 
 .sim-td.muted {
-    color: var(--cds-text-subtle);
-    font-family: inherit;
+    color: var(--cds-color-label);
 }
 
 .sim-td.strong {
-    font-weight: 600;
-    color: var(--cds-text-primary);
-    font-size: 13px;
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-content);
 }
 
 .sim-td.verde {
@@ -301,8 +203,19 @@
     position: sticky;
     bottom: 0;
     z-index: 2;
+    margin-top: auto;
     border-top: 2px solid var(--cds-border-default);
     background: var(--cds-surface-subtle);
+}
+
+.sim-table-footer .sim-td {
+    font-size: var(--cds-font-size-body);
+    font-weight: var(--cds-font-weight-bold);
+    color: var(--cds-color-value);
+}
+
+.sim-table-footer .sim-td.verde {
+    color: var(--cds-success-text-alt);
 }
 
 .sim-pager {
@@ -312,11 +225,6 @@
 }
 
 @media (max-width: 900px) {
-    .sim-page {
-        height: auto;
-        overflow: visible;
-    }
-
     .sim-body {
         grid-template-columns: 1fr;
         grid-template-rows: none;

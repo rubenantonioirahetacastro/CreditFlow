@@ -9,19 +9,26 @@ namespace CreditFlow.API.Infrastructure.Services
 {
     public class AzureBlobStorageService : IBlobStorageService
     {
-        private readonly BlobContainerClient _containerClient;
+        // La conexión se crea al primer uso: si falta la configuración, solo fallan las operaciones de archivos
+        // y no los controladores que reciben este servicio (p. ej. el listado de empleados).
+        private readonly Lazy<BlobContainerClient> _container;
 
         public AzureBlobStorageService(IConfiguration configuration)
         {
-            var connectionString = configuration["AzureBlobStorageConnectionString"]
-                ?? throw new InvalidOperationException("No se encontró 'AzureBlobStorageConnectionString' en la configuración.");
+            _container = new Lazy<BlobContainerClient>(() =>
+            {
+                var connectionString = configuration["AzureBlobStorageConnectionString"]
+                    ?? throw new InvalidOperationException("No se encontró 'AzureBlobStorageConnectionString' en la configuración.");
 
-            var containerName = configuration["AzureBlobStorageContainerName"] ?? "documentos";
+                var containerName = configuration["AzureBlobStorageContainerName"] ?? "documentos";
 
-            var blobServiceClient = new BlobServiceClient(connectionString);
-            _containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-            _containerClient.CreateIfNotExists();
+                var containerClient = new BlobServiceClient(connectionString).GetBlobContainerClient(containerName);
+                containerClient.CreateIfNotExists();
+                return containerClient;
+            });
         }
+
+        private BlobContainerClient _containerClient => _container.Value;
 
         public async Task<string> UploadImageAsync(Stream fileStream, string folder, string fileName)
         {

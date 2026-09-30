@@ -1,3 +1,4 @@
+using System.Globalization;
 using CreditFlow.Web.Components;
 using CreditFlow.Web.Core.Http;
 using CreditFlow.Web.Core.Navigation;
@@ -69,7 +70,20 @@ builder.Services
 
 builder.Services.AddRadzenComponents();
 
+// Cultura única de la aplicación (El Salvador): moneda «$», fechas dd/MM/yyyy y punto decimal.
+// Sin esto, el formato «C» y los gráficos dependen de la configuración regional del servidor.
+var culturaApp = CultureInfo.GetCultureInfo("es-SV");
+CultureInfo.DefaultThreadCurrentCulture = culturaApp;
+CultureInfo.DefaultThreadCurrentUICulture = culturaApp;
+
 var app = builder.Build();
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(culturaApp),
+    SupportedCultures = [culturaApp],
+    SupportedUICultures = [culturaApp]
+});
 
 if (!app.Environment.IsDevelopment())
 {

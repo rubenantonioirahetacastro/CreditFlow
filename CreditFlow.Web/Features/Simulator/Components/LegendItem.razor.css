@@ -1,7 +1,7 @@
-.legend-item { display: flex; align-items: center; gap: 7px; color: var(--cds-text-muted); font: 500 11.5px/1 var(--cds-font-family); }
+.legend-item { display: flex; align-items: center; gap: 7px; color: var(--cds-color-content); font-size: var(--cds-font-size-small); font-weight: var(--cds-font-weight-regular); line-height: var(--cds-line-height); }
 .legend-item__dot { width: 9px; height: 9px; border-radius: 3px; }
 .legend-item__dot--capital { background: var(--cds-primary-accent); }
-.legend-item__dot--interest { background: var(--cds-accent-orange); }
+.legend-item__dot--interest { background: var(--cds-chart-interest); }
 .legend-item__dot--tax { background: var(--cds-accent-purple); }
 .legend-item__dot--expense { background: var(--cds-border-strong); }
-.legend-item__value { font-family: var(--cds-font-family); font-variant-numeric: tabular-nums; }
+.legend-item__value { font-variant-numeric: tabular-nums; }

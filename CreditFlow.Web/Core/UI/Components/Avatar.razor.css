@@ -1,19 +1,19 @@
 .avatar-contenedor {
     position: relative;
-    width: 46px;
-    height: 46px;
+    width: var(--avatar-size);
+    height: var(--avatar-size);
     margin: 0 auto;
 }
 
 .avatar-foto {
     box-sizing: border-box !important;
-    flex: 0 0 46px !important;
-    width: 46px !important;
-    min-width: 46px !important;
-    max-width: 46px !important;
-    height: 46px !important;
-    min-height: 46px !important;
-    max-height: 46px !important;
+    flex: 0 0 var(--avatar-size) !important;
+    width: var(--avatar-size) !important;
+    min-width: var(--avatar-size) !important;
+    max-width: var(--avatar-size) !important;
+    height: var(--avatar-size) !important;
+    min-height: var(--avatar-size) !important;
+    max-height: var(--avatar-size) !important;
     border-radius: 50% !important;
     object-fit: cover;
     display: block;
@@ -22,31 +22,37 @@
 
 .avatar-iniciales {
     box-sizing: border-box !important;
-    flex: 0 0 46px !important;
-    width: 46px !important;
-    min-width: 46px !important;
-    max-width: 46px !important;
-    height: 46px !important;
-    min-height: 46px !important;
-    max-height: 46px !important;
+    flex: 0 0 var(--avatar-size) !important;
+    width: var(--avatar-size) !important;
+    min-width: var(--avatar-size) !important;
+    max-width: var(--avatar-size) !important;
+    height: var(--avatar-size) !important;
+    min-height: var(--avatar-size) !important;
+    max-height: var(--avatar-size) !important;
     border-radius: 50% !important;
     overflow: hidden;
     display: flex !important;
     align-items: center;
     justify-content: center;
     color: var(--cds-surface-control) !important;
-    font-size: 1rem !important;
+    font-size: calc(var(--avatar-size) * 0.36) !important;
     font-weight: 700 !important;
     line-height: 1;
     margin: 0 auto;
     padding: 0;
 }
 
+.avatar-iniciales ::deep .avatar-icono {
+    font-size: calc(var(--avatar-size) * 0.58);
+    line-height: 1;
+    color: var(--cds-surface-control);
+}
+
 .avatar-upload-overlay {
     position: absolute;
     inset: 0;
-    width: 46px;
-    height: 46px;
+    width: var(--avatar-size);
+    height: var(--avatar-size);
     border-radius: 50%;
     cursor: pointer;
 }
@@ -88,3 +94,13 @@
 ::deep .avatar-upload-input {
     display: none;
 }
+
+.avatar-sutil .avatar-iniciales {
+    background-color: var(--cds-surface-navigation) !important;
+    color: var(--cds-text-muted-alt) !important;
+    box-shadow: inset 0 0 0 1px var(--cds-border-neutral);
+}
+
+    .avatar-sutil .avatar-iniciales ::deep .avatar-icono {
+        color: var(--cds-text-muted-alt);
+    }
