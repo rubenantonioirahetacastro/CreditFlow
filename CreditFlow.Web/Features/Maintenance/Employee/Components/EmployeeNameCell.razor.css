@@ -1,0 +1,20 @@
+.employee-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+    .employee-name ::deep .avatar-contenedor {
+        flex: none;
+        margin: 0;
+    }
+
+.employee-name__full {
+    min-width: 0;
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-value);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

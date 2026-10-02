@@ -1,0 +1,17 @@
+@using CreditFlow.Web.Features.Maintenance.Employee.Models
+
+@* Celda «Nombre» del listado: avatar de 32px y nombre completo. *@
+<span class="employee-name">
+    <Avatar Id="@Empleado.IdEmpleado"
+            Tamano="32"
+            TieneFoto="@Empleado.TieneFoto"
+            Iniciales="@Empleado.Iniciales"
+            Color="@EmployeeAvatarPalette.Resolve(Empleado.IdEmpleado, Empleado.Iniciales)"
+            ObtenerFotoDataUrl="@ObtenerFotoDataUrl" />
+    <span class="employee-name__full" title="@Empleado.NombreCompleto">@Empleado.NombreCompleto</span>
+</span>
+
+@code {
+    [Parameter, EditorRequired] public EmpleadoListItem Empleado { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<int, Task<string?>> ObtenerFotoDataUrl { get; set; } = default!;
+}
