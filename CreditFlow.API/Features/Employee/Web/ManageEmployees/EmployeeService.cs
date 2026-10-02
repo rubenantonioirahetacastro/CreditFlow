@@ -186,6 +186,7 @@ namespace CreditFlow.API.Features.Employee.Web.ManageEmployees
             empleado.NCodAge = request.CodAgencia;
             empleado.CCorreo = request.Correo;
             empleado.CTelefono = request.Telefono;
+            var cambioEstado = empleado.NEstado != request.Estado;
             empleado.NEstado = request.Estado;
 
             // Empleado.CCorreo y UsuarioLogin.CCorreo se cargan con el mismo valor en
@@ -194,6 +195,18 @@ namespace CreditFlow.API.Features.Employee.Web.ManageEmployees
             if (usuario != null)
             {
                 usuario.CCorreo = request.Correo;
+
+                // Mismo criterio que DeleteAsync: el login solo revisa Bloqueado, así que
+                // desactivar bloquea el acceso y reactivar lo libera. Solo cuando el estado
+                // cambia, para no desbloquear por intentos fallidos en una edición cualquiera.
+                if (cambioEstado)
+                {
+                    var activo = request.Estado == 1;
+                    usuario.Bloqueado = activo ? 0 : 1;
+                    usuario.FechaBloqueo = activo ? null : int.Parse(DateTime.UtcNow.ToString("yyyyMMdd"));
+                    if (activo)
+                        usuario.IntentosFallidos = 0;
+                }
 
                 if (request.Foto != null)
                     usuario.VFoto = await SubirFotoAsync(request.Foto, empleado.CDocumento);
