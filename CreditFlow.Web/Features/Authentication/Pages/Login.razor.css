@@ -1,1 +1,38 @@
-::deep .login-card { max-width: 400px; margin: 3rem auto; }
+/* Pantalla dividida: panel de marca a la izquierda y formulario centrado a la derecha. */
+.login-page {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: var(--cds-font-family);
+    line-height: var(--cds-line-height);
+    background: var(--cds-white);
+}
+
+.login-page__panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+    background:
+        radial-gradient(circle at 85% 10%, var(--cds-auth-panel-glow), transparent 45%),
+        radial-gradient(circle at 10% 95%, var(--cds-auth-panel-glow), transparent 40%),
+        var(--cds-white);
+}
+
+@media (max-width: 960px) {
+    .login-page {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+        .login-page ::deep .auth-hero {
+            display: none;
+        }
+
+    .login-page__panel {
+        padding: 40px 20px;
+        background:
+            radial-gradient(circle at 50% 0%, var(--cds-auth-panel-glow), transparent 60%),
+            var(--cds-white);
+    }
+}

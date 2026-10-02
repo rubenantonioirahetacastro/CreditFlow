@@ -1,30 +1,17 @@
 @page "/login"
 @layout LoginLayout
+@using CreditFlow.Web.Features.Authentication.Components
 
-<PageTitle>Iniciar sesión</PageTitle>
+@* Sin barra superior: el título solo va en la pestaña del navegador. *@
+<PageTitle>Iniciar sesión · CrediFlow</PageTitle>
 
-<CdsCard Padding="CdsCardPadding.Spacious" Class="login-card">
-    <h3>Iniciar sesión</h3>
+<div class="login-page">
+    <AuthHero />
 
-    @if (!string.IsNullOrEmpty(Error))
-    {
-        <div class="alert alert-danger" role="alert">@Error</div>
-    }
-
-    <form method="post" action="/login">
-        <AntiforgeryToken />
-
-        <div class="mb-3">
-            <label class="form-label" for="documento">Documento</label>
-            <CdsTextField NativeForm="true" id="documento" name="documento" autocomplete="username" required />
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="password">Contraseña</label>
-            <CdsPasswordField NativeForm="true" id="password" name="password" autocomplete="current-password" required />
-        </div>
-        <CdsButton Text="Ingresar" ButtonType="ButtonType.Submit" />
-    </form>
-</CdsCard>
+    <main class="login-page__panel">
+        <LoginForm Error="@Error" />
+    </main>
+</div>
 
 @code {
     [SupplyParameterFromQuery(Name = "error")]

@@ -1,0 +1,204 @@
+.login-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    max-width: 400px;
+    animation: login-enter .8s cubic-bezier(.16, 1, .3, 1) .15s both;
+}
+
+/* Si el acceso falla, la tarjeta se sacude una vez (como en los inicios de sesión de sistemas operativos). */
+.login-card--error {
+    animation: login-shake .5s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+.login-card__logo {
+    display: block;
+    width: auto;
+    height: 38px;
+    align-self: flex-start;
+}
+
+.login-card__titles {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.login-card__title {
+    margin: 0;
+    font-family: var(--cds-font-family);
+    font-size: var(--cds-font-size-heading);
+    font-weight: var(--cds-font-weight-strong);
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    color: var(--cds-color-value);
+}
+
+.login-card__subtitle {
+    margin: 0;
+    font-size: var(--cds-font-size-body);
+    color: var(--cds-color-label);
+}
+
+.login-card__alert {
+    animation: login-alert .35s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-space-stack);
+}
+
+/* Entrada escalonada de campos, ayuda y botón. */
+.login-form > * {
+    animation: login-enter .7s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+    .login-form > :nth-child(2) { animation-delay: .25s; }
+    .login-form > :nth-child(3) { animation-delay: .33s; }
+    .login-form > :nth-child(4) { animation-delay: .41s; }
+    .login-form > :nth-child(5) { animation-delay: .49s; }
+
+.login-card--error .login-form > * {
+    animation: none;
+}
+
+.login-form__help {
+    margin: -2px 0 6px;
+    font-size: var(--cds-font-size-small);
+    color: var(--cds-color-label);
+}
+
+    .login-form__help span {
+        color: var(--cds-color-hint);
+    }
+
+/* Botón principal: alto generoso, flecha que avanza al pasar el cursor y spinner al enviar. */
+.login-form ::deep .login-submit {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 52px;
+    border-radius: 14px;
+    font-size: var(--cds-font-size-title);
+    font-weight: var(--cds-font-weight-strong);
+    text-transform: none;
+    letter-spacing: 0;
+    box-shadow: 0 10px 24px -10px var(--cds-auth-glow-primary);
+    transition: transform .2s cubic-bezier(.2, .8, .2, 1), box-shadow .25s ease, background-color .2s ease;
+}
+
+    .login-form ::deep .login-submit:not(:disabled):hover {
+        transform: translateY(-1px);
+        background-color: var(--cds-primary-dark);
+        box-shadow: 0 16px 30px -12px var(--cds-auth-glow-primary);
+    }
+
+    .login-form ::deep .login-submit:not(:disabled):active {
+        transform: translateY(0) scale(.99);
+    }
+
+    .login-form ::deep .login-submit:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 4px var(--cds-surface-selected);
+    }
+
+.login-form ::deep .login-submit__arrow {
+    display: inline-flex;
+    transition: transform .25s cubic-bezier(.2, .8, .2, 1);
+}
+
+    .login-form ::deep .login-submit__arrow .rzi {
+        font-size: 20px;
+    }
+
+.login-form ::deep .login-submit:hover .login-submit__arrow {
+    transform: translateX(4px);
+}
+
+.login-form ::deep .login-submit__spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--cds-auth-text-muted);
+    border-top-color: var(--cds-white);
+    border-radius: 50%;
+    animation: login-spin .7s linear infinite;
+}
+
+.login-form ::deep .login-submit--loading {
+    pointer-events: none;
+}
+
+    .login-form ::deep .login-submit--loading .login-submit__arrow {
+        display: none;
+    }
+
+    .login-form ::deep .login-submit--loading .login-submit__spinner {
+        display: inline-block;
+    }
+
+.login-card__secure {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding-top: 18px;
+    border-top: 1px solid var(--cds-border-soft);
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-color-label);
+    animation: login-fade 1s ease .7s both;
+    --rz-icon-weight: var(--cds-icon-weight);
+}
+
+    .login-card__secure ::deep .rzi {
+        font-size: 15px;
+        color: var(--cds-success);
+    }
+
+@keyframes login-enter {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes login-fade {
+    from { opacity: 0; }
+}
+
+@keyframes login-alert {
+    from { opacity: 0; transform: translateY(-6px) scale(.98); }
+}
+
+@keyframes login-shake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-8px); }
+    40%, 60% { transform: translateX(8px); }
+}
+
+@keyframes login-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-card,
+    .login-card__alert,
+    .login-form > *,
+    .login-card__secure {
+        animation: none;
+    }
+
+    .login-form ::deep .login-submit,
+    .login-form ::deep .login-submit__arrow {
+        transition: none;
+    }
+
+    .login-form ::deep .login-submit__spinner {
+        animation-duration: 1.6s;
+    }
+}

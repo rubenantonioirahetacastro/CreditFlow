@@ -1,0 +1,77 @@
+@* Tarjeta de inicio de sesión. El formulario se envía de forma nativa a POST /login (AuthEndpoints),
+   que crea la cookie y redirige; los errores regresan en ?error=. *@
+<div class="login-card @(string.IsNullOrWhiteSpace(Error) ? null : "login-card--error")">
+    <img src="images/crediflow-logo.svg" alt="CrediFlow" class="login-card__logo" />
+
+    <div class="login-card__titles">
+        <h1 class="login-card__title">Inicia sesión</h1>
+        <p class="login-card__subtitle">Bienvenido de nuevo. Ingresa con tu documento y contraseña.</p>
+    </div>
+
+    @if (MostrarError)
+    {
+        <div class="login-card__alert">
+            <CdsFormMessage Message="@Error" />
+        </div>
+    }
+
+    <form method="post" action="/login" class="login-form">
+        <AntiforgeryToken />
+
+        <AuthField Id="documento"
+                   Name="documento"
+                   Label="Documento"
+                   Icon="badge"
+                   Autocomplete="username"
+                   Required="true"
+                   Autofocus="true"
+                   Invalid="@MostrarError"
+                   ValueChanged="@(v => { documento = v; errorDescartado = true; })" />
+
+        <AuthField Id="password"
+                   Name="password"
+                   Label="Contraseña"
+                   Icon="lock"
+                   Type="password"
+                   Autocomplete="current-password"
+                   Required="true"
+                   Invalid="@MostrarError"
+                   ValueChanged="@(v => { password = v; errorDescartado = true; })" />
+
+        <p class="login-form__help">
+            ¿Olvidaste tu contraseña? <span>Pide a tu administrador que la restablezca.</span>
+        </p>
+
+        <CdsButton ButtonType="ButtonType.Submit"
+                   class="@($"login-submit {(enviando ? "login-submit--loading" : null)}")"
+                   aria-busy="@(enviando ? "true" : "false")"
+                   Click="@Enviar">
+            <span class="login-submit__text">@(enviando ? "Verificando…" : "Continuar")</span>
+            <span class="login-submit__arrow" aria-hidden="true"><RadzenIcon Icon="arrow_forward" /></span>
+            <span class="login-submit__spinner" aria-hidden="true"></span>
+        </CdsButton>
+    </form>
+
+    <div class="login-card__secure">
+        <RadzenIcon Icon="lock" />
+        <span>Conexión cifrada · Solo personal autorizado</span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Error { get; set; }
+
+    private string documento = string.Empty;
+    private string password = string.Empty;
+    private bool enviando;
+    private bool errorDescartado;
+
+    private bool MostrarError => !string.IsNullOrWhiteSpace(Error) && !errorDescartado;
+
+    private void Enviar()
+    {
+        // Solo muestra el estado de carga si el navegador va a enviar (los campos son obligatorios).
+        if (!string.IsNullOrWhiteSpace(documento) && !string.IsNullOrEmpty(password))
+            enviando = true;
+    }
+}

@@ -7,6 +7,7 @@
     --cds-font-size-small: 13px;   /* celdas y encabezados de tabla, chips, pills, badges, leyendas */
     --cds-font-size-body: 14px;    /* texto base, inputs, selects, mensajes, fila de totales */
     --cds-font-size-title: 16px;   /* título de tarjeta y valor destacado */
+    --cds-font-size-heading: 26px; /* título principal de pantallas de acceso (login) */
     --cds-font-size-hero: 40px;    /* cifra principal de una pantalla (máximo una) */
     /* Tipografía: pesos, interlineado y tracking */
     --cds-font-weight-regular: 500;
@@ -117,6 +118,18 @@
     --cds-color-inverse-accent: var(--cds-brand-400);       /* acción e ícono sobre fondo oscuro */
     --cds-surface-inverse-hover: rgba(255, 255, 255, 0.08); /* hover de una acción sobre fondo oscuro */
     --cds-backdrop: rgba(14, 27, 61, 0.35);                 /* fondo detrás de paneles laterales y modales */
+    /* Pantalla de acceso (login): panel de marca oscuro con luces animadas y vidrio. */
+    --cds-auth-backdrop: var(--cds-brand-ink);
+    --cds-auth-glow-primary: rgba(48, 97, 242, 0.55);
+    --cds-auth-glow-accent: rgba(128, 157, 242, 0.40);
+    --cds-auth-glow-soft: rgba(73, 115, 242, 0.30);
+    --cds-auth-grid-line: rgba(255, 255, 255, 0.045);
+    --cds-auth-text: #ffffff;
+    --cds-auth-text-muted: rgba(255, 255, 255, 0.70);
+    --cds-auth-glass: rgba(255, 255, 255, 0.07);
+    --cds-auth-glass-border: rgba(255, 255, 255, 0.14);
+    --cds-auth-panel-glow: rgba(48, 97, 242, 0.07);
+    --cds-auth-shadow: rgba(14, 27, 61, 0.18);
     --cds-surface-table-success: #e6f7ec;
     --cds-surface-table-info: var(--cds-brand-tint);
     --cds-surface-table-header: #eef2f7;

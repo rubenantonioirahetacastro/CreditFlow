@@ -1,0 +1,127 @@
+.auth-field {
+    position: relative;
+    --rz-icon-weight: var(--cds-icon-weight);
+    --rz-icon-grade: var(--cds-icon-grade);
+}
+
+.auth-field__input {
+    display: block;
+    width: 100%;
+    height: 56px;
+    box-sizing: border-box;
+    padding: 22px 16px 6px 48px;
+    border: 1px solid var(--cds-border-strong);
+    border-radius: 14px;
+    background: var(--cds-white);
+    color: var(--cds-color-value);
+    font-family: var(--cds-font-family);
+    font-size: var(--cds-font-size-title);
+    font-weight: var(--cds-font-weight-regular);
+    line-height: var(--cds-line-height);
+    transition: border-color .2s ease, box-shadow .25s ease, background-color .2s ease;
+}
+
+.auth-field__input--toggle {
+    padding-right: 52px;
+}
+
+    .auth-field__input:hover {
+        border-color: var(--cds-focus-ring);
+    }
+
+    .auth-field__input:focus {
+        outline: 0;
+        border-color: var(--cds-primary);
+        box-shadow: 0 0 0 4px var(--cds-surface-selected);
+    }
+
+/* Rótulo dentro del campo que sube y se achica al enfocar o al tener texto (también con autocompletado). */
+.auth-field__label {
+    position: absolute;
+    top: 50%;
+    left: 48px;
+    margin: 0;
+    transform: translateY(-50%);
+    transform-origin: left center;
+    color: var(--cds-color-label);
+    font-size: var(--cds-font-size-title);
+    font-weight: var(--cds-font-weight-regular);
+    pointer-events: none;
+    transition: transform .2s cubic-bezier(.2, .8, .2, 1), color .2s ease;
+}
+
+.auth-field__input:focus + .auth-field__label,
+.auth-field__input:not(:placeholder-shown) + .auth-field__label,
+.auth-field__input:-webkit-autofill + .auth-field__label {
+    transform: translateY(-118%) scale(.75);
+    letter-spacing: var(--cds-letter-spacing-label);
+}
+
+.auth-field__input:focus + .auth-field__label {
+    color: var(--cds-primary);
+}
+
+.auth-field__icon {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    display: inline-flex;
+    transform: translateY(-50%);
+    color: var(--cds-color-hint);
+    pointer-events: none;
+    transition: color .2s ease;
+}
+
+    .auth-field__icon ::deep .rzi {
+        font-size: 21px;
+    }
+
+.auth-field:focus-within .auth-field__icon {
+    color: var(--cds-primary);
+}
+
+.auth-field__toggle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    transform: translateY(-50%);
+    border: none;
+    border-radius: var(--cds-radius-control);
+    background: none;
+    color: var(--cds-color-label);
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+    .auth-field__toggle ::deep .rzi {
+        font-size: 20px;
+    }
+
+    .auth-field__toggle:hover,
+    .auth-field__toggle:focus-visible {
+        outline: none;
+        background: var(--cds-surface-muted);
+        color: var(--cds-color-value);
+    }
+
+.auth-field--invalid .auth-field__input {
+    border-color: var(--cds-danger);
+}
+
+    .auth-field--invalid .auth-field__input:focus {
+        box-shadow: 0 0 0 4px var(--cds-danger-surface);
+    }
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-field__input,
+    .auth-field__label,
+    .auth-field__icon {
+        transition: none;
+    }
+}

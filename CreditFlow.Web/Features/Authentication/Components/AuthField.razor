@@ -1,0 +1,53 @@
+@* Campo de la pantalla de acceso: ícono, rótulo flotante y, en contraseñas, botón para mostrar u ocultar. *@
+<div class="auth-field @(Invalid ? "auth-field--invalid" : null)">
+    <span class="auth-field__icon" aria-hidden="true"><RadzenIcon Icon="@Icon" /></span>
+    <input id="@Id"
+           name="@Name"
+           type="@TipoEfectivo"
+           class="auth-field__input @(EsPassword ? "auth-field__input--toggle" : null)"
+           placeholder=" "
+           autocomplete="@Autocomplete"
+           autocapitalize="off"
+           spellcheck="false"
+           required="@Required"
+           autofocus="@Autofocus"
+           aria-invalid="@(Invalid ? "true" : "false")"
+           @oninput="OnInput" />
+    <label class="auth-field__label" for="@Id">@Label</label>
+
+    @if (EsPassword)
+    {
+        <button type="button"
+                class="auth-field__toggle"
+                aria-label="@(mostrar ? "Ocultar contraseña" : "Mostrar contraseña")"
+                aria-pressed="@(mostrar ? "true" : "false")"
+                title="@(mostrar ? "Ocultar contraseña" : "Mostrar contraseña")"
+                @onclick="() => mostrar = !mostrar">
+            <RadzenIcon Icon="@(mostrar ? "visibility_off" : "visibility")" />
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Id { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Name { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = "person";
+
+    /// <summary>«text» o «password».</summary>
+    [Parameter] public string Type { get; set; } = "text";
+
+    [Parameter] public string? Autocomplete { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Autofocus { get; set; }
+    [Parameter] public bool Invalid { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private bool mostrar;
+
+    private bool EsPassword => Type == "password";
+
+    private string TipoEfectivo => EsPassword && mostrar ? "text" : Type;
+
+    private Task OnInput(ChangeEventArgs args) => ValueChanged.InvokeAsync(args.Value?.ToString() ?? string.Empty);
+}

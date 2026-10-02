@@ -44,6 +44,7 @@ Los componentes de Radzen (inputs, textarea, diálogos, grillas) toman su texto 
 | `--cds-font-size-small` | 13px | Celdas y encabezados de tabla, pills, chips de estado, badges («12 pagos»), leyendas |
 | `--cds-font-size-body` | 14px | Texto base, inputs, selects, mensajes, valores de KPI, fila de totales |
 | `--cds-font-size-title` | 16px | Título de tarjeta («Detalle de cuotas») y valor destacado de KPI |
+| `--cds-font-size-heading` | 26px | Solo el título del formulario de la pantalla de acceso |
 | `--cds-font-size-hero` | 40px | Cifra principal de la pantalla (máximo una por página). Tracking `--cds-letter-spacing-hero` |
 
 Rótulos (`label`) llevan `letter-spacing: var(--cds-letter-spacing-label)`.
@@ -186,6 +187,12 @@ Siempre `CdsExportButton` (`Format="CdsExportFormat.Excel"` o `Pdf`), a la derec
 - Lista maestra: `CdsCardHeader` con conteo y botón «Nuevo»; buscador; ítems con insignia de código, nombre, clave técnica y conteo. Seleccionado: fondo `--cds-surface-selected`, borde interior `--cds-border-selected` e insignia `--cds-primary`.
 - Detalle: `CdsCardHeader` con `Lead` (insignia de código), `Subtitle` («Clave X · N activos de M») y acciones (Excel + acción principal); `CdsTabs` con conteo y filtro de texto; tabla sin paginación con pie «Mostrando X de Y». La columna de nombre («Nombre del catálogo») alinea a la izquierda tanto el encabezado como las celdas.
 - Crear/editar en `CdsDrawer`; eliminar con diálogo que ofrece «Desactivar» como alternativa segura; cada cambio muestra `CdsUndoToast`.
+
+### Pantalla de acceso (referencia: Login)
+- Pantalla dividida sin barra superior (`LoginLayout`): panel de marca oscuro (`AuthHero`, tokens `--cds-auth-*`) y formulario centrado (`LoginForm`) de máximo 400px. Bajo 960px se oculta el panel de marca.
+- Título del formulario en `--cds-font-size-heading` (único uso fuera de la escala de pantallas internas); la cifra *hero* la usa el titular del panel de marca.
+- Campos `AuthField`: 56px de alto, ícono a la izquierda, rótulo flotante y botón para mostrar/ocultar la contraseña. Botón principal (`CdsButton`) de 52px con flecha que avanza al pasar el cursor y spinner al enviar.
+- Animaciones: luces del panel que se desplazan lentamente, entrada escalonada de textos y campos, beneficios en vidrio que flotan y sacudida de la tarjeta cuando el acceso falla. Todas se desactivan con `prefers-reduced-motion`.
 
 ## 8. Menú lateral
 - «Otorgamiento» es un encabezado fijo de sección, siempre desplegado.
