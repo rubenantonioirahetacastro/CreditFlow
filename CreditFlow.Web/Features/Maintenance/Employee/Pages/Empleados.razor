@@ -1,208 +1,200 @@
 @page "/empleados"
 @attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
+@using CreditFlow.Web.Features.Maintenance.Employee.Components
+@using CreditFlow.Web.Core.Utils.Format
 
 <CdsPageHeader Title="Empleados"
                Icon="badge"
                Path="@(new PagePathItem[] { "Mantenimientos" })"
                Description="Administra los empleados, sus roles y accesos." />
 
-<CdsFormMessage Message="@ValidationError" />
+@if (cargando && empleados.Count == 0)
+{
+    <CdsPageState Kind="CdsPageStateKind.Loading" Title="Cargando empleados…" />
+}
+else if (errorCarga is not null && empleados.Count == 0)
+{
+    <CdsPageState Kind="CdsPageStateKind.Error"
+                  Title="No pudimos cargar los empleados"
+                  Message="@errorCarga"
+                  OnAction="@CargarAsync" />
+}
+else
+{
+    <div class="cds-page cds-page--fill emp-page" @ref="paginaRootRef">
+        <EmployeeSummary Total="@empleados.Count"
+                         Activos="@Activos"
+                         Inactivos="@(empleados.Count - Activos)"
+                         Agencias="@AgenciasConPersonal" />
 
-<GridEstandar TItem="EmpleadoEdicionDto"
-              @ref="gridEstandar"
-              Data="@ListaEmpleados"
-              IsLoading="@Cargando"
-              LoadingText="Cargando empleados…"
-              ErrorMessage="@ErrorCarga"
-              OnRetry="@CargarDatosAsync"
-              EmptyText="No hay empleados registrados."
-              ExportFileName="empleados"
-              EditMode="DataGridEditMode.Single"
-              RowRender="@OnRowRender"
-              ShowAddButton="@esAdmin"
-              AddDisabled="@(filaEnEdicion != null)"
-              AddButtonTitle="Nuevo empleado"
-              OnAdd="@NuevoEmpleadoAsync">
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="" Sortable="false" Filterable="false" Width="90px" CssClass="celda-accion" Visible="@esAdmin" Frozen="true">
-        <Template Context="empleado">
-            <CdsButton Icon="edit"
-                          ButtonStyle="ButtonStyle.Primary"
-                          Variant="Variant.Outlined"
-                          Size="ButtonSize.ExtraSmall"
-                          Disabled="@(filaEnEdicion != null)"
-                          title="Editar empleado"
-                          Click="@(() => EditarAsync(empleado))" />
-        </Template>
-        <EditTemplate Context="empleado">
-            <div class="d-flex gap-1">
-                <CdsButton Icon="save"
-                              ButtonStyle="ButtonStyle.Primary"
-                              Variant="Variant.Outlined"
-                              Size="ButtonSize.ExtraSmall"
-                              Disabled="@Guardando"
-                              title="Guardar cambios"
-                              Click="@(() => GuardarAsync(empleado))" />
-                <CdsButton Icon="close"
-                              ButtonStyle="ButtonStyle.Secondary"
-                              Variant="Variant.Outlined"
-                              Size="ButtonSize.ExtraSmall"
-                              Disabled="@Guardando"
-                              title="Cancelar edición"
-                              Click="@(() => CancelarAsync(empleado))" />
+        <CdsCard Padding="CdsCardPadding.None" Class="emp-table-card">
+            <CdsCardHeader Title="Listado de empleados" Badge="@($"{EmpleadosFiltrados.Count} empleados")">
+                <Actions>
+                    <CdsExportButton Format="CdsExportFormat.Excel"
+                                     Disabled="@(EmpleadosFiltrados.Count == 0)"
+                                     Click="@(() => grilla.ExportarExcelAsync())" />
+                    @if (esAdmin)
+                    {
+                        <CdsButton Text="Nuevo empleado"
+                                   Icon="person_add"
+                                   Size="ButtonSize.Small"
+                                   Click="@(() => AbrirPanel(null))" />
+                    }
+                </Actions>
+            </CdsCardHeader>
+
+            <div class="emp-filters">
+                <CdsTabs AriaLabel="Filtrar empleados por estado">
+                    <CdsTab Text="Todos" Count="@empleados.Count" Selected="@(filtroEstado == FiltroEstado.Todos)" OnClick="@(() => filtroEstado = FiltroEstado.Todos)" />
+                    <CdsTab Text="Activos" Count="@Activos" Selected="@(filtroEstado == FiltroEstado.Activos)" OnClick="@(() => filtroEstado = FiltroEstado.Activos)" />
+                    <CdsTab Text="Inactivos" Count="@(empleados.Count - Activos)" Selected="@(filtroEstado == FiltroEstado.Inactivos)" OnClick="@(() => filtroEstado = FiltroEstado.Inactivos)" />
+                </CdsTabs>
+                <div class="emp-filters__search">
+                    <CdsTextField NativeForm="true"
+                                  Value="@filtroTexto"
+                                  ValueChanged="@(v => filtroTexto = v)"
+                                  Placeholder="Buscar por nombre, usuario o documento"
+                                  aria-label="Buscar empleados" />
+                </div>
             </div>
-        </EditTemplate>
-    </RadzenDataGridColumn>
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="" Sortable="false" Filterable="false" Width="80px" Frozen="true">
-        <Template Context="empleado">
-            <Avatar Id="@empleado.IdEmpleado"
-                    TieneFoto="@(!string.IsNullOrEmpty(empleado.FotoUrl))"
-                    Iniciales="@ObtenerIniciales(empleado)"
-                    Color="@ObtenerColorAvatar(empleado)"
-                    ObtenerFotoDataUrl="@EmpleadoService.ObtenerFotoDataUrlAsync" />
-        </Template>
-        <EditTemplate Context="empleado">
-            <Avatar Id="@empleado.IdEmpleado"
-                    TieneFoto="@(!string.IsNullOrEmpty(empleado.FotoUrl))"
-                    PreviewUrl="@empleado.FotoPreviewUrl"
-                    Iniciales="@ObtenerIniciales(empleado)"
-                    Color="@ObtenerColorAvatar(empleado)"
-                    Editable="true"
-                    OnFotoSeleccionada="@(e => OnFotoSeleccionadaAsync(empleado, e))"
-                    ObtenerFotoDataUrl="@EmpleadoService.ObtenerFotoDataUrlAsync" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.CodigoUsuario)" Title="Usuario" Width="130px" Frozen="true">
-        <Template Context="empleado">@(string.IsNullOrEmpty(empleado.CodigoUsuario) ? "-" : empleado.CodigoUsuario)</Template>
-        <EditTemplate Context="empleado">@(string.IsNullOrEmpty(empleado.CodigoUsuario) ? "-" : empleado.CodigoUsuario)</EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Documento)" Title="Documento" Width="150px">
-        <EditTemplate Context="empleado">
-            <CdsDocumentField @bind-Value="empleado.Documento" Disabled="@(empleado.IdEmpleado != 0)" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Nombres)" Title="Nombres" Width="160px">
-        <EditTemplate Context="empleado">
-            <CdsTextField @bind-Value="empleado.Nombres" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Title="Apellidos" Width="170px" Sortable="false" Filterable="false">
-        <Template Context="empleado">@empleado.PrimerApellido @empleado.SegundoApellido</Template>
-        <EditTemplate Context="empleado">
-            <div class="d-flex gap-1">
-                <div class="employee-lastname-field"><CdsTextField @bind-Value="empleado.PrimerApellido" Placeholder="Primer apellido" /></div>
-                <div class="employee-lastname-field"><CdsTextField @bind-Value="empleado.SegundoApellido" Placeholder="Segundo apellido" /></div>
+            <div class="emp-grid">
+                <GridEstandar @ref="grilla"
+                              TItem="EmpleadoListItem"
+                              Data="@EmpleadosFiltrados"
+                              EmptyText="@(empleados.Count == 0 ? "Aún no hay empleados registrados." : "No hay empleados que coincidan con el filtro.")"
+                              ExportFileName="empleados"
+                              ShowAddButton="false"
+                              ShowExportButton="false"
+                              FillHeight="true"
+                              SelectionMode="DataGridSelectionMode.Single"
+                              RowSelect="@(item => AbrirPanel(item))">
+                    <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.UsuarioVisible)" Title="Usuario" Width="145px" Filterable="false" Frozen="true" TextAlign="TextAlign.Center">
+                        <Template Context="item">
+                            <span class="cds-mono">@item.UsuarioVisible</span>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.NombreVisible)" Title="Nombre" Width="260px" Frozen="true" TextAlign="TextAlign.Left">
+                        <Template Context="item">
+                            <span class="emp-person">
+                                <Avatar Id="@item.IdEmpleado"
+                                        Tamano="32"
+                                        TieneFoto="@item.TieneFoto"
+                                        Iniciales="@item.Iniciales"
+                                        Color="@item.ColorAvatar"
+                                        ObtenerFotoDataUrl="@EmpleadoService.ObtenerFotoDataUrlAsync" />
+                                <CdsTruncatedText Text="@item.NombreVisible" />
+                            </span>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.DocumentoVisible)" Title="Documento" Width="175px" Filterable="false" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.AgenciaVisible)" Title="Agencia" Width="170px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.RolVisible)" Title="Rol" Width="170px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.CorreoVisible)" Title="Correo" Width="240px" Filterable="false" TextAlign="TextAlign.Center">
+                        <Template Context="item">
+                            <CdsTruncatedText Text="@item.CorreoVisible" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.TelefonoVisible)" Title="Teléfono" Width="110px" Filterable="false" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.EstadoVisible)" Title="Estado" Width="100px" Filterable="false" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn TItem="EmpleadoListItem" Title="Acciones" Width="125px" Sortable="false" Filterable="false" TextAlign="TextAlign.Center" Visible="@esAdmin" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                        <Template Context="item">
+                            @* stopPropagation: la fila también abre el panel; evita abrirlo dos veces. *@
+                            <span @onclick:stopPropagation="true">
+                                <CdsButton Icon="edit"
+                                           Variant="Variant.Text"
+                                           ButtonStyle="ButtonStyle.Base"
+                                           Size="ButtonSize.ExtraSmall"
+                                           title="@($"Editar a {item.NombreVisible}")"
+                                           aria-label="@($"Editar a {item.NombreVisible}")"
+                                           Click="@(() => AbrirPanel(item))" />
+                            </span>
+                        </Template>
+                    </RadzenDataGridColumn>
+                </GridEstandar>
             </div>
-        </EditTemplate>
-    </RadzenDataGridColumn>
+        </CdsCard>
+    </div>
+}
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Sexo)" Title="Sexo" Width="70px" Filterable="false">
-        <EditTemplate Context="empleado">
-            <CdsNumericField TValue="int" @bind-Value="empleado.Sexo" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
+<EmployeeDrawer Open="@panelAbierto"
+                Empleado="@empleadoEnEdicion"
+                Agencias="@agencias"
+                Roles="@roles"
+                Guardando="@guardando"
+                ObtenerFotoDataUrl="@EmpleadoService.ObtenerFotoDataUrlAsync"
+                OnClose="@(() => panelAbierto = false)"
+                OnSave="@GuardarAsync" />
 
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.CodAgencia)" Title="Agencia" Width="90px">
-        <EditTemplate Context="empleado">
-            <CdsNumericField TValue="int" @bind-Value="empleado.CodAgencia" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Correo)" Title="Correo" Width="220px" Filterable="false">
-        <Template Context="empleado">
-            <CdsTruncatedText Text="@empleado.Correo" />
-        </Template>
-        <EditTemplate Context="empleado">
-            <CdsEmailField @bind-Value="empleado.Correo" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Telefono)" Title="Teléfono" Width="130px" Filterable="false">
-        <EditTemplate Context="empleado">
-            <CdsPhoneField @bind-Value="empleado.Telefono" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto"
-                           Title="Contraseña"
-                           Width="160px"
-                           Sortable="false"
-                           Filterable="false"
-                           Visible="@(filaEnEdicion?.IdEmpleado == 0)">
-        <Template Context="empleado"></Template>
-        <EditTemplate Context="empleado">
-            @if (empleado.IdEmpleado == 0)
-            {
-                <CdsPasswordField @bind-Value="empleado.Password" Placeholder="Contraseña" />
-            }
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Rol)" Title="Rol" Width="130px" Filterable="false">
-        <Template Context="empleado">@(empleado.Rol ?? "-")</Template>
-        <EditTemplate Context="empleado">
-            <CdsDropdown TValue="int"
-                             @bind-Value="empleado.IdRol"
-                             Data="@Roles"
-                             TextProperty="@nameof(RoleDto.Nombre)"
-                             ValueProperty="@nameof(RoleDto.IdRol)"
-                             Placeholder="-- Seleccionar --" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="EmpleadoEdicionDto" Property="@nameof(EmpleadoDto.Estado)" Title="Estado" Width="100px" Filterable="false">
-        <Template Context="empleado">@(empleado.Estado == 1 ? "Activo" : "Inactivo")</Template>
-        <EditTemplate Context="empleado">
-            <CdsDropdown TValue="int"
-                             @bind-Value="empleado.Estado"
-                             Data="@EstadoOpciones"
-                             TextProperty="@nameof(OpcionEstado.Texto)"
-                             ValueProperty="@nameof(OpcionEstado.Valor)"
-                             Disabled="@(empleado.IdEmpleado == 0)" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-</GridEstandar>
+<CdsUndoToast Visible="@avisoVisible"
+              Version="@avisoVersion"
+              Message="@avisoMensaje"
+              OnUndo="@(accionDeshacer is null ? default : EventCallback.Factory.Create(this, DeshacerAsync))"
+              OnClose="@(() => avisoVisible = false)" />
 
 @code {
     [Inject] private IEmpleadoService EmpleadoService { get; set; } = default!;
     [Inject] private IRoleService RoleService { get; set; } = default!;
+    [Inject] private IAgenciaService AgenciaService { get; set; } = default!;
     [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
     [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
 
-    private record OpcionEstado(int Valor, string Texto);
+    private enum FiltroEstado { Todos, Activos, Inactivos }
 
-    private static readonly List<OpcionEstado> EstadoOpciones = new()
-    {
-        new OpcionEstado(1, "Activo"),
-        new OpcionEstado(0, "Inactivo")
-    };
+    private ElementReference paginaRootRef;
+    private GridEstandar<EmpleadoListItem> grilla = default!;
 
-    private class EmpleadoEdicionDto : EmpleadoDto
-    {
-        public string? Password { get; set; }
+    private List<EmpleadoListItem> empleados = [];
+    private List<RoleDto> roles = [];
+    private List<AgenciaDto> agencias = [];
 
-        public IBrowserFile? FotoSeleccionada { get; set; }
-
-        public string? FotoPreviewUrl { get; set; }
-    }
-
-    private GridEstandar<EmpleadoEdicionDto> gridEstandar = default!;
-
-    private List<EmpleadoEdicionDto> ListaEmpleados { get; set; } = new();
-    private List<RoleDto> Roles { get; set; } = new();
-
-    private EmpleadoEdicionDto? filaEnEdicion;
-    private EmpleadoEdicionDto? backupOriginal;
-
-    private bool Cargando = true;
-    private bool Guardando;
+    private bool cargando = true;
+    private string? errorCarga;
+    private bool guardando;
     private bool esAdmin;
-    private string? ErrorCarga;
-    private string? ValidationError;
+
+    private FiltroEstado filtroEstado = FiltroEstado.Todos;
+    private string filtroTexto = string.Empty;
+
+    private bool panelAbierto;
+    private EmpleadoDto? empleadoEnEdicion;
+
+    // Aviso con «Deshacer»: guarda la acción inversa del último cambio (nula si no se puede deshacer).
+    private bool avisoVisible;
+    private int avisoVersion;
+    private string avisoMensaje = string.Empty;
+    private Func<Task<(bool Exito, string? Mensaje)>>? accionDeshacer;
+
+    private int Activos => empleados.Count(e => e.Activo);
+
+    private int AgenciasConPersonal => empleados
+        .Where(e => e.Activo && e.Empleado.CodAgencia > 0)
+        .Select(e => e.Empleado.CodAgencia)
+        .Distinct()
+        .Count();
+
+    private List<EmpleadoListItem> EmpleadosFiltrados
+    {
+        get
+        {
+            var texto = filtroTexto.Trim();
+            var digitos = DigitFormatter.OnlyDigits(texto, 14);
+            return empleados
+                .Where(e => filtroEstado switch
+                {
+                    FiltroEstado.Activos => e.Activo,
+                    FiltroEstado.Inactivos => !e.Activo,
+                    _ => true
+                })
+                .Where(e => texto.Length == 0 ||
+                            e.NombreVisible.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                            e.UsuarioVisible.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                            e.CorreoVisible.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                            (digitos.Length > 0 && e.Empleado.Documento.Contains(digitos)))
+                .ToList();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -212,204 +204,76 @@
             esAdmin = RoleAuthorization.HasAnyRoleId(authState.User, RoleIds.GlobalAdministrators);
         }
 
-        await CargarDatosAsync();
+        await CargarAsync();
     }
 
-    private async Task CargarDatosAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Cargando = true;
-        ErrorCarga = null;
+        await JS.FitAsync(paginaRootRef);
+    }
 
-        var rolesTask = RoleService.ObtenerTodosAsync();
+    private async Task CargarAsync()
+    {
+        cargando = true;
+
         var empleadosTask = EmpleadoService.ObtenerTodosAsync();
-        await Task.WhenAll(rolesTask, empleadosTask);
+        var rolesTask = RoleService.ObtenerTodosAsync();
+        var agenciasTask = AgenciaService.ObtenerTodasAsync();
+        await Task.WhenAll(empleadosTask, rolesTask, agenciasTask);
 
         var rolesResult = await rolesTask;
-        var empleadosResult = await empleadosTask;
-
         if (rolesResult.IsSuccess)
-            Roles = rolesResult.Data ?? [];
+            roles = rolesResult.Data ?? [];
 
+        // Sin agencias la tabla muestra el código; no impide trabajar.
+        var agenciasResult = await agenciasTask;
+        if (agenciasResult.IsSuccess)
+            agencias = (agenciasResult.Data ?? []).OrderBy(a => a.Nombre).ToList();
+
+        var empleadosResult = await empleadosTask;
         if (empleadosResult.IsSuccess)
-            ListaEmpleados = (empleadosResult.Data ?? []).Select(MapearAEdicion).ToList();
-
-        if (!rolesResult.IsSuccess || !empleadosResult.IsSuccess)
-            ErrorCarga = empleadosResult.Message ?? rolesResult.Message;
-
-        Cargando = false;
-    }
-
-    private async Task CargarEmpleadosAsync()
-    {
-        var result = await EmpleadoService.ObtenerTodosAsync();
-        if (result.IsSuccess)
         {
-            ListaEmpleados = (result.Data ?? []).Select(MapearAEdicion).ToList();
-            ErrorCarga = null;
+            var nombresAgencia = agencias.ToDictionary(a => a.NCodAge, a => NameFormatter.ToDisplayName(a.Nombre));
+            empleados = (empleadosResult.Data ?? [])
+                .Select(e => new EmpleadoListItem(e, nombresAgencia.GetValueOrDefault(e.CodAgencia)))
+                .OrderBy(e => e.NombreVisible)
+                .ToList();
+            errorCarga = null;
+        }
+        else if (empleados.Count > 0)
+        {
+            Notifications.Error("No se pudieron actualizar los empleados", empleadosResult.Message);
         }
         else
         {
-            if (ListaEmpleados.Count > 0)
-                Notifications.Error("No se pudieron actualizar los empleados", result.Message);
-            else
-                ErrorCarga = result.Message;
+            errorCarga = empleadosResult.Message ?? "No se pudieron cargar los empleados.";
         }
+
+        if (empleadosResult.IsSuccess && !rolesResult.IsSuccess)
+            Notifications.Error("No se pudieron cargar los roles", rolesResult.Message);
+
+        cargando = false;
     }
 
-    private EmpleadoEdicionDto MapearAEdicion(EmpleadoDto e) => new()
+    private void AbrirPanel(EmpleadoListItem? item)
     {
-        IdEmpleado = e.IdEmpleado,
-        IdUsuario = e.IdUsuario,
-        Documento = e.Documento,
-        CodigoUsuario = e.CodigoUsuario,
-        FotoUrl = e.FotoUrl,
-        Nombres = e.Nombres,
-        PrimerApellido = e.PrimerApellido,
-        SegundoApellido = e.SegundoApellido,
-        Sexo = e.Sexo,
-        CodAgencia = e.CodAgencia,
-        Correo = e.Correo,
-        Telefono = e.Telefono,
-        Estado = e.Estado,
-        Rol = e.Rol,
-        IdRol = e.IdRol
-    };
-
-    private static readonly string[] ColoresAvatar =
-    {
-        "var(--cds-primary)", "var(--cds-primary-accent-light)", "var(--cds-primary-light)", "var(--cds-primary-accent-dark)", "var(--cds-primary-dark)"
-    };
-
-    private static string ObtenerIniciales(EmpleadoEdicionDto empleado)
-    {
-        var inicialNombre = string.IsNullOrWhiteSpace(empleado.Nombres) ? "" : empleado.Nombres.Trim()[0].ToString();
-        var inicialApellido = string.IsNullOrWhiteSpace(empleado.PrimerApellido) ? "" : empleado.PrimerApellido.Trim()[0].ToString();
-        return (inicialNombre + inicialApellido).ToUpperInvariant();
-    }
-
-    private static string ObtenerColorAvatar(EmpleadoEdicionDto empleado)
-    {
-        var clave = $"{empleado.Nombres}{empleado.PrimerApellido}";
-        var indice = Math.Abs(clave.GetHashCode()) % ColoresAvatar.Length;
-        return ColoresAvatar[indice];
-    }
-
-    private void OnRowRender(RowRenderEventArgs<EmpleadoEdicionDto> args)
-    {
-        if (filaEnEdicion is not { } fila || !ReferenceEquals(args.Data, fila))
+        if (!esAdmin)
             return;
 
-        args.Attributes["style"] = fila.IdEmpleado == 0
-            ? "background-color: var(--cds-surface-table-success);"
-            : "background-color: var(--cds-surface-table-info);";
+        empleadoEnEdicion = item?.Empleado;
+        panelAbierto = true;
     }
 
-    private async Task NuevoEmpleadoAsync()
+    private async Task GuardarAsync(EmpleadoFormModel modelo)
     {
-        ValidationError = null;
-        var nuevo = new EmpleadoEdicionDto { Estado = 1 };
-        filaEnEdicion = nuevo;
-        await gridEstandar.Grid.InsertRow(nuevo);
-    }
+        var anterior = empleadoEnEdicion;
+        var nombre = NameFormatter.ToDisplayName($"{modelo.Nombres} {modelo.PrimerApellido}");
 
-    private async Task OnFotoSeleccionadaAsync(EmpleadoEdicionDto empleado, InputFileChangeEventArgs e)
-    {
-        var archivo = e.File;
-
-        var validation = EmployeeValidator.ValidatePhoto(archivo);
-        if (!validation.IsValid)
-        {
-            ValidationError = validation.Message;
-            return;
-        }
-
-        ValidationError = null;
-        using var stream = archivo.OpenReadStream(EmployeeValidator.MaxPhotoSizeBytes);
-        using var memoria = new MemoryStream();
-        await stream.CopyToAsync(memoria);
-
-        empleado.FotoSeleccionada = archivo;
-        empleado.FotoPreviewUrl = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(memoria.ToArray())}";
-    }
-
-    private async Task EditarAsync(EmpleadoEdicionDto empleado)
-    {
-        ValidationError = null;
-        backupOriginal = ClonarValores(empleado);
-        filaEnEdicion = empleado;
-        await gridEstandar.Grid.EditRow(empleado);
-    }
-
-    private void CancelarAsync(EmpleadoEdicionDto empleado)
-    {
-        ValidationError = null;
-        gridEstandar.Grid.CancelEditRow(empleado);
-
-        if (empleado.IdEmpleado != 0 && backupOriginal is not null)
-        {
-            CopiarValores(backupOriginal, empleado);
-        }
-
-        empleado.FotoSeleccionada = null;
-        empleado.FotoPreviewUrl = null;
-
-        backupOriginal = null;
-        filaEnEdicion = null;
-    }
-
-    private async Task GuardarAsync(EmpleadoEdicionDto empleado)
-    {
-        var esNuevo = empleado.IdEmpleado == 0;
-
-        var validation = EmployeeValidator.Validate(empleado, esNuevo, empleado.Password);
-        if (!validation.IsValid)
-        {
-            ValidationError = validation.Message;
-            return;
-        }
-
-        ValidationError = null;
-        Guardando = true;
-        bool exito;
-        string? mensaje;
-
-        if (esNuevo)
-        {
-            var request = new CrearEmpleadoRequest
-            {
-                Documento = empleado.Documento,
-                Nombres = empleado.Nombres,
-                PrimerApellido = empleado.PrimerApellido,
-                SegundoApellido = empleado.SegundoApellido,
-                Sexo = empleado.Sexo,
-                CodAgencia = empleado.CodAgencia,
-                Correo = empleado.Correo,
-                Telefono = empleado.Telefono,
-                Password = empleado.Password!,
-                IdRol = empleado.IdRol,
-                Foto = empleado.FotoSeleccionada
-            };
-            (exito, mensaje) = await EmpleadoService.CrearAsync(request);
-        }
-        else
-        {
-            var request = new ActualizarEmpleadoRequest
-            {
-                Nombres = empleado.Nombres,
-                PrimerApellido = empleado.PrimerApellido,
-                SegundoApellido = empleado.SegundoApellido,
-                Sexo = empleado.Sexo,
-                CodAgencia = empleado.CodAgencia,
-                Correo = empleado.Correo,
-                Telefono = empleado.Telefono,
-                Estado = empleado.Estado,
-                IdRol = empleado.IdRol,
-                Foto = empleado.FotoSeleccionada
-            };
-            (exito, mensaje) = await EmpleadoService.ActualizarAsync(empleado.IdEmpleado, request);
-        }
-
-        Guardando = false;
+        guardando = true;
+        var (exito, mensaje) = modelo.EsNuevo
+            ? await EmpleadoService.CrearAsync(modelo.ACrear())
+            : await EmpleadoService.ActualizarAsync(modelo.IdEmpleado, modelo.AActualizar());
+        guardando = false;
 
         if (!exito)
         {
@@ -417,44 +281,46 @@
             return;
         }
 
-        await gridEstandar.Grid.UpdateRow(empleado);
-        backupOriginal = null;
-        filaEnEdicion = null;
+        panelAbierto = false;
+        await CargarAsync();
 
-        Notifications.Success(
-            esNuevo ? "Empleado creado" : "Empleado actualizado",
-            "Los cambios se guardaron correctamente.");
-        await CargarEmpleadosAsync();
+        if (anterior is null)
+        {
+            // Crear no se deshace: la API solo da de baja lógica y el usuario ya quedó creado.
+            MostrarAviso($"Empleado «{nombre}» creado", null);
+            return;
+        }
+
+        var cambioEstado = EmpleadoConvenciones.EsActivo(anterior) != modelo.Activo;
+        MostrarAviso(
+            cambioEstado ? $"«{nombre}» {(modelo.Activo ? "activado" : "desactivado")}" : $"Empleado «{nombre}» actualizado",
+            // La foto no se restaura: el formulario solo envía una foto nueva cuando se elige una.
+            () => EmpleadoService.ActualizarAsync(anterior.IdEmpleado, EmpleadoFormModel.Desde(anterior).AActualizar()));
     }
 
-    private static EmpleadoEdicionDto ClonarValores(EmpleadoEdicionDto origen) => new()
+    private void MostrarAviso(string mensaje, Func<Task<(bool Exito, string? Mensaje)>>? deshacer)
     {
-        IdEmpleado = origen.IdEmpleado,
-        IdUsuario = origen.IdUsuario,
-        Documento = origen.Documento,
-        Nombres = origen.Nombres,
-        PrimerApellido = origen.PrimerApellido,
-        SegundoApellido = origen.SegundoApellido,
-        Sexo = origen.Sexo,
-        CodAgencia = origen.CodAgencia,
-        Correo = origen.Correo,
-        Telefono = origen.Telefono,
-        Estado = origen.Estado,
-        Rol = origen.Rol,
-        IdRol = origen.IdRol
-    };
+        avisoMensaje = mensaje;
+        accionDeshacer = deshacer;
+        avisoVersion++;
+        avisoVisible = true;
+    }
 
-    private static void CopiarValores(EmpleadoEdicionDto origen, EmpleadoEdicionDto destino)
+    private async Task DeshacerAsync()
     {
-        destino.Nombres = origen.Nombres;
-        destino.PrimerApellido = origen.PrimerApellido;
-        destino.SegundoApellido = origen.SegundoApellido;
-        destino.Sexo = origen.Sexo;
-        destino.CodAgencia = origen.CodAgencia;
-        destino.Correo = origen.Correo;
-        destino.Telefono = origen.Telefono;
-        destino.Estado = origen.Estado;
-        destino.Rol = origen.Rol;
-        destino.IdRol = origen.IdRol;
+        avisoVisible = false;
+        if (accionDeshacer is null)
+            return;
+
+        var (exito, mensaje) = await accionDeshacer();
+        accionDeshacer = null;
+        if (!exito)
+        {
+            Notifications.Error("No se pudo deshacer el cambio", mensaje);
+            return;
+        }
+
+        await CargarAsync();
+        Notifications.Info("Cambio deshecho");
     }
 }

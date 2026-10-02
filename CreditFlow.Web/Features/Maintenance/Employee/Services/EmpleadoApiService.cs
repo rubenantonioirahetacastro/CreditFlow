@@ -15,9 +15,11 @@ public sealed class EmpleadoApiService(IApiClient apiClient) : IEmpleadoService
             BaseUrl,
             "No se pudieron cargar los empleados.");
 
+    // El contenido se tipa como HttpContent para usar la sobrecarga multipart de IApiClient;
+    // con el tipo concreto, C# elige la sobrecarga genérica y lo enviaría como JSON.
     public async Task<(bool Exito, string? Mensaje)> CrearAsync(CrearEmpleadoRequest request)
     {
-        var content = CrearContenido(request);
+        HttpContent content = CrearContenido(request);
         var result = await apiClient.PostAsync(BaseUrl, content, "No se pudo crear el empleado.");
         return (result.IsSuccess, result.Message);
     }
@@ -26,7 +28,7 @@ public sealed class EmpleadoApiService(IApiClient apiClient) : IEmpleadoService
         int id,
         ActualizarEmpleadoRequest request)
     {
-        var content = CrearContenido(request);
+        HttpContent content = CrearContenido(request);
         var result = await apiClient.PutAsync(
             $"{BaseUrl}/{id}",
             content,

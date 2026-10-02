@@ -1,0 +1,278 @@
+@using CreditFlow.Web.Features.Maintenance.Agency.Models
+@using CreditFlow.Web.Core.Utils.Format
+@using CreditFlow.Web.Features.Maintenance.Employee.Models
+@using CreditFlow.Web.Features.Maintenance.Employee.Validation
+@using CreditFlow.Web.Features.Maintenance.Role.Models
+
+<CdsDrawer Open="@Open"
+           Title="@(modelo.EsNuevo ? "Nuevo empleado" : "Editar empleado")"
+           Subtitle="@Subtitulo"
+           OnClose="@OnClose">
+    <ChildContent>
+        <div class="employee-form">
+            @* Foto y nombre de la persona (vista previa en vivo). *@
+            <div class="employee-form__identity">
+                <Avatar Id="@modelo.IdEmpleado"
+                        Tamano="56"
+                        TieneFoto="@TieneFoto"
+                        PreviewUrl="@fotoPreviewUrl"
+                        Iniciales="@EmpleadoListItem.ObtenerIniciales(modelo.Nombres, modelo.PrimerApellido)"
+                        Color="@EmpleadoListItem.ObtenerColorAvatar(modelo.Nombres, modelo.PrimerApellido)"
+                        Sutil="@(string.IsNullOrWhiteSpace(modelo.Nombres) && string.IsNullOrWhiteSpace(modelo.PrimerApellido))"
+                        Editable="true"
+                        OnFotoSeleccionada="@SeleccionarFotoAsync"
+                        ObtenerFotoDataUrl="@ObtenerFotoDataUrl" />
+                <span class="employee-form__identity-text">
+                    <span class="employee-form__identity-name">@NombreVisible</span>
+                    @if (errorFoto is not null)
+                    {
+                        <span class="employee-form__identity-error" role="alert">@errorFoto</span>
+                    }
+                    else
+                    {
+                        <span class="employee-form__identity-hint">Toca la foto para cambiarla. PNG, JPG o WEBP de hasta 5 MB.</span>
+                    }
+                </span>
+            </div>
+
+            <section class="employee-form__section" aria-label="Datos personales">
+                <span class="employee-form__section-title">Datos personales</span>
+
+                <CdsFormField Label="Documento (DUI)"
+                              For="employee-document"
+                              Error="@Mostrar(nameof(EmployeeFormErrors.Documento), errores.Documento)"
+                              Hint="@(modelo.EsNuevo ? "Se usa para crear el usuario de acceso." : "El documento no se puede cambiar.")">
+                    <CdsDocumentField NativeForm="true"
+                                      Value="@modelo.Documento"
+                                      ValueChanged="@(v => Cambiar(nameof(EmployeeFormErrors.Documento), () => modelo.Documento = v))"
+                                      ReadOnly="@(!modelo.EsNuevo)"
+                                      id="employee-document" />
+                </CdsFormField>
+
+                <CdsFormField Label="Nombres"
+                              For="employee-names"
+                              Error="@Mostrar(nameof(EmployeeFormErrors.Nombres), errores.Nombres)">
+                    <CdsTextField NativeForm="true"
+                                  Value="@modelo.Nombres"
+                                  ValueChanged="@(v => Cambiar(nameof(EmployeeFormErrors.Nombres), () => modelo.Nombres = v))"
+                                  MaxLength="100"
+                                  id="employee-names" />
+                </CdsFormField>
+
+                <div class="employee-form__pair">
+                    <CdsFormField Label="Primer apellido"
+                                  For="employee-lastname-1"
+                                  Error="@Mostrar(nameof(EmployeeFormErrors.PrimerApellido), errores.PrimerApellido)">
+                        <CdsTextField NativeForm="true"
+                                      Value="@modelo.PrimerApellido"
+                                      ValueChanged="@(v => Cambiar(nameof(EmployeeFormErrors.PrimerApellido), () => modelo.PrimerApellido = v))"
+                                      MaxLength="100"
+                                      id="employee-lastname-1" />
+                    </CdsFormField>
+
+                    <CdsFormField Label="Segundo apellido" For="employee-lastname-2" Hint="Opcional.">
+                        <CdsTextField NativeForm="true"
+                                      Value="@modelo.SegundoApellido"
+                                      ValueChanged="@(v => modelo.SegundoApellido = v)"
+                                      MaxLength="100"
+                                      id="employee-lastname-2" />
+                    </CdsFormField>
+                </div>
+
+                <CdsFormField Label="Sexo" Error="@Mostrar(nameof(EmployeeFormErrors.Sexo), errores.Sexo)">
+                    <div class="employee-form__options" role="radiogroup" aria-label="Sexo">
+                        <CdsOptionCard Text="Masculino"
+                                       Icon="man"
+                                       Selected="@(modelo.Sexo == EmpleadoConvenciones.SexoMasculino)"
+                                       OnClick="@(() => Cambiar(nameof(EmployeeFormErrors.Sexo), () => modelo.Sexo = EmpleadoConvenciones.SexoMasculino))" />
+                        <CdsOptionCard Text="Femenino"
+                                       Icon="woman"
+                                       Selected="@(modelo.Sexo == EmpleadoConvenciones.SexoFemenino)"
+                                       OnClick="@(() => Cambiar(nameof(EmployeeFormErrors.Sexo), () => modelo.Sexo = EmpleadoConvenciones.SexoFemenino))" />
+                    </div>
+                </CdsFormField>
+            </section>
+
+            <section class="employee-form__section" aria-label="Contacto">
+                <span class="employee-form__section-title">Contacto</span>
+
+                <CdsFormField Label="Correo"
+                              For="employee-email"
+                              Error="@Mostrar(nameof(EmployeeFormErrors.Correo), errores.Correo)"
+                              Hint="También se usa para recuperar la contraseña.">
+                    <CdsEmailField NativeForm="true"
+                                   Value="@modelo.Correo"
+                                   ValueChanged="@(v => Cambiar(nameof(EmployeeFormErrors.Correo), () => modelo.Correo = v))"
+                                   MaxLength="150"
+                                   id="employee-email" />
+                </CdsFormField>
+
+                <CdsFormField Label="Teléfono"
+                              For="employee-phone"
+                              Error="@Mostrar(nameof(EmployeeFormErrors.Telefono), errores.Telefono)"
+                              Hint="Opcional.">
+                    <CdsPhoneField NativeForm="true"
+                                   Value="@modelo.Telefono"
+                                   ValueChanged="@(v => Cambiar(nameof(EmployeeFormErrors.Telefono), () => modelo.Telefono = v))"
+                                   id="employee-phone" />
+                </CdsFormField>
+            </section>
+
+            <section class="employee-form__section" aria-label="Acceso">
+                <span class="employee-form__section-title">Acceso</span>
+
+                <CdsFormField Label="Agencia"
+                              For="employee-agency"
+                              Error="@Mostrar(nameof(EmployeeFormErrors.Agencia), errores.Agencia)">
+                    <CdsDropdown TValue="int"
+                                 Value="@modelo.CodAgencia"
+                                 ValueChanged="@(v => Cambiar(nameof(EmployeeFormErrors.Agencia), () => modelo.CodAgencia = v))"
+                                 Data="@Agencias"
+                                 TextProperty="@nameof(AgenciaDto.Nombre)"
+                                 ValueProperty="@nameof(AgenciaDto.NCodAge)"
+                                 Placeholder="Selecciona una agencia"
+                                 id="employee-agency" />
+                </CdsFormField>
+
+                <CdsFormField Label="Rol"
+                              For="employee-role"
+                              Error="@Mostrar(nameof(EmployeeFormErrors.Rol), errores.Rol)"
+                              Hint="Define las opciones del menú a las que tendrá acceso.">
+                    <CdsDropdown TValue="int"
+                                 Value="@modelo.IdRol"
+                                 ValueChanged="@(v => Cambiar(nameof(EmployeeFormErrors.Rol), () => modelo.IdRol = v))"
+                                 Data="@Roles"
+                                 TextProperty="@nameof(RoleDto.Nombre)"
+                                 ValueProperty="@nameof(RoleDto.IdRol)"
+                                 Placeholder="Selecciona un rol"
+                                 id="employee-role" />
+                </CdsFormField>
+
+                @if (modelo.EsNuevo)
+                {
+                    <CdsFormField Label="Contraseña inicial"
+                                  For="employee-password"
+                                  Error="@Mostrar(nameof(EmployeeFormErrors.Password), errores.Password)"
+                                  Hint="El empleado podrá cambiarla después de iniciar sesión.">
+                        <CdsPasswordField NativeForm="true"
+                                          Value="@modelo.Password"
+                                          ValueChanged="@(v => Cambiar(nameof(EmployeeFormErrors.Password), () => modelo.Password = v))"
+                                          id="employee-password" />
+                    </CdsFormField>
+                }
+                else
+                {
+                    <div class="employee-form__switch">
+                        <CdsSwitch Value="@modelo.Activo"
+                                   ValueChanged="@(v => modelo.Activo = v)"
+                                   Text="@(modelo.Activo ? "Empleado activo" : "Empleado inactivo: no puede iniciar sesión")" />
+                    </div>
+                }
+            </section>
+        </div>
+    </ChildContent>
+    <Footer>
+        <CdsButton Text="Cancelar"
+                   Variant="Variant.Outlined"
+                   ButtonStyle="ButtonStyle.Base"
+                   Size="ButtonSize.Small"
+                   Click="@OnClose" />
+        <CdsButton Text="@(Guardando ? "Guardando…" : modelo.EsNuevo ? "Crear empleado" : "Guardar cambios")"
+                   Icon="save"
+                   Size="ButtonSize.Small"
+                   Disabled="@(Guardando || errores.HayErrores)"
+                   Click="@GuardarAsync" />
+    </Footer>
+</CdsDrawer>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+
+    /// <summary>Empleado a editar; nulo para crear uno nuevo.</summary>
+    [Parameter] public EmpleadoDto? Empleado { get; set; }
+
+    [Parameter] public IReadOnlyList<AgenciaDto> Agencias { get; set; } = [];
+    [Parameter] public IReadOnlyList<RoleDto> Roles { get; set; } = [];
+    [Parameter] public bool Guardando { get; set; }
+    [Parameter, EditorRequired] public Func<int, Task<string?>> ObtenerFotoDataUrl { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<EmpleadoFormModel> OnSave { get; set; }
+
+    private bool abiertoAntes;
+    private EmpleadoFormModel modelo = new();
+    private EmployeeFormErrors errores = EmployeeFormErrors.Ninguno;
+
+    // Los errores de un campo se muestran después de que el usuario lo toca o intenta guardar.
+    private readonly HashSet<string> tocados = [];
+    private bool intentoGuardar;
+
+    private string? fotoPreviewUrl;
+    private string? errorFoto;
+
+    private bool TieneFoto => !string.IsNullOrEmpty(Empleado?.FotoUrl);
+
+    private string NombreVisible
+    {
+        get
+        {
+            var nombre = NameFormatter.ToDisplayName($"{modelo.Nombres} {modelo.PrimerApellido} {modelo.SegundoApellido}");
+            return string.IsNullOrEmpty(nombre) ? "Nuevo empleado" : nombre;
+        }
+    }
+
+    private string? Subtitulo => Empleado is null
+        ? "Se creará también su usuario de acceso."
+        : string.IsNullOrWhiteSpace(Empleado.CodigoUsuario) ? null : $"Usuario {Empleado.CodigoUsuario}";
+
+    protected override void OnParametersSet()
+    {
+        // Se inicializa cada vez que el panel se abre.
+        if (Open && !abiertoAntes)
+        {
+            modelo = Empleado is null ? new EmpleadoFormModel() : EmpleadoFormModel.Desde(Empleado);
+            tocados.Clear();
+            intentoGuardar = false;
+            fotoPreviewUrl = null;
+            errorFoto = null;
+            errores = EmployeeValidator.Validate(modelo);
+        }
+
+        abiertoAntes = Open;
+    }
+
+    private string? Mostrar(string campo, string? error) =>
+        intentoGuardar || tocados.Contains(campo) ? error : null;
+
+    private void Cambiar(string campo, Action asignar)
+    {
+        asignar();
+        tocados.Add(campo);
+        errores = EmployeeValidator.Validate(modelo);
+    }
+
+    private async Task SeleccionarFotoAsync(InputFileChangeEventArgs e)
+    {
+        var archivo = e.File;
+        var validacion = EmployeeValidator.ValidatePhoto(archivo);
+        if (!validacion.IsValid)
+        {
+            errorFoto = validacion.Message;
+            return;
+        }
+
+        errorFoto = null;
+        await using var stream = archivo.OpenReadStream(EmployeeValidator.MaxPhotoSizeBytes);
+        using var memoria = new MemoryStream();
+        await stream.CopyToAsync(memoria);
+
+        modelo.Foto = archivo;
+        fotoPreviewUrl = $"data:{archivo.ContentType};base64,{Convert.ToBase64String(memoria.ToArray())}";
+    }
+
+    private Task GuardarAsync()
+    {
+        intentoGuardar = true;
+        errores = EmployeeValidator.Validate(modelo);
+        return errores.HayErrores ? Task.CompletedTask : OnSave.InvokeAsync(modelo);
+    }
+}
