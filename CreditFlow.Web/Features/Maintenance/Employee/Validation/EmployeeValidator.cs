@@ -6,51 +6,65 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace CreditFlow.Web.Features.Maintenance.Employee.Validation;
 
+/// <summary>Errores por campo para la validación en vivo del formulario de empleado.</summary>
+public sealed record EmployeeFormErrors(
+    string? Documento,
+    string? Nombres,
+    string? PrimerApellido,
+    string? Sexo,
+    string? Agencia,
+    string? Correo,
+    string? Password,
+    string? Rol)
+{
+    public static readonly EmployeeFormErrors Ninguno = new(null, null, null, null, null, null, null, null);
+
+    public bool HayErrores =>
+        Documento is not null || Nombres is not null || PrimerApellido is not null || Sexo is not null ||
+        Agencia is not null || Correo is not null || Password is not null || Rol is not null;
+}
+
 public static class EmployeeValidator
 {
     public const long MaxPhotoSizeBytes = 5 * 1024 * 1024;
 
-    public static UiValidationResult Validate(EmpleadoDto employee, bool isNew, string? password)
-    {
-        if (isNew && string.IsNullOrWhiteSpace(employee.Documento))
-            return UiValidationResult.Failure("El documento es obligatorio.");
+    private static readonly string[] AllowedPhotoTypes = ["image/jpeg", "image/png", "image/webp"];
 
+    public static EmployeeFormErrors Validate(EmpleadoFormulario employee, bool isNew)
+    {
+        string? documento = null;
         if (isNew)
         {
-            var documentValidation = DocumentValidator.Validate(employee.Documento, DocumentType.Dui);
-            if (!documentValidation.IsValid)
-                return documentValidation;
+            if (string.IsNullOrWhiteSpace(employee.Documento))
+                documento = "El documento es obligatorio.";
+            else if (DocumentValidator.Validate(employee.Documento, DocumentType.Dui) is { IsValid: false } dui)
+                documento = dui.Message;
         }
 
-        if (string.IsNullOrWhiteSpace(employee.Nombres))
-            return UiValidationResult.Failure("Los nombres son obligatorios.");
-
-        if (string.IsNullOrWhiteSpace(employee.PrimerApellido))
-            return UiValidationResult.Failure("El primer apellido es obligatorio.");
-
-        if (employee.Sexo <= 0)
-            return UiValidationResult.Failure("Debe seleccionar el sexo.");
-
-        if (employee.CodAgencia <= 0)
-            return UiValidationResult.Failure("Debe seleccionar una agencia.");
-
+        string? correo = null;
         if (string.IsNullOrWhiteSpace(employee.Correo))
-            return UiValidationResult.Failure("El correo es obligatorio.");
+            correo = "El correo es obligatorio.";
+        else if (!EmailValidator.IsValid(employee.Correo))
+            correo = "El correo no es válido.";
 
-        if (!EmailValidator.IsValid(employee.Correo))
-            return UiValidationResult.Failure("El correo no es válido.");
-
-        if (isNew && string.IsNullOrWhiteSpace(password))
-            return UiValidationResult.Failure("La contraseña es obligatoria.");
-
-        if (employee.IdRol <= 0)
-            return UiValidationResult.Failure("Debe seleccionar un rol.");
-
-        return UiValidationResult.Success();
+        return new EmployeeFormErrors(
+            documento,
+            string.IsNullOrWhiteSpace(employee.Nombres) ? "Los nombres son obligatorios." : null,
+            string.IsNullOrWhiteSpace(employee.PrimerApellido) ? "El primer apellido es obligatorio." : null,
+            employee.Sexo <= 0 ? "Selecciona el sexo." : null,
+            employee.CodAgencia <= 0 ? "Selecciona una agencia." : null,
+            correo,
+            isNew && string.IsNullOrWhiteSpace(employee.Password) ? "La contraseña es obligatoria." : null,
+            employee.IdRol <= 0 ? "Selecciona un rol." : null);
     }
 
-    public static UiValidationResult ValidatePhoto(IBrowserFile photo) =>
-        photo.Size > MaxPhotoSizeBytes
-            ? UiValidationResult.Failure("La foto no puede superar los 5MB.")
+    public static UiValidationResult ValidatePhoto(IBrowserFile photo)
+    {
+        if (!AllowedPhotoTypes.Contains(photo.ContentType, StringComparer.OrdinalIgnoreCase))
+            return UiValidationResult.Failure("La foto debe ser JPG, PNG o WEBP.");
+
+        return photo.Size > MaxPhotoSizeBytes
+            ? UiValidationResult.Failure("La foto no puede superar los 5 MB.")
             : UiValidationResult.Success();
+    }
 }

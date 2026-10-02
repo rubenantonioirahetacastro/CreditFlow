@@ -1,0 +1,29 @@
+@* Panel de marca de la pantalla de acceso: fondo oscuro con luces y monedas en movimiento, mensaje
+   y la escena animada del otorgamiento de un crédito. *@
+<aside class="auth-hero" aria-hidden="true">
+    <span class="auth-hero__glow auth-hero__glow--primary"></span>
+    <span class="auth-hero__glow auth-hero__glow--accent"></span>
+    <span class="auth-hero__glow auth-hero__glow--soft"></span>
+    <span class="auth-hero__grid"></span>
+
+    @for (var i = 0; i < 8; i++)
+    {
+        <span class="auth-hero__coin auth-hero__coin--@i">$</span>
+    }
+
+    <div class="auth-hero__content">
+        <span class="auth-hero__mark">
+            <img src="images/crediflow-mark.svg" alt="" />
+        </span>
+
+        <div class="auth-hero__message">
+            <span class="auth-hero__eyebrow">Plataforma de otorgamiento de créditos</span>
+            <span class="auth-hero__headline">Del sí al desembolso, en un solo flujo.</span>
+            <span class="auth-hero__text">Evalúa, aprueba y desembolsa cada crédito con claridad y en tiempo real.</span>
+        </div>
+
+        <DisbursementScene />
+
+        <span class="auth-hero__footer">© @DateTime.Today.Year CrediFlow</span>
+    </div>
+</aside>

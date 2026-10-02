@@ -1,0 +1,46 @@
+@* Campo de la pantalla de acceso: ícono, rótulo flotante y, en contraseñas, botón para mostrar u ocultar
+   (lo maneja wwwroot/js/auth.js porque el login se renderiza estático). *@
+<div class="auth-field @(Invalid ? "auth-field--invalid" : null)">
+    <span class="auth-field__icon" aria-hidden="true"><RadzenIcon Icon="@Icon" /></span>
+    <input id="@Id"
+           name="@Name"
+           type="@Type"
+           class="auth-field__input @(EsPassword ? "auth-field__input--toggle" : null)"
+           placeholder=" "
+           autocomplete="@Autocomplete"
+           autocapitalize="off"
+           spellcheck="false"
+           required="@Required"
+           autofocus="@Autofocus"
+           aria-invalid="@(Invalid ? "true" : "false")" />
+    <label class="auth-field__label" for="@Id">@Label</label>
+
+    @if (EsPassword)
+    {
+        <button type="button"
+                class="auth-field__toggle"
+                data-auth-toggle="@Id"
+                aria-label="Mostrar contraseña"
+                aria-pressed="false"
+                title="Mostrar contraseña">
+            <RadzenIcon Icon="visibility" />
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Id { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Name { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter] public string Icon { get; set; } = "person";
+
+    /// <summary>«text» o «password».</summary>
+    [Parameter] public string Type { get; set; } = "text";
+
+    [Parameter] public string? Autocomplete { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Autofocus { get; set; }
+    [Parameter] public bool Invalid { get; set; }
+
+    private bool EsPassword => Type == "password";
+}

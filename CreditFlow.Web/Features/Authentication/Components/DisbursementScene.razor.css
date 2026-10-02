@@ -1,0 +1,392 @@
+/* Línea de tiempo del ciclo (9 s):
+   0–38 %  el monto rueda hasta $5,000      18–30 % avanza a Evaluación
+   42–54 % avanza a Aprobación              62–72 % avanza a Desembolso (caen monedas)
+   94–100 % se reinicia con un fundido. */
+.scene {
+    --cycle: 9s;
+    --cell: 1.15em;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+    max-width: 430px;
+    padding: 22px 24px 20px;
+    border: 1px solid var(--cds-auth-glass-border);
+    border-radius: 20px;
+    background: var(--cds-auth-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 30px 60px -30px var(--cds-shadow-overlay-strong);
+    color: var(--cds-auth-text);
+    --rz-icon-weight: var(--cds-icon-weight);
+    animation: scene-enter 1s cubic-bezier(.16, 1, .3, 1) .55s both, scene-float 7s ease-in-out 1.6s infinite;
+}
+
+/* Encabezado: solicitante de ejemplo. */
+.scene__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.scene__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--cds-primary);
+    font-size: var(--cds-font-size-small);
+    font-weight: var(--cds-font-weight-strong);
+}
+
+.scene__who {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.scene__who-name {
+    font-size: var(--cds-font-size-body);
+    font-weight: var(--cds-font-weight-strong);
+}
+
+.scene__who-detail {
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-auth-text-muted);
+}
+
+.scene__tag {
+    padding: 2px 8px;
+    border: 1px solid var(--cds-auth-glass-border);
+    border-radius: var(--cds-radius-badge);
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-auth-text-muted);
+}
+
+/* Monto con contador tipo odómetro. */
+.scene__amount {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.scene__amount-label {
+    font-size: var(--cds-font-size-label);
+    letter-spacing: var(--cds-letter-spacing-label);
+    color: var(--cds-auth-text-muted);
+}
+
+.scene__odometer {
+    display: inline-flex;
+    align-items: flex-end;
+    font-size: var(--cds-font-size-hero);
+    font-weight: var(--cds-font-weight-strong);
+    line-height: var(--cell);
+    letter-spacing: var(--cds-letter-spacing-hero);
+    font-variant-numeric: tabular-nums;
+}
+
+.scene__symbol,
+.scene__separator,
+.scene__cents {
+    height: var(--cell);
+}
+
+.scene__symbol {
+    margin-right: 4px;
+    color: var(--cds-accent-gold);
+}
+
+.scene__cents {
+    color: var(--cds-auth-text-muted);
+}
+
+/* Cada dígito es una ventana con los bordes difuminados: al rodar, los números entran y salen suavemente. */
+.scene__digit {
+    display: inline-block;
+    height: var(--cell);
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, transparent, var(--cds-white) 14%, var(--cds-white) 86%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, var(--cds-white) 14%, var(--cds-white) 86%, transparent);
+}
+
+.scene__strip {
+    display: flex;
+    flex-direction: column;
+    animation: scene-roll var(--cycle) cubic-bezier(.22, .9, .25, 1) infinite;
+}
+
+    .scene__strip > span {
+        height: var(--cell);
+    }
+
+.scene__digit--1 .scene__strip { animation-delay: .08s; }
+.scene__digit--2 .scene__strip { animation-delay: .16s; }
+.scene__digit--3 .scene__strip { animation-delay: .24s; }
+
+/* Etapas del crédito. */
+.scene__steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.scene__track {
+    position: absolute;
+    top: 13px;
+    left: 12.5%;
+    right: 12.5%;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--cds-auth-glass-border);
+    overflow: hidden;
+}
+
+.scene__fill {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--cds-primary);
+    box-shadow: 0 0 12px var(--cds-auth-glow-primary);
+    animation: scene-fill var(--cycle) ease-in-out infinite;
+}
+
+.scene__step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.scene__dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--cds-auth-glass-border);
+    border-radius: 50%;
+    background: var(--cds-auth-backdrop);
+    color: transparent;
+}
+
+    .scene__dot ::deep .rzi {
+        font-size: 16px;
+    }
+
+.scene__step--0 .scene__dot {
+    border-color: var(--cds-primary);
+    background: var(--cds-primary);
+    color: var(--cds-white);
+}
+
+.scene__step--1 .scene__dot { animation: scene-dot-1 var(--cycle) ease infinite; }
+.scene__step--2 .scene__dot { animation: scene-dot-2 var(--cycle) ease infinite; }
+.scene__step--3 .scene__dot { animation: scene-dot-3 var(--cycle) ease infinite; }
+
+.scene__step-label {
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-auth-text-muted);
+}
+
+/* Estado que cambia en cada etapa. */
+.scene__status {
+    position: relative;
+    height: 40px;
+}
+
+.scene__state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 12px;
+    font-size: var(--cds-font-size-small);
+    font-weight: var(--cds-font-weight-strong);
+    opacity: 0;
+}
+
+    .scene__state ::deep .rzi {
+        font-size: 19px;
+    }
+
+.scene__state--review {
+    background: var(--cds-auth-glass);
+    color: var(--cds-auth-text-muted);
+    animation: scene-state-review var(--cycle) ease infinite;
+}
+
+.scene__state--approved {
+    background: var(--cds-primary);
+    color: var(--cds-white);
+    animation: scene-state-approved var(--cycle) ease infinite;
+}
+
+.scene__state--paid {
+    background: var(--cds-success);
+    color: var(--cds-white);
+    box-shadow: 0 10px 30px -10px var(--cds-success);
+    animation: scene-state-paid var(--cycle) ease infinite;
+}
+
+.scene__pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cds-accent-gold);
+    animation: scene-pulse 1s ease-in-out infinite;
+}
+
+/* Monedas que saltan al desembolsar. */
+.scene__burst {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border: 2px solid var(--cds-accent-gold-hover);
+    border-radius: 50%;
+    background: var(--cds-accent-gold);
+    color: var(--cds-brand-ink);
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-bold);
+    line-height: 1;
+    opacity: 0;
+    pointer-events: none;
+    animation: scene-burst var(--cycle) cubic-bezier(.2, .8, .3, 1) infinite;
+}
+
+.scene__burst--0 { --x: -150px; --y: -70px; --r: -40deg; }
+.scene__burst--1 { --x: -90px; --y: -105px; --r: 25deg; animation-delay: .05s; }
+.scene__burst--2 { --x: -25px; --y: -125px; --r: -15deg; animation-delay: .1s; }
+.scene__burst--3 { --x: 40px; --y: -115px; --r: 35deg; animation-delay: .03s; }
+.scene__burst--4 { --x: 105px; --y: -95px; --r: -30deg; animation-delay: .08s; }
+.scene__burst--5 { --x: 155px; --y: -60px; --r: 20deg; animation-delay: .12s; }
+
+@keyframes scene-enter {
+    from { opacity: 0; transform: translateY(24px) scale(.97); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes scene-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+@keyframes scene-roll {
+    0%, 6% { transform: translateY(0); opacity: 1; }
+    38%, 93% { transform: translateY(calc(var(--roll) * var(--cell) * -1)); opacity: 1; }
+    97% { transform: translateY(calc(var(--roll) * var(--cell) * -1)); opacity: 0; }
+    98% { transform: translateY(0); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scene-fill {
+    0%, 18% { width: 0; }
+    30%, 42% { width: 33.333%; }
+    54%, 62% { width: 66.666%; }
+    72%, 93% { width: 100%; }
+    98%, 100% { width: 0; }
+}
+
+@keyframes scene-dot-1 {
+    0%, 29% { border-color: var(--cds-auth-glass-border); background: var(--cds-auth-backdrop); color: transparent; transform: scale(1); }
+    32% { transform: scale(1.25); }
+    31%, 93% { border-color: var(--cds-primary); background: var(--cds-primary); color: var(--cds-white); }
+    36%, 93% { transform: scale(1); }
+    97%, 100% { border-color: var(--cds-auth-glass-border); background: var(--cds-auth-backdrop); color: transparent; }
+}
+
+@keyframes scene-dot-2 {
+    0%, 53% { border-color: var(--cds-auth-glass-border); background: var(--cds-auth-backdrop); color: transparent; transform: scale(1); }
+    56% { transform: scale(1.25); }
+    55%, 93% { border-color: var(--cds-primary); background: var(--cds-primary); color: var(--cds-white); }
+    60%, 93% { transform: scale(1); }
+    97%, 100% { border-color: var(--cds-auth-glass-border); background: var(--cds-auth-backdrop); color: transparent; }
+}
+
+@keyframes scene-dot-3 {
+    0%, 71% { border-color: var(--cds-auth-glass-border); background: var(--cds-auth-backdrop); color: transparent; transform: scale(1); box-shadow: none; }
+    74% { transform: scale(1.3); box-shadow: 0 0 0 6px var(--cds-success-border); }
+    73%, 93% { border-color: var(--cds-success); background: var(--cds-success); color: var(--cds-white); }
+    78%, 93% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+    97%, 100% { border-color: var(--cds-auth-glass-border); background: var(--cds-auth-backdrop); color: transparent; }
+}
+
+@keyframes scene-state-review {
+    0%, 50% { opacity: 1; transform: none; }
+    53%, 96% { opacity: 0; transform: translateY(-8px); }
+    100% { opacity: 1; transform: none; }
+}
+
+@keyframes scene-state-approved {
+    0%, 51% { opacity: 0; transform: translateY(8px) scale(.96); }
+    55%, 69% { opacity: 1; transform: none; }
+    72%, 100% { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes scene-state-paid {
+    0%, 70% { opacity: 0; transform: translateY(8px) scale(.96); }
+    74% { opacity: 1; transform: scale(1.04); }
+    77%, 93% { opacity: 1; transform: none; }
+    97%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes scene-burst {
+    0%, 72% { opacity: 0; transform: translate(0, 0) scale(.4) rotate(0); }
+    75% { opacity: 1; }
+    86% { opacity: 1; transform: translate(var(--x), var(--y)) scale(1) rotate(var(--r)); }
+    92%, 100% { opacity: 0; transform: translate(var(--x), calc(var(--y) + 40px)) scale(.9) rotate(var(--r)); }
+}
+
+@keyframes scene-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(.6); opacity: .5; }
+}
+
+/* Sin movimiento: se muestra el estado final (desembolsado). */
+@media (prefers-reduced-motion: reduce) {
+    .scene,
+    .scene__strip,
+    .scene__fill,
+    .scene__step .scene__dot,
+    .scene__state,
+    .scene__pulse,
+    .scene__burst {
+        animation: none;
+    }
+
+    .scene__strip {
+        transform: translateY(calc(var(--roll) * var(--cell) * -1));
+    }
+
+    .scene__fill {
+        width: 100%;
+    }
+
+    .scene__step .scene__dot {
+        border-color: var(--cds-primary);
+        background: var(--cds-primary);
+        color: var(--cds-white);
+    }
+
+    .scene__step--3 .scene__dot {
+        border-color: var(--cds-success);
+        background: var(--cds-success);
+    }
+
+    .scene__state--paid {
+        opacity: 1;
+    }
+}

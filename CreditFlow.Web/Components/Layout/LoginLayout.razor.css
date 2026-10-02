@@ -1,13 +1,3 @@
-.login-brand {
-    padding: 28px 0 12px;
-}
-
-.login-brand-image {
-    display: block;
-    height: 44px;
-    width: auto;
-}
-
 #blazor-error-ui {
     background: var(--cds-warning-surface);
     bottom: 0;

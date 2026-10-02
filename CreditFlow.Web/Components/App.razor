@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -15,15 +15,23 @@
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="RenderModeForPage" />
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="@VersionedAsset("js/simulador.js")"></script>
+    <script src="@VersionedAsset("js/auth.js")"></script>
 </body>
 
 </html>
 
 @code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // El login se renderiza estático (SSR): publica un formulario nativo a POST /login y así sus animaciones
+    // no se reinician cuando el circuito interactivo reemplaza el HTML prerenderizado.
+    private IComponentRenderMode? RenderModeForPage =>
+        HttpContext.Request.Path.StartsWithSegments("/login") ? null : InteractiveServer;
+
     private static readonly string AssetVersion = typeof(App).Assembly.ManifestModule.ModuleVersionId.ToString("N");
 
     private static string VersionedAsset(string path) => $"{path}?v={AssetVersion}";

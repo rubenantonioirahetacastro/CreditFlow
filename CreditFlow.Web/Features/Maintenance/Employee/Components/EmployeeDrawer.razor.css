@@ -1,0 +1,81 @@
+.employee-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Encabezado con la foto editable y el nombre que se va escribiendo. */
+.employee-form__identity {
+    display: flex;
+    align-items: center;
+    gap: var(--cds-space-stack);
+}
+
+    .employee-form__identity ::deep .avatar-contenedor {
+        flex: none;
+        margin: 0;
+    }
+
+.employee-form__identity-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.employee-form__name {
+    font-size: var(--cds-font-size-title);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-value);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.employee-form__photo-hint {
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-color-label);
+}
+
+.employee-form__photo-error {
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-danger-text);
+}
+
+/* Secciones separadas por una línea fina, con título e ícono (DESIGN.md «Sección avanzada»). */
+.employee-form__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-space-stack);
+    padding-top: var(--cds-space-stack);
+    border-top: 1px solid var(--cds-border-soft);
+}
+
+.employee-form__section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-strong);
+    letter-spacing: var(--cds-letter-spacing-label);
+    color: var(--cds-color-content);
+    --rz-icon-weight: var(--cds-icon-weight);
+    --rz-icon-grade: var(--cds-icon-grade);
+}
+
+    .employee-form__section-title ::deep .rzi {
+        font-size: 18px;
+        color: var(--cds-color-hint);
+    }
+
+.employee-form__row,
+.employee-form__options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+}
+
+.employee-form__switch {
+    padding-top: 4px;
+}

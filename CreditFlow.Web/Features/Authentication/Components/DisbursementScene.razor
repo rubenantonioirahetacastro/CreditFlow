@@ -1,0 +1,77 @@
+@* Ilustración animada del otorgamiento de un crédito (ejemplo, no datos reales): el monto rueda como un contador,
+   la solicitud avanza por las etapas hasta el desembolso y al final caen monedas. Ciclo continuo de 9 s, solo CSS. *@
+<div class="scene" aria-hidden="true">
+    <div class="scene__header">
+        <span class="scene__avatar">MR</span>
+        <span class="scene__who">
+            <span class="scene__who-name">Solicitud de crédito</span>
+            <span class="scene__who-detail">Microcrédito · 12 cuotas</span>
+        </span>
+        <span class="scene__tag">Ejemplo</span>
+    </div>
+
+    <div class="scene__amount">
+        <span class="scene__amount-label">Monto a desembolsar</span>
+        <span class="scene__odometer">
+            <span class="scene__symbol">$</span>
+            @for (var i = 0; i < Digitos.Length; i++)
+            {
+                @if (i == 1)
+                {
+                    <span class="scene__separator">,</span>
+                }
+                var (tira, indice) = Digitos[i];
+                <span class="scene__digit scene__digit--@i" style="--roll:@indice">
+                    <span class="scene__strip">
+                        @foreach (var n in tira)
+                        {
+                            <span>@n</span>
+                        }
+                    </span>
+                </span>
+            }
+            <span class="scene__cents">.00</span>
+        </span>
+    </div>
+
+    <div class="scene__steps">
+        <span class="scene__track"><span class="scene__fill"></span></span>
+        @foreach (var (paso, indice) in Pasos.Select((p, i) => (p, i)))
+        {
+            <span class="scene__step scene__step--@indice">
+                <span class="scene__dot"><RadzenIcon Icon="check" /></span>
+                <span class="scene__step-label">@paso</span>
+            </span>
+        }
+    </div>
+
+    <div class="scene__status">
+        <span class="scene__state scene__state--review"><span class="scene__pulse"></span>Evaluando solicitud…</span>
+        <span class="scene__state scene__state--approved"><RadzenIcon Icon="verified" />Crédito aprobado</span>
+        <span class="scene__state scene__state--paid"><RadzenIcon Icon="payments" />Desembolso realizado</span>
+
+        @for (var i = 0; i < 6; i++)
+        {
+            <span class="scene__burst scene__burst--@i">$</span>
+        }
+    </div>
+</div>
+
+@code {
+    private static readonly string[] Pasos = ["Solicitud", "Evaluación", "Aprobación", "Desembolso"];
+
+    // $5,000: cada dígito rueda una o varias vueltas completas antes de detenerse en su valor.
+    private static readonly (int[] Tira, int Indice)[] Digitos =
+    [
+        Rodillo(5, vueltas: 1),
+        Rodillo(0, vueltas: 2),
+        Rodillo(0, vueltas: 3),
+        Rodillo(0, vueltas: 4)
+    ];
+
+    private static (int[] Tira, int Indice) Rodillo(int destino, int vueltas)
+    {
+        var tira = Enumerable.Range(0, vueltas * 10 + destino + 1).Select(n => n % 10).ToArray();
+        return (tira, tira.Length - 1);
+    }
+}

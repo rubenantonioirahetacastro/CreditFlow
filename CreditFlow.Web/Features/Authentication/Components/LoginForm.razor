@@ -1,0 +1,61 @@
+@* Tarjeta de inicio de sesión. El formulario se envía de forma nativa a POST /login (AuthEndpoints),
+   que crea la cookie y redirige; los errores regresan en ?error=. El login se renderiza estático:
+   el estado «Verificando…» y limpiar el error al escribir los maneja wwwroot/js/auth.js. *@
+<div class="login-card @(HayError ? "login-card--error" : null)">
+    <img src="images/crediflow-logo.svg" alt="CrediFlow" class="login-card__logo" />
+
+    <div class="login-card__titles">
+        <h1 class="login-card__title">Inicia sesión</h1>
+        <p class="login-card__subtitle">Bienvenido de nuevo. Ingresa con tu documento y contraseña.</p>
+    </div>
+
+    @if (HayError)
+    {
+        <div class="login-card__alert">
+            <CdsFormMessage Message="@Error" />
+        </div>
+    }
+
+    <form method="post" action="/login" class="login-form" data-auth-form>
+        <AntiforgeryToken />
+
+        <AuthField Id="documento"
+                   Name="documento"
+                   Label="Documento"
+                   Icon="badge"
+                   Autocomplete="username"
+                   Required="true"
+                   Autofocus="true"
+                   Invalid="@HayError" />
+
+        <AuthField Id="password"
+                   Name="password"
+                   Label="Contraseña"
+                   Icon="lock"
+                   Type="password"
+                   Autocomplete="current-password"
+                   Required="true"
+                   Invalid="@HayError" />
+
+        <p class="login-form__help">
+            ¿Olvidaste tu contraseña? <span>Pide a tu administrador que la restablezca.</span>
+        </p>
+
+        <CdsButton ButtonType="ButtonType.Submit" class="login-submit">
+            <span class="login-submit__text">Continuar</span>
+            <span class="login-submit__arrow" aria-hidden="true"><RadzenIcon Icon="arrow_forward" /></span>
+            <span class="login-submit__spinner" aria-hidden="true"></span>
+        </CdsButton>
+    </form>
+
+    <div class="login-card__secure">
+        <RadzenIcon Icon="lock" />
+        <span>Conexión cifrada · Solo personal autorizado</span>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Error { get; set; }
+
+    private bool HayError => !string.IsNullOrWhiteSpace(Error);
+}
