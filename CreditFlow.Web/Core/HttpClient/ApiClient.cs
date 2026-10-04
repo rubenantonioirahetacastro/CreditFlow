@@ -69,7 +69,7 @@ public sealed class ApiClient : IApiClient
             fallbackMessage,
             cancellationToken);
 
-    public Task<ApiResult> PostAsync(
+    public Task<ApiResult> PostFormAsync(
         string url,
         HttpContent content,
         string? fallbackMessage = null,
@@ -88,7 +88,7 @@ public sealed class ApiClient : IApiClient
             fallbackMessage,
             cancellationToken);
 
-    public Task<ApiResult> PutAsync(
+    public Task<ApiResult> PutFormAsync(
         string url,
         HttpContent content,
         string? fallbackMessage = null,

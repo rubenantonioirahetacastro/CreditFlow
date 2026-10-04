@@ -370,6 +370,13 @@ La única excepción válida es una operación administrativa cuyo propósito se
 - Los administradores globales son los roles configurados en `RoleIds.GlobalAdministrators`.
 - Un usuario puede tener múltiples roles activos; no se debe asumir un único claim `IdRol`.
 
+### Capacidades
+
+- `Core/Security/Capabilities.cs` define los códigos estables (`credit_request`, `simulate`, `prospect`, `verify`, `assigned_clients`, `offline_sync`) y `Core/Security/RoleCapabilities.cs` es el único mapa rol -> capacidades.
+- El login móvil devuelve `Capacidades` junto a `IdRol` e `IdRoles` (contrato aditivo). Los clientes solo las usan para decidir la experiencia; la autorización sigue resolviéndose en el servidor con policies.
+- `RoleCapabilities.MobileAccess` (login móvil) y `RoleCapabilities.VerificationAccess` (endpoints de verificación) **se derivan del mismo mapa**: el acceso real y lo que ve la app no pueden desalinearse. No se mantienen listas de roles aparte para estas capacidades.
+- Un rol nuevo se registra en `RoleIds` y en `RoleCapabilities`; no se agrega lógica por rol en móvil ni web.
+
 ### Policies
 
 Los endpoints usan `[Authorize]` o `[Authorize(Policy = ...)]` con las policies de `Core/Security/AuthorizationPolicies.cs`.

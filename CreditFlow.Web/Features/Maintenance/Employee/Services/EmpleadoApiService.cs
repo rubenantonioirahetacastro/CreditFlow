@@ -18,7 +18,7 @@ public sealed class EmpleadoApiService(IApiClient apiClient) : IEmpleadoService
     public async Task<(bool Exito, string? Mensaje)> CrearAsync(CrearEmpleadoRequest request)
     {
         var content = CrearContenido(request);
-        var result = await apiClient.PostAsync(BaseUrl, content, "No se pudo crear el empleado.");
+        var result = await apiClient.PostFormAsync(BaseUrl, content, "No se pudo crear el empleado.");
         return (result.IsSuccess, result.Message);
     }
 
@@ -27,7 +27,7 @@ public sealed class EmpleadoApiService(IApiClient apiClient) : IEmpleadoService
         ActualizarEmpleadoRequest request)
     {
         var content = CrearContenido(request);
-        var result = await apiClient.PutAsync(
+        var result = await apiClient.PutFormAsync(
             $"{BaseUrl}/{id}",
             content,
             "No se pudo actualizar el empleado.");

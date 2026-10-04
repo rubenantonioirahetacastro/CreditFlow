@@ -86,7 +86,7 @@ public class MobileLoginController : ControllerBase
 
         var session = await _userSessionService.GetAsync(user.IdUsuario, user.CDocumento);
 
-        if (!session.RoleIds.Any(RoleIds.MobileAccess.Contains))
+        if (!session.RoleIds.Any(RoleCapabilities.MobileAccess.Contains))
         {
             await _context.PasswordChangeAudits.AddAsync(new PasswordChangeAudit
             {
@@ -132,7 +132,8 @@ public class MobileLoginController : ControllerBase
             IdPersona = session.PersonId,
             bTemporal = user.BContrasenaTemporal == true,
             IdRol = session.RoleId,
-            IdRoles = session.RoleIds
+            IdRoles = session.RoleIds,
+            Capacidades = session.Capabilities
         });
     }
 

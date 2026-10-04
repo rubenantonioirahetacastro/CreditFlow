@@ -136,7 +136,7 @@ builder.Services.AddAuthorization(options =>
             {
                 return RoleAuthorization.HasAnyRoleId(
                     context.User,
-                    RoleIds.VerificationAccess);
+                    RoleCapabilities.VerificationAccess);
             }));
 
     options.AddPolicy(

@@ -1,3 +1,5 @@
+using CreditFlow.API.Core.Security;
+
 namespace CreditFlow.API.Features.Authentication.Shared.Session;
 
 public sealed record UserSession(
@@ -6,4 +8,7 @@ public sealed record UserSession(
     int? PersonId,
     int? EmployeeId,
     int RoleId,
-    IReadOnlyList<int> RoleIds);
+    IReadOnlyList<int> RoleIds)
+{
+    public IReadOnlyList<string> Capabilities => RoleCapabilities.For(RoleIds);
+}

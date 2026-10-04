@@ -9,12 +9,11 @@ public static class RoleIds
     public const int Cashier = 5;
     public const int DisbursementOfficer = 6;
     public const int Technology = 7;
+    public const int Verifier = 8;
 
     public static readonly int[] GlobalAdministrators = [Administrator, Technology];
-    public static readonly int[] MobileAccess = [Administrator, Client, Supervisor, Cashier, Technology];
     public static readonly int[] WebAccess = [Administrator, Supervisor, CreditOfficer, DisbursementOfficer, Technology];
     public static readonly int[] MaintenanceAccess = [Administrator, Supervisor, Technology];
     public static readonly int[] AdministrationAccess = [Administrator, Technology];
-    public static readonly int[] VerificationAccess = [Administrator, Supervisor, Technology];
     public static readonly int[] CalendarConfigurationAccess = [Administrator, Supervisor, CreditOfficer, Technology];
 }
