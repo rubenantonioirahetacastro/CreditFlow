@@ -152,10 +152,76 @@
     animation: auth-rise .9s cubic-bezier(.16, 1, .3, 1) .42s both;
 }
 
+/* Palabra clave del titular en degradado dorado con un brillo que la recorre. */
+.auth-hero__highlight {
+    background: linear-gradient(100deg, var(--cds-accent-gold) 0%, var(--cds-auth-gold-light) 40%, var(--cds-brand-400) 60%, var(--cds-accent-gold) 100%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: auth-shimmer 6s ease-in-out 1.2s infinite;
+}
+
+/* Luz que sigue al cursor (posición en --mx/--my, la escribe auth.js). */
+.auth-hero__spotlight {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(420px circle at var(--mx, 30%) var(--my, 40%), var(--cds-auth-spotlight), transparent 70%);
+    opacity: var(--spot, 0);
+    transition: opacity .4s ease;
+    pointer-events: none;
+}
+
+/* Escenario con perspectiva: la escena se inclina hacia el cursor (--rx/--ry, los escribe auth.js). */
+.auth-hero__stage {
+    perspective: 1100px;
+}
+
+.auth-hero__tilt {
+    max-width: 430px;
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform .5s cubic-bezier(.16, 1, .3, 1);
+    will-change: transform;
+}
+
 .auth-hero__footer {
-    font-size: var(--cds-font-size-label);
-    color: var(--cds-auth-text-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
     animation: auth-fade 1s ease 1s both;
+}
+
+.auth-hero__trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    --rz-icon-weight: var(--cds-icon-weight);
+}
+
+    .auth-hero__trust li {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 11px 5px 8px;
+        border: 1px solid var(--cds-auth-glass-border);
+        border-radius: 999px;
+        background: var(--cds-auth-glass);
+        font-size: var(--cds-font-size-label);
+        color: var(--cds-auth-text-muted);
+    }
+
+        .auth-hero__trust li ::deep .rzi {
+            font-size: 15px;
+            color: var(--cds-color-inverse-accent);
+        }
+
+@keyframes auth-shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 @keyframes auth-rise {
@@ -186,7 +252,16 @@
     .auth-hero__eyebrow,
     .auth-hero__headline,
     .auth-hero__text,
-    .auth-hero__footer {
+    .auth-hero__footer,
+    .auth-hero__highlight {
         animation: none;
+    }
+
+    .auth-hero__tilt {
+        transform: none;
+    }
+
+    .auth-hero__spotlight {
+        display: none;
     }
 }

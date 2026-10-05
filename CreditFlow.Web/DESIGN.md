@@ -112,6 +112,9 @@ Cada patrón visual se implementa **una sola vez** y las páginas lo componen. A
 | Tarjeta | `CdsCard` | `Padding="None"` para tarjetas de tabla |
 | Encabezado de tarjeta de tabla | `CdsCardHeader` | `Title`, `Badge` («12 pagos») y `<Actions>` a la derecha (estado, Excel, PDF) |
 | Indicador de resumen | `CdsKpi` | `Label`, `Value`, `Description`, `Strong`, `Icon`. Resumen de página (fila de métricas): cada indicador con `Icon` (recuadro 44px en `--cds-surface-selected`) y `Strong`, del mismo ancho, separados por líneas verticales `--cds-border-soft`. Resumen junto a una cifra *hero* (Simulador): sin ícono y un solo `Strong` |
+| Fila de indicadores de una página | `CdsKpiRow` | Dentro de una `CdsCard`; agrupa los `CdsKpi` con ícono (mismo ancho y separadores). `Columns` (4 por defecto; de a dos en pantallas angostas) |
+| Tarjeta de listado | `CdsListCard` | `Title`, `Badge` (conteo), `<Actions>` (Excel + «Nuevo…»), `<Filters>` (`CdsTabs`), `<Search>` (campo de búsqueda) y la tabla en `ChildContent`; ocupa el alto restante de la página |
+| Confirmar eliminación | `CdsDeleteDialog` | Con `DialogService.OpenAsync<CdsDeleteDialog>`; devuelve `CdsDeleteChoice` y ofrece «Desactivar» como alternativa cuando `PuedeDesactivar` |
 | Chip de estado | `CdsStatusBadge Variant="Chip"` | `Appearance` `Success`/`Danger`, `Icon`, `Celebrate` + `@key` para animar en cada resultado |
 | Pestañas (filtros sobre una tabla, secciones de un expediente) | `CdsTabs` + `CdsTab` (`Text`, `Count` opcional) | Texto `small`; activa en `strong`/`value` con línea `--cds-primary` de 2px sobre el borde inferior y contador en `--cds-surface-selected`; sin colores de estado |
 | Estado de un registro en tabla | texto plano (columna con `Property`) | Sin badges ni colores en tablas. `CreditStatusBadge` se reserva para fichas de detalle |
@@ -188,12 +191,20 @@ Siempre `CdsExportButton` (`Format="CdsExportFormat.Excel"` o `Pdf`), a la derec
 - Detalle: `CdsCardHeader` con `Lead` (insignia de código), `Subtitle` («Clave X · N activos de M») y acciones (Excel + acción principal); `CdsTabs` con conteo y filtro de texto; tabla sin paginación con pie «Mostrando X de Y». La columna de nombre («Nombre del catálogo») alinea a la izquierda tanto el encabezado como las celdas.
 - Crear/editar en `CdsDrawer`; eliminar con diálogo que ofrece «Desactivar» como alternativa segura; cada cambio muestra `CdsUndoToast`.
 
+### Mantenimiento de listado (referencia: Empleados; también Roles, Agencias y Líneas de crédito)
+- Página `cds-page cds-page--fill`: arriba `CdsCard` + `CdsKpiRow` con los indicadores; debajo `CdsListCard` con conteo, Excel y «Nuevo…» (solo con permiso de edición), pestañas con conteo (estado o, si no hay estado, completitud de datos) y búsqueda.
+- Tabla `GridEstandar` (`FillHeight`, sin botón flotante ni Excel propio): código en `cds-mono` primero y fijo; nombre o descripción a la izquierda; vacíos con texto explícito («Sin correo»); estado con `CdsSwitch` que guarda al instante (texto plano sin permiso); acciones de ícono (`edit`, `delete`) en la última columna.
+- Filas como modelo `…ListItem` de la feature con los textos visibles ya resueltos, para que ordenar, filtrar y exportar usen lo mismo que se ve.
+- Crear/editar en `CdsDrawer` con validación en vivo por campo (validator de la feature que devuelve errores por campo); eliminar con `CdsDeleteDialog`; cada cambio guardado muestra `CdsUndoToast` (sin «Deshacer» cuando la API no permite revertirlo).
+
 ### Pantalla de acceso (referencia: Login)
 - Pantalla dividida sin barra superior (`LoginLayout`): panel de marca oscuro (`AuthHero`, tokens `--cds-auth-*`) y formulario centrado (`LoginForm`) de máximo 400px. Bajo 960px se oculta el panel de marca.
 - Título del formulario en `--cds-font-size-heading` (único uso fuera de la escala de pantallas internas); la cifra *hero* la usa el titular del panel de marca.
 - Campos `AuthField`: 56px de alto, ícono a la izquierda, rótulo flotante y botón para mostrar/ocultar la contraseña. Botón principal (`CdsButton`) de 52px con flecha que avanza al pasar el cursor y spinner al enviar.
 - Escena de otorgamiento (`DisbursementScene`, ejemplo ilustrativo): tarjeta de vidrio con el monto en contador tipo odómetro, etapas Solicitud → Evaluación → Aprobación → Desembolso que se completan en un ciclo de 9 s y monedas que saltan al desembolsar. Monedas que suben por el fondo del panel.
+- Interacción: luz que sigue al cursor sobre el panel de marca e inclinación 3D (máx. 6°) de la escena; palabra clave del titular en degradado dorado con brillo; garantías («Conexión cifrada», «Acceso por rol», «Accesos auditados») en píldoras de vidrio. En el formulario: saludo según la hora, campos rellenos que se vuelven blancos al enfocar, aviso de Bloq Mayús en la contraseña, botón con degradado y destello al pasar el cursor, campos atenuados mientras se verifica, y textura de puntos en el fondo.
 - Animaciones: luces del panel que se desplazan, entrada escalonada de textos y campos, la escena en bucle y sacudida de la tarjeta cuando el acceso falla. Todas se desactivan con `prefers-reduced-motion` (la escena queda en su estado final).
+- «Recordarme» (`AuthCheckbox`, casilla nativa): guarda solo el documento en la cookie HttpOnly `CreditFlow.RememberedUser` (30 días) para prellenarlo y enfocar la contraseña, y hace la sesión persistente hasta el vencimiento del token de la API. La contraseña nunca se guarda; la recuerda el administrador de contraseñas del navegador (`autocomplete="current-password"`). Sin marcarla, se borra el documento recordado.
 - El login se renderiza estático (SSR, ver `App.razor`): si fuera interactivo, el circuito reemplazaría el HTML prerenderizado y reiniciaría las animaciones. Lo que requiere comportamiento en el navegador (mostrar contraseña, «Verificando…», limpiar el error) vive en `wwwroot/js/auth.js`.
 
 ## 8. Menú lateral

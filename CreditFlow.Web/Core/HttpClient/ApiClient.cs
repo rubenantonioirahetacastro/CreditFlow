@@ -39,7 +39,7 @@ public sealed class ApiClient : IApiClient
         SendForDataAsync<TResponse>(
             HttpMethod.Post,
             url,
-            JsonContent.Create(body),
+            CrearContenido(body),
             fallbackMessage,
             cancellationToken,
             attachToken: true);
@@ -52,7 +52,7 @@ public sealed class ApiClient : IApiClient
         SendForDataAsync<TResponse>(
             HttpMethod.Post,
             url,
-            JsonContent.Create(body),
+            CrearContenido(body),
             fallbackMessage,
             cancellationToken,
             attachToken: false);
@@ -65,7 +65,7 @@ public sealed class ApiClient : IApiClient
         SendAsync(
             HttpMethod.Post,
             url,
-            JsonContent.Create(body),
+            CrearContenido(body),
             fallbackMessage,
             cancellationToken);
 
@@ -84,7 +84,7 @@ public sealed class ApiClient : IApiClient
         SendAsync(
             HttpMethod.Put,
             url,
-            JsonContent.Create(body),
+            CrearContenido(body),
             fallbackMessage,
             cancellationToken);
 
@@ -199,6 +199,12 @@ public sealed class ApiClient : IApiClient
             return ApiResult.Failure(UnexpectedResponseMessage);
         }
     }
+
+    // Si el cuerpo ya es HttpContent (p. ej. MultipartFormDataContent con archivos), se envía tal cual.
+    // Sin esto, la sobrecarga genérica gana la resolución (coincidencia exacta de tipo) y lo serializaría como JSON,
+    // lo que la API rechaza con 415 en los endpoints [Consumes("multipart/form-data")].
+    private static HttpContent CrearContenido<TRequest>(TRequest body) =>
+        body as HttpContent ?? JsonContent.Create(body);
 
     private async Task<HttpRequestMessage> CreateRequestAsync(
         HttpMethod method,

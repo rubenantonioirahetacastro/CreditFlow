@@ -5,8 +5,11 @@
     <img src="images/crediflow-logo.svg" alt="CrediFlow" class="login-card__logo" />
 
     <div class="login-card__titles">
+        <span class="login-card__greeting"><RadzenIcon Icon="@Saludo.Icono" />@Saludo.Texto</span>
         <h1 class="login-card__title">Inicia sesión</h1>
-        <p class="login-card__subtitle">Bienvenido de nuevo. Ingresa con tu documento y contraseña.</p>
+        <p class="login-card__subtitle">
+            @(Recordado ? "Bienvenido de nuevo. Ingresa tu contraseña para continuar." : "Bienvenido de nuevo. Ingresa con tu documento y contraseña.")
+        </p>
     </div>
 
     @if (HayError)
@@ -24,8 +27,9 @@
                    Label="Documento"
                    Icon="badge"
                    Autocomplete="username"
+                   Value="@DocumentoRecordado"
                    Required="true"
-                   Autofocus="true"
+                   Autofocus="@(!Recordado)"
                    Invalid="@HayError" />
 
         <AuthField Id="password"
@@ -35,7 +39,17 @@
                    Type="password"
                    Autocomplete="current-password"
                    Required="true"
+                   Autofocus="@Recordado"
                    Invalid="@HayError" />
+
+        <div class="login-form__options">
+            <AuthCheckbox Id="recordar"
+                          Name="recordar"
+                          Text="Recordarme"
+                          Checked="@Recordado"
+                          Title="Recuerda tu documento en este equipo y mantiene la sesión abierta aunque cierres el navegador. Tu contraseña no se guarda." />
+            <span class="login-form__options-hint">No lo uses en equipos compartidos</span>
+        </div>
 
         <p class="login-form__help">
             ¿Olvidaste tu contraseña? <span>Pide a tu administrador que la restablezca.</span>
@@ -57,5 +71,18 @@
 @code {
     [Parameter] public string? Error { get; set; }
 
+    /// <summary>Documento guardado con «Recordarme» en este equipo (prellena el campo).</summary>
+    [Parameter] public string? DocumentoRecordado { get; set; }
+
     private bool HayError => !string.IsNullOrWhiteSpace(Error);
+
+    private bool Recordado => !string.IsNullOrWhiteSpace(DocumentoRecordado);
+
+    // Saludo según la hora local del servidor (la Web corre en la misma zona horaria que sus usuarios).
+    private static (string Texto, string Icono) Saludo => DateTime.Now.Hour switch
+    {
+        < 12 => ("Buenos días", "wb_sunny"),
+        < 19 => ("Buenas tardes", "wb_twilight"),
+        _ => ("Buenas noches", "dark_mode")
+    };
 }

@@ -1,0 +1,12 @@
+@* Fila de indicadores de resumen de una página (DESIGN.md §6 «Indicador de resumen»): CdsKpi con ícono, del mismo
+   ancho y separados por líneas verticales. Se coloca dentro de una CdsCard. *@
+<div class="cds-kpi-row" style="--cds-kpi-columns:@Columns">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Cantidad de indicadores por fila en pantallas anchas (en angostas se muestran de a dos).</summary>
+    [Parameter] public int Columns { get; set; } = 4;
+}

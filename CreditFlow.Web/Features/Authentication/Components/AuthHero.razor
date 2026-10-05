@@ -1,10 +1,12 @@
-@* Panel de marca de la pantalla de acceso: fondo oscuro con luces y monedas en movimiento, mensaje
-   y la escena animada del otorgamiento de un crédito. *@
-<aside class="auth-hero" aria-hidden="true">
+@* Panel de marca de la pantalla de acceso: fondo oscuro con luces y monedas en movimiento, una luz que sigue
+   al cursor, mensaje y la escena animada del otorgamiento de un crédito (con inclinación 3D al mover el cursor).
+   La interacción con el cursor la maneja wwwroot/js/auth.js. *@
+<aside class="auth-hero" aria-hidden="true" data-auth-spotlight>
     <span class="auth-hero__glow auth-hero__glow--primary"></span>
     <span class="auth-hero__glow auth-hero__glow--accent"></span>
     <span class="auth-hero__glow auth-hero__glow--soft"></span>
     <span class="auth-hero__grid"></span>
+    <span class="auth-hero__spotlight"></span>
 
     @for (var i = 0; i < 8; i++)
     {
@@ -18,12 +20,22 @@
 
         <div class="auth-hero__message">
             <span class="auth-hero__eyebrow">Plataforma de otorgamiento de créditos</span>
-            <span class="auth-hero__headline">Del sí al desembolso, en un solo flujo.</span>
+            <span class="auth-hero__headline">Del sí al <span class="auth-hero__highlight">desembolso</span>, en un solo flujo.</span>
             <span class="auth-hero__text">Evalúa, aprueba y desembolsa cada crédito con claridad y en tiempo real.</span>
         </div>
 
-        <DisbursementScene />
+        <div class="auth-hero__stage">
+            <div class="auth-hero__tilt" data-auth-tilt>
+                <DisbursementScene />
+            </div>
+        </div>
 
-        <span class="auth-hero__footer">© @DateTime.Today.Year CrediFlow</span>
+        <div class="auth-hero__footer">
+            <ul class="auth-hero__trust">
+                <li><RadzenIcon Icon="lock" />Conexión cifrada</li>
+                <li><RadzenIcon Icon="admin_panel_settings" />Acceso por rol</li>
+                <li><RadzenIcon Icon="history" />Accesos auditados</li>
+            </ul>
+        </div>
     </div>
 </aside>
