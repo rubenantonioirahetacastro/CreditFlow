@@ -256,23 +256,24 @@ else
     private async Task EliminarAsync(CatalogoCodigoDto valor)
     {
         var activo = CatalogoConvenciones.EsActivo(valor);
-        object? eleccion = await DialogService.OpenAsync<CatalogDeleteDialog>(
+        object? eleccion = await DialogService.OpenAsync<CdsDeleteDialog>(
             $"¿Eliminar «{valor.CNomCod}»?",
             new Dictionary<string, object?>
             {
-                [nameof(CatalogDeleteDialog.Nombre)] = valor.CNomCod,
-                [nameof(CatalogDeleteDialog.Valor)] = valor.NValor,
-                [nameof(CatalogDeleteDialog.PuedeDesactivar)] = activo
+                [nameof(CdsDeleteDialog.Nombre)] = valor.CNomCod,
+                [nameof(CdsDeleteDialog.Identificador)] = valor.NValor.ToString(),
+                [nameof(CdsDeleteDialog.IdentificadorEtiqueta)] = "valor",
+                [nameof(CdsDeleteDialog.PuedeDesactivar)] = activo
             },
             new DialogOptions { Width = "min(460px, 92vw)", CloseDialogOnOverlayClick = true });
 
-        if (eleccion is CatalogDeleteChoice.Desactivar)
+        if (eleccion is CdsDeleteChoice.Desactivar)
         {
             await CambiarEstadoAsync(valor, false);
             return;
         }
 
-        if (eleccion is not CatalogDeleteChoice.Eliminar)
+        if (eleccion is not CdsDeleteChoice.Eliminar)
             return;
 
         var anterior = Copiar(valor);

@@ -15,6 +15,7 @@ public static class AuthEndpoints
             HttpContext context,
             [FromForm] string documento,
             [FromForm] string password,
+            [FromForm] string? recordar,
             IAuthService authService) =>
         {
             var response = await authService.LoginAsync(documento, password);
@@ -44,7 +45,23 @@ public static class AuthEndpoints
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
-            await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            // «Recordarme»: la sesión sobrevive al cierre del navegador hasta que vence el token de la API
+            // (más allá no serviría: la API rechazaría las peticiones). Además se recuerda el documento.
+            var recordarme = !string.IsNullOrEmpty(recordar);
+            var propiedades = new AuthenticationProperties();
+            if (recordarme)
+            {
+                var vencimiento = AccessTokenExpiration.Read(response.Token);
+                propiedades.IsPersistent = vencimiento is not null;
+                propiedades.ExpiresUtc = vencimiento;
+                RememberedUser.Save(context, documento);
+            }
+            else
+            {
+                RememberedUser.Clear(context);
+            }
+
+            await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, propiedades);
 
             return Results.Redirect(response.BTemporal ? "/password-temporal" : "/");
         });

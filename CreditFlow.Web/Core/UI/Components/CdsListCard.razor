@@ -1,0 +1,41 @@
+@* Tarjeta de listado de una página de mantenimiento (patrón de Empleados/Bandeja): CdsCardHeader con conteo y
+   acciones, fila de filtros (pestañas a la izquierda, búsqueda a la derecha) y la tabla, que ocupa el alto restante. *@
+<div class="cds-list">
+<CdsCard Padding="CdsCardPadding.None" Class="cds-list-card">
+    <CdsCardHeader Title="@Title" Badge="@Badge" Actions="@Actions" />
+
+    @if (Filters is not null || Search is not null)
+    {
+        <div class="cds-list-card__filters">
+            <div class="cds-list-card__tabs">@Filters</div>
+            @if (Search is not null)
+            {
+                <div class="cds-list-card__search">@Search</div>
+            }
+        </div>
+    }
+
+    <div class="cds-list-card__body">
+        @ChildContent
+    </div>
+</CdsCard>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    /// <summary>Conteo junto al título, p. ej. «12 empleados».</summary>
+    [Parameter] public string? Badge { get; set; }
+
+    /// <summary>Acciones a la derecha del encabezado (Excel, «Nuevo…»).</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    /// <summary>Pestañas de filtro (CdsTabs), apoyadas sobre el borde inferior de la fila.</summary>
+    [Parameter] public RenderFragment? Filters { get; set; }
+
+    /// <summary>Campo de búsqueda a la derecha de la fila de filtros.</summary>
+    [Parameter] public RenderFragment? Search { get; set; }
+
+    /// <summary>La tabla (GridEstandar con FillHeight="true").</summary>
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+}

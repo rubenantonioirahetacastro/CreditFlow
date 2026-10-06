@@ -22,43 +22,43 @@ else if (errorCarga is not null && empleados.Count == 0)
 else
 {
     <div class="cds-page cds-page--fill emp-page" @ref="paginaRootRef">
-        <EmployeeSummary Total="@empleados.Count"
-                         Activos="@Activos"
-                         Inactivos="@(empleados.Count - Activos)"
-                         Agencias="@AgenciasConPersonal" />
+        <CdsCard>
+            <CdsKpiRow>
+                <CdsKpi Icon="groups" Label="Empleados" Value="@empleados.Count.ToString()" Strong="true" />
+                <CdsKpi Icon="how_to_reg" Label="Activos" Value="@Activos.ToString()" Strong="true" />
+                <CdsKpi Icon="person_off" Label="Inactivos" Value="@((empleados.Count - Activos).ToString())" Strong="true" />
+                <CdsKpi Icon="store" Label="Agencias con personal" Value="@AgenciasConPersonal.ToString()" Strong="true" />
+            </CdsKpiRow>
+        </CdsCard>
 
-        <CdsCard Padding="CdsCardPadding.None" Class="emp-table-card">
-            <CdsCardHeader Title="Personal" Badge="@($"{EmpleadosFiltrados.Count} empleados")">
-                <Actions>
-                    <CdsExportButton Format="CdsExportFormat.Excel"
-                                     Disabled="@(EmpleadosFiltrados.Count == 0)"
-                                     Click="@(() => grilla.ExportarExcelAsync())" />
-                    @if (puedeEditar)
-                    {
-                        <CdsButton Text="Nuevo empleado"
-                                   Icon="person_add"
-                                   Size="ButtonSize.Small"
-                                   Click="@(() => AbrirFormulario(null))" />
-                    }
-                </Actions>
-            </CdsCardHeader>
-
-            <div class="emp-filters">
+        <CdsListCard Title="Personal" Badge="@($"{EmpleadosFiltrados.Count} empleados")">
+            <Actions>
+                <CdsExportButton Format="CdsExportFormat.Excel"
+                                 Disabled="@(EmpleadosFiltrados.Count == 0)"
+                                 Click="@(() => grilla.ExportarExcelAsync())" />
+                @if (puedeEditar)
+                {
+                    <CdsButton Text="Nuevo empleado"
+                               Icon="person_add"
+                               Size="ButtonSize.Small"
+                               Click="@(() => AbrirFormulario(null))" />
+                }
+            </Actions>
+            <Filters>
                 <CdsTabs AriaLabel="Filtrar empleados por estado">
                     <CdsTab Text="Todos" Count="@empleados.Count" Selected="@(filtroEstado == FiltroEstado.Todos)" OnClick="@(() => filtroEstado = FiltroEstado.Todos)" />
                     <CdsTab Text="Activos" Count="@Activos" Selected="@(filtroEstado == FiltroEstado.Activos)" OnClick="@(() => filtroEstado = FiltroEstado.Activos)" />
                     <CdsTab Text="Inactivos" Count="@(empleados.Count - Activos)" Selected="@(filtroEstado == FiltroEstado.Inactivos)" OnClick="@(() => filtroEstado = FiltroEstado.Inactivos)" />
                 </CdsTabs>
-                <div class="emp-filters__search">
-                    <CdsTextField NativeForm="true"
-                                  Value="@filtroTexto"
-                                  ValueChanged="@(v => filtroTexto = v)"
-                                  Placeholder="Buscar por nombre, usuario, documento o correo"
-                                  aria-label="Buscar empleado" />
-                </div>
-            </div>
-
-            <div class="emp-grid">
+            </Filters>
+            <Search>
+                <CdsTextField NativeForm="true"
+                              Value="@filtroTexto"
+                              ValueChanged="@(v => filtroTexto = v)"
+                              Placeholder="Buscar por nombre, usuario, documento o correo"
+                              aria-label="Buscar empleado" />
+            </Search>
+            <ChildContent>
                 <GridEstandar @ref="grilla"
                               TItem="EmpleadoListItem"
                               Data="@EmpleadosFiltrados"
@@ -67,7 +67,7 @@ else
                               ShowAddButton="false"
                               ShowExportButton="false"
                               FillHeight="true">
-                    <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.CodigoUsuario)" Title="Usuario" Width="140px" Frozen="true" TextAlign="TextAlign.Center">
+                    <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.CodigoUsuario)" Title="Usuario" Width="140px" Frozen="true" TextAlign="TextAlign.Left" CssClass="emp-col-usuario">
                         <Template Context="empleado"><span class="cds-mono">@empleado.CodigoUsuario</span></Template>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn TItem="EmpleadoListItem" Property="@nameof(EmpleadoListItem.NombreCompleto)" Title="Nombre" Width="260px" Frozen="true" TextAlign="TextAlign.Left">
@@ -110,8 +110,8 @@ else
                         </Template>
                     </RadzenDataGridColumn>
                 </GridEstandar>
-            </div>
-        </CdsCard>
+            </ChildContent>
+        </CdsListCard>
     </div>
 }
 

@@ -1,6 +1,7 @@
 @page "/login"
 @layout LoginLayout
 @using CreditFlow.Web.Features.Authentication.Components
+@using CreditFlow.Web.Features.Authentication.Services
 
 @* Sin barra superior: el título solo va en la pestaña del navegador. *@
 <PageTitle>Iniciar sesión · CrediFlow</PageTitle>
@@ -9,11 +10,17 @@
     <AuthHero />
 
     <main class="login-page__panel">
-        <LoginForm Error="@Error" />
+        <LoginForm Error="@Error" DocumentoRecordado="@DocumentoRecordado" />
+        <footer class="login-page__footer">© @DateTime.Today.Year CrediFlow · Uso exclusivo del personal autorizado</footer>
     </main>
 </div>
 
 @code {
     [SupplyParameterFromQuery(Name = "error")]
     private string? Error { get; set; }
+
+    // El login se renderiza estático (SSR), así que el HttpContext está disponible.
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    private string? DocumentoRecordado => HttpContext is null ? null : RememberedUser.Read(HttpContext);
 }

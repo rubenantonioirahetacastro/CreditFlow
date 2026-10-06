@@ -1,7 +1,39 @@
 .auth-field {
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     --rz-icon-weight: var(--cds-icon-weight);
     --rz-icon-grade: var(--cds-icon-grade);
+}
+
+.auth-field__box {
+    position: relative;
+}
+
+/* Aviso de Bloq Mayús: auth.js agrega .auth-field--caps mientras está activado. */
+.auth-field__caps {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: var(--cds-radius-badge);
+    background: var(--cds-accent-orange-soft);
+    color: var(--cds-accent-orange-text);
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-strong);
+}
+
+    .auth-field__caps ::deep .rzi {
+        font-size: 16px;
+    }
+
+.auth-field--caps .auth-field__caps {
+    display: inline-flex;
+    animation: auth-caps-in .25s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+@keyframes auth-caps-in {
+    from { opacity: 0; transform: translateY(-4px); }
 }
 
 .auth-field__input {
@@ -10,9 +42,9 @@
     height: 56px;
     box-sizing: border-box;
     padding: 22px 16px 6px 48px;
-    border: 1px solid var(--cds-border-strong);
+    border: 1px solid var(--cds-border-default);
     border-radius: 14px;
-    background: var(--cds-white);
+    background: var(--cds-surface-hover);
     color: var(--cds-color-value);
     font-family: var(--cds-font-family);
     font-size: var(--cds-font-size-title);
@@ -32,7 +64,8 @@
     .auth-field__input:focus {
         outline: 0;
         border-color: var(--cds-primary);
-        box-shadow: 0 0 0 4px var(--cds-surface-selected);
+        background-color: var(--cds-white);
+        box-shadow: 0 0 0 4px var(--cds-surface-selected), 0 8px 20px -12px var(--cds-auth-glow-primary);
     }
 
 /* Rótulo dentro del campo que sube y se achica al enfocar o al tener texto (también con autocompletado). */

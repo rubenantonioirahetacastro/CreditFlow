@@ -1,0 +1,140 @@
+@using System.Globalization
+@using CreditFlow.Web.Features.Maintenance.Agency.Models
+@using CreditFlow.Web.Features.Maintenance.Agency.Validation
+
+<CdsDrawer Open="@Open"
+           Title="@(esNueva ? "Nueva agencia" : "Editar agencia")"
+           Subtitle="@(esNueva ? "Registra una agencia y sus datos de contacto." : $"Agencia {Agencia?.NCodAge}")"
+           OnClose="@OnClose">
+    <ChildContent>
+        <div class="agency-form">
+            <CdsFormField Label="Código"
+                          For="agency-code"
+                          Error="@(codigoTocado ? errores.Codigo : null)"
+                          Hint="@(esNueva ? "Se propone el siguiente código disponible." : "El código identifica a la agencia y no se puede cambiar.")">
+                <CdsTextField NativeForm="true"
+                              Class="cds-mono"
+                              Value="@codigoTexto"
+                              ValueChanged="@(v => { codigoTexto = v; codigoTocado = true; Validar(); })"
+                              ReadOnly="@(!esNueva)"
+                              inputmode="numeric"
+                              id="agency-code"
+                              aria-invalid="@((codigoTocado && errores.Codigo is not null).ToString().ToLowerInvariant())" />
+            </CdsFormField>
+
+            <CdsFormField Label="Nombre" For="agency-name" Error="@(nombreTocado ? errores.Nombre : null)">
+                <CdsTextField NativeForm="true"
+                              Value="@nombre"
+                              ValueChanged="@(v => { nombre = v; nombreTocado = true; Validar(); })"
+                              Placeholder="Por ejemplo: Agencia Central"
+                              MaxLength="100"
+                              id="agency-name"
+                              aria-invalid="@((nombreTocado && errores.Nombre is not null).ToString().ToLowerInvariant())" />
+            </CdsFormField>
+
+            <section class="agency-form__section" aria-label="Contacto">
+                <span class="agency-form__section-title"><RadzenIcon Icon="contact_mail" />Ubicación y contacto</span>
+
+                <CdsFormField Label="Dirección" For="agency-address" Hint="Opcional.">
+                    <CdsTextField NativeForm="true"
+                                  Value="@direccion"
+                                  ValueChanged="@(v => direccion = v)"
+                                  MaxLength="250"
+                                  id="agency-address" />
+                </CdsFormField>
+
+                <CdsFormField Label="Teléfono" For="agency-phone" Hint="Opcional.">
+                    <CdsPhoneField NativeForm="true"
+                                   Value="@telefono"
+                                   ValueChanged="@(v => telefono = v)"
+                                   id="agency-phone" />
+                </CdsFormField>
+
+                <CdsFormField Label="Correo electrónico" For="agency-email" Error="@errores.Correo" Hint="Opcional.">
+                    <CdsEmailField NativeForm="true"
+                                   Value="@correo"
+                                   ValueChanged="@(v => { correo = v; Validar(); })"
+                                   Placeholder="agencia@empresa.com"
+                                   MaxLength="150"
+                                   id="agency-email"
+                                   aria-invalid="@((errores.Correo is not null).ToString().ToLowerInvariant())" />
+                </CdsFormField>
+            </section>
+        </div>
+    </ChildContent>
+    <Footer>
+        <CdsButton Text="Cancelar"
+                   Variant="Variant.Outlined"
+                   ButtonStyle="ButtonStyle.Base"
+                   Size="ButtonSize.Small"
+                   Click="@OnClose" />
+        <CdsButton Text="@(Guardando ? "Guardando…" : esNueva ? "Crear agencia" : "Guardar cambios")"
+                   Icon="save"
+                   Size="ButtonSize.Small"
+                   Disabled="@(Guardando || errores.HayErrores)"
+                   Click="@GuardarAsync" />
+    </Footer>
+</CdsDrawer>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+
+    /// <summary>Agencia a editar; nula para crear una nueva.</summary>
+    [Parameter] public AgenciaDto? Agencia { get; set; }
+
+    [Parameter] public IReadOnlyCollection<int> CodigosExistentes { get; set; } = [];
+    [Parameter] public bool Guardando { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<AgenciaDto> OnSave { get; set; }
+
+    private bool abiertoAntes;
+    private bool esNueva;
+    private string codigoTexto = string.Empty;
+    private string nombre = string.Empty;
+    private string direccion = string.Empty;
+    private string telefono = string.Empty;
+    private string correo = string.Empty;
+    private bool codigoTocado;
+    private bool nombreTocado;
+    private AgencyFormErrors errores = new(null, null, null);
+
+    protected override void OnParametersSet()
+    {
+        // Se inicializa cada vez que el panel se abre.
+        if (Open && !abiertoAntes)
+        {
+            esNueva = Agencia is null;
+            var codigo = Agencia?.NCodAge ?? (CodigosExistentes.Count == 0 ? 1 : CodigosExistentes.Max() + 1);
+            codigoTexto = codigo.ToString(CultureInfo.InvariantCulture);
+            nombre = Agencia?.Nombre ?? string.Empty;
+            direccion = Agencia?.Direccion ?? string.Empty;
+            telefono = Agencia?.Telefono ?? string.Empty;
+            correo = Agencia?.CorreoElectronico ?? string.Empty;
+            codigoTocado = true;
+            nombreTocado = !esNueva;
+            Validar();
+        }
+
+        abiertoAntes = Open;
+    }
+
+    private void Validar() =>
+        errores = AgencyValidator.Validate(codigoTexto, nombre, correo, CodigosExistentes, esNueva);
+
+    private Task GuardarAsync()
+    {
+        codigoTocado = nombreTocado = true;
+        Validar();
+        if (errores.HayErrores)
+            return Task.CompletedTask;
+
+        return OnSave.InvokeAsync(new AgenciaDto
+        {
+            NCodAge = int.Parse(codigoTexto.Trim(), CultureInfo.InvariantCulture),
+            Nombre = nombre.Trim(),
+            Direccion = direccion.Trim(),
+            Telefono = telefono.Trim(),
+            CorreoElectronico = correo.Trim()
+        });
+    }
+}

@@ -1,0 +1,15 @@
+@* Casilla nativa de la pantalla de acceso («Recordarme»). Es nativa porque el login se renderiza estático
+   y su valor viaja en el POST del formulario. *@
+<label class="auth-checkbox" title="@Title">
+    <input type="checkbox" class="auth-checkbox__input" id="@Id" name="@Name" value="on" checked="@Checked" />
+    <span class="auth-checkbox__box" aria-hidden="true"><RadzenIcon Icon="check" /></span>
+    <span class="auth-checkbox__text">@Text</span>
+</label>
+
+@code {
+    [Parameter, EditorRequired] public string Id { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Name { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Text { get; set; } = string.Empty;
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public bool Checked { get; set; }
+}

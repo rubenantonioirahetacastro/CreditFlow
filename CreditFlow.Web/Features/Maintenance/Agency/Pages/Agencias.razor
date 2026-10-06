@@ -1,124 +1,161 @@
 @page "/agencias"
 @attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
+@using CreditFlow.Web.Features.Maintenance.Agency.Components
 
 <CdsPageHeader Title="Agencias"
                Icon="storefront"
                Path="@(new PagePathItem[] { "Mantenimientos" })"
                Description="Administra las agencias y sus datos de contacto." />
 
-<CdsFormMessage Message="@ValidationError" />
+@if (cargando && agencias.Count == 0)
+{
+    <CdsPageState Kind="CdsPageStateKind.Loading" Title="Cargando agencias…" />
+}
+else if (errorCarga is not null && agencias.Count == 0)
+{
+    <CdsPageState Kind="CdsPageStateKind.Error"
+                  Title="No pudimos cargar las agencias"
+                  Message="@errorCarga"
+                  OnAction="@CargarAsync" />
+}
+else
+{
+    <div class="cds-page cds-page--fill agency-page" @ref="paginaRootRef">
+        <CdsCard>
+            <CdsKpiRow>
+                <CdsKpi Icon="storefront" Label="Agencias" Value="@agencias.Count.ToString()" Strong="true" />
+                <CdsKpi Icon="call" Label="Con teléfono" Value="@agencias.Count(a => a.TieneTelefono).ToString()" Strong="true" />
+                <CdsKpi Icon="mail" Label="Con correo" Value="@agencias.Count(a => a.TieneCorreo).ToString()" Strong="true" />
+                <CdsKpi Icon="contact_support" Label="Datos incompletos" Value="@Incompletas.ToString()" Strong="true" />
+            </CdsKpiRow>
+        </CdsCard>
 
-<GridEstandar TItem="AgenciaEdicionDto"
-              @ref="gridEstandar"
-              Data="@ListaAgencias"
-              IsLoading="@Cargando"
-              LoadingText="Cargando agencias…"
-              ErrorMessage="@ErrorCarga"
-              OnRetry="@CargarAgenciasAsync"
-              EmptyText="No hay agencias registradas."
-              ExportFileName="agencias"
-              EditMode="DataGridEditMode.Single"
-              RowRender="@OnRowRender"
-              ShowAddButton="@puedeEditar"
-              AddDisabled="@(filaEnEdicion != null)"
-              AddButtonTitle="Nueva agencia"
-              OnAdd="@NuevaAgenciaAsync">
-    <RadzenDataGridColumn TItem="AgenciaEdicionDto" Title="" Sortable="false" Filterable="false" Width="90px" CssClass="celda-accion" Visible="@puedeEditar" Frozen="true">
-        <Template Context="agencia">
-            <div class="d-flex gap-1">
-                <CdsButton Icon="edit"
-                              ButtonStyle="ButtonStyle.Primary"
-                              Variant="Variant.Outlined"
-                              Size="ButtonSize.ExtraSmall"
-                              Disabled="@(filaEnEdicion != null)"
-                              title="Editar agencia"
-                              Click="@(() => EditarAsync(agencia))" />
-                <CdsButton Icon="delete"
-                              ButtonStyle="ButtonStyle.Danger"
-                              Variant="Variant.Outlined"
-                              Size="ButtonSize.ExtraSmall"
-                              Disabled="@(filaEnEdicion != null)"
-                              title="Eliminar agencia"
-                              Click="@(() => EliminarAsync(agencia))" />
-            </div>
-        </Template>
-        <EditTemplate Context="agencia">
-            <div class="d-flex gap-1">
-                <CdsButton Icon="save"
-                              ButtonStyle="ButtonStyle.Primary"
-                              Variant="Variant.Outlined"
-                              Size="ButtonSize.ExtraSmall"
-                              Disabled="@Guardando"
-                              title="Guardar cambios"
-                              Click="@(() => GuardarAsync(agencia))" />
-                <CdsButton Icon="close"
-                              ButtonStyle="ButtonStyle.Secondary"
-                              Variant="Variant.Outlined"
-                              Size="ButtonSize.ExtraSmall"
-                              Disabled="@Guardando"
-                              title="Cancelar edición"
-                              Click="@(() => CancelarAsync(agencia))" />
-            </div>
-        </EditTemplate>
-    </RadzenDataGridColumn>
+        <CdsListCard Title="Red de agencias" Badge="@($"{AgenciasFiltradas.Count} agencias")">
+            <Actions>
+                <CdsExportButton Format="CdsExportFormat.Excel"
+                                 Disabled="@(AgenciasFiltradas.Count == 0)"
+                                 Click="@(() => grilla.ExportarExcelAsync())" />
+                @if (puedeEditar)
+                {
+                    <CdsButton Text="Nueva agencia"
+                               Icon="add"
+                               Size="ButtonSize.Small"
+                               Click="@(() => AbrirFormulario(null))" />
+                }
+            </Actions>
+            <Filters>
+                <CdsTabs AriaLabel="Filtrar agencias por datos de contacto">
+                    <CdsTab Text="Todas" Count="@agencias.Count" Selected="@(filtro == FiltroDatos.Todas)" OnClick="@(() => filtro = FiltroDatos.Todas)" />
+                    <CdsTab Text="Datos completos" Count="@(agencias.Count - Incompletas)" Selected="@(filtro == FiltroDatos.Completas)" OnClick="@(() => filtro = FiltroDatos.Completas)" />
+                    <CdsTab Text="Datos incompletos" Count="@Incompletas" Selected="@(filtro == FiltroDatos.Incompletas)" OnClick="@(() => filtro = FiltroDatos.Incompletas)" />
+                </CdsTabs>
+            </Filters>
+            <Search>
+                <CdsTextField NativeForm="true"
+                              Value="@filtroTexto"
+                              ValueChanged="@(v => filtroTexto = v)"
+                              Placeholder="Buscar por código, nombre, dirección o correo"
+                              aria-label="Buscar agencia" />
+            </Search>
+            <ChildContent>
+                <GridEstandar @ref="grilla"
+                              TItem="AgenciaListItem"
+                              Data="@AgenciasFiltradas"
+                              EmptyText="@(agencias.Count == 0 ? "Aún no hay agencias registradas." : "No hay agencias que coincidan con el filtro.")"
+                              ExportFileName="agencias"
+                              ShowAddButton="false"
+                              ShowExportButton="false"
+                              FillHeight="true">
+                    <RadzenDataGridColumn TItem="AgenciaListItem" Property="@nameof(AgenciaListItem.Codigo)" Title="Código" Width="100px" Frozen="true" TextAlign="TextAlign.Center">
+                        <Template Context="agencia"><span class="cds-mono">@agencia.Codigo</span></Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="AgenciaListItem" Property="@nameof(AgenciaListItem.Nombre)" Title="Nombre" Width="220px" Frozen="true" TextAlign="TextAlign.Left" />
+                    <RadzenDataGridColumn TItem="AgenciaListItem" Property="@nameof(AgenciaListItem.Direccion)" Title="Dirección" MinWidth="260px" TextAlign="TextAlign.Left">
+                        <Template Context="agencia"><CdsTruncatedText Text="@agencia.Direccion" /></Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="AgenciaListItem" Property="@nameof(AgenciaListItem.Telefono)" Title="Teléfono" Width="130px" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn TItem="AgenciaListItem" Property="@nameof(AgenciaListItem.Correo)" Title="Correo" Width="230px" TextAlign="TextAlign.Center">
+                        <Template Context="agencia"><CdsTruncatedText Text="@agencia.Correo" /></Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="AgenciaListItem" Title="Acciones" Width="110px" Sortable="false" Filterable="false" TextAlign="TextAlign.Center" Visible="@puedeEditar">
+                        <Template Context="agencia">
+                            <CdsButton Icon="edit"
+                                       Variant="Variant.Text"
+                                       ButtonStyle="ButtonStyle.Base"
+                                       Size="ButtonSize.ExtraSmall"
+                                       title="Editar agencia"
+                                       aria-label="@($"Editar {agencia.Nombre}")"
+                                       Click="@(() => AbrirFormulario(agencia.Agencia))" />
+                            <CdsButton Icon="delete"
+                                       Variant="Variant.Text"
+                                       ButtonStyle="ButtonStyle.Base"
+                                       Size="ButtonSize.ExtraSmall"
+                                       title="Eliminar agencia"
+                                       aria-label="@($"Eliminar {agencia.Nombre}")"
+                                       Click="@(() => EliminarAsync(agencia))" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </GridEstandar>
+            </ChildContent>
+        </CdsListCard>
+    </div>
+}
 
-    <RadzenDataGridColumn TItem="AgenciaEdicionDto" Property="@nameof(AgenciaEdicionDto.NCodAge)" Title="Código" Width="100px">
-        <EditTemplate Context="agencia">
-            <CdsNumericField TValue="int" @bind-Value="agencia.NCodAge" Disabled="@(!agencia.EsNueva)" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
+<AgencyDrawer Open="@formularioAbierto"
+              Agencia="@agenciaEnEdicion"
+              CodigosExistentes="@agencias.Select(a => a.Codigo).ToList()"
+              Guardando="@guardando"
+              OnClose="@(() => formularioAbierto = false)"
+              OnSave="@GuardarAsync" />
 
-    <RadzenDataGridColumn TItem="AgenciaEdicionDto" Property="@nameof(AgenciaEdicionDto.Nombre)" Title="Nombre" Width="200px">
-        <EditTemplate Context="agencia">
-            <CdsTextField @bind-Value="agencia.Nombre" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="AgenciaEdicionDto" Property="@nameof(AgenciaEdicionDto.Direccion)" Title="Dirección" Sortable="false" Filterable="false">
-        <EditTemplate Context="agencia">
-            <CdsTextField @bind-Value="agencia.Direccion" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="AgenciaEdicionDto" Property="@nameof(AgenciaEdicionDto.Telefono)" Title="Teléfono" Width="150px" Filterable="false">
-        <EditTemplate Context="agencia">
-            <CdsPhoneField @bind-Value="agencia.Telefono" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-
-    <RadzenDataGridColumn TItem="AgenciaEdicionDto" Property="@nameof(AgenciaEdicionDto.CorreoElectronico)" Title="Correo" Width="220px" Filterable="false">
-        <Template Context="agencia">
-            <CdsTruncatedText Text="@agencia.CorreoElectronico" />
-        </Template>
-        <EditTemplate Context="agencia">
-            <CdsEmailField @bind-Value="agencia.CorreoElectronico" />
-        </EditTemplate>
-    </RadzenDataGridColumn>
-</GridEstandar>
+<CdsUndoToast Visible="@avisoVisible"
+              Version="@avisoVersion"
+              Message="@avisoMensaje"
+              OnUndo="@(accionDeshacer is null ? default : EventCallback.Factory.Create(this, DeshacerAsync))"
+              OnClose="@(() => avisoVisible = false)" />
 
 @code {
     [Inject] private IAgenciaService AgenciaService { get; set; } = default!;
     [Inject] private DialogService DialogService { get; set; } = default!;
     [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
     [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
 
-    private class AgenciaEdicionDto : AgenciaDto
-    {
-        public bool EsNueva { get; set; }
-    }
+    private enum FiltroDatos { Todas, Completas, Incompletas }
 
-    private GridEstandar<AgenciaEdicionDto> gridEstandar = default!;
+    private ElementReference paginaRootRef;
+    private GridEstandar<AgenciaListItem> grilla = default!;
 
-    private List<AgenciaEdicionDto> ListaAgencias { get; set; } = new();
-
-    private AgenciaEdicionDto? filaEnEdicion;
-    private AgenciaEdicionDto? backupOriginal;
-
-    private bool Cargando = true;
-    private bool Guardando;
+    private List<AgenciaListItem> agencias = [];
+    private bool cargando = true;
+    private string? errorCarga;
+    private bool guardando;
     private bool puedeEditar;
-    private string? ErrorCarga;
-    private string? ValidationError;
+
+    private FiltroDatos filtro = FiltroDatos.Todas;
+    private string filtroTexto = string.Empty;
+
+    private bool formularioAbierto;
+    private AgenciaDto? agenciaEnEdicion;
+
+    // Aviso con «Deshacer»: guarda la acción inversa del último cambio.
+    private bool avisoVisible;
+    private int avisoVersion;
+    private string avisoMensaje = string.Empty;
+    private Func<Task<(bool Exito, string? Mensaje)>>? accionDeshacer;
+
+    private int Incompletas => agencias.Count(a => a.DatosIncompletos);
+
+    private List<AgenciaListItem> AgenciasFiltradas =>
+        agencias
+            .Where(a => filtro switch
+            {
+                FiltroDatos.Completas => !a.DatosIncompletos,
+                FiltroDatos.Incompletas => a.DatosIncompletos,
+                _ => true
+            })
+            .Where(a => string.IsNullOrWhiteSpace(filtroTexto) || a.Coincide(filtroTexto.Trim()))
+            .ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -128,111 +165,52 @@
             puedeEditar = RoleAuthorization.HasAnyRoleId(authState.User, RoleIds.MaintenanceEditAccess);
         }
 
-        await CargarAgenciasAsync();
+        await CargarAsync();
     }
 
-    private async Task CargarAgenciasAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Cargando = true;
-        ErrorCarga = null;
+        await JS.FitAsync(paginaRootRef);
+    }
+
+    private async Task CargarAsync()
+    {
+        cargando = true;
         var result = await AgenciaService.ObtenerTodasAsync();
         if (result.IsSuccess)
-            ListaAgencias = (result.Data ?? []).Select(MapearAEdicion).ToList();
-        else if (ListaAgencias.Count > 0)
+        {
+            agencias = (result.Data ?? [])
+                .Select(a => new AgenciaListItem { Agencia = a })
+                .OrderBy(a => a.Codigo)
+                .ToList();
+            errorCarga = null;
+        }
+        else if (agencias.Count > 0)
+        {
             Notifications.Error("No se pudieron actualizar las agencias", result.Message);
-        else
-            ErrorCarga = result.Message;
-        Cargando = false;
-    }
-
-    private static AgenciaEdicionDto MapearAEdicion(AgenciaDto a) => new()
-    {
-        NCodAge = a.NCodAge,
-        Nombre = a.Nombre,
-        Direccion = a.Direccion,
-        Telefono = a.Telefono,
-        CorreoElectronico = a.CorreoElectronico
-    };
-
-    private void OnRowRender(RowRenderEventArgs<AgenciaEdicionDto> args)
-    {
-        if (filaEnEdicion is not { } fila || !ReferenceEquals(args.Data, fila))
-            return;
-
-        args.Attributes["style"] = fila.EsNueva
-            ? "background-color: var(--cds-surface-table-success);"
-            : "background-color: var(--cds-surface-table-info);";
-    }
-
-    private async Task NuevaAgenciaAsync()
-    {
-        ValidationError = null;
-        var nueva = new AgenciaEdicionDto { EsNueva = true };
-        filaEnEdicion = nueva;
-        await gridEstandar.Grid.InsertRow(nueva);
-    }
-
-    private async Task EditarAsync(AgenciaEdicionDto agencia)
-    {
-        ValidationError = null;
-        backupOriginal = ClonarValores(agencia);
-        filaEnEdicion = agencia;
-        await gridEstandar.Grid.EditRow(agencia);
-    }
-
-    private void CancelarAsync(AgenciaEdicionDto agencia)
-    {
-        ValidationError = null;
-        gridEstandar.Grid.CancelEditRow(agencia);
-
-        if (!agencia.EsNueva && backupOriginal is not null)
-        {
-            CopiarValores(backupOriginal, agencia);
-        }
-
-        backupOriginal = null;
-        filaEnEdicion = null;
-    }
-
-    private async Task GuardarAsync(AgenciaEdicionDto agencia)
-    {
-        var validation = AgencyValidator.Validate(agencia, agencia.EsNueva);
-        if (!validation.IsValid)
-        {
-            ValidationError = validation.Message;
-            return;
-        }
-
-        ValidationError = null;
-        Guardando = true;
-        bool exito;
-        string? mensaje;
-
-        if (agencia.EsNueva)
-        {
-            var request = new CrearAgenciaRequest
-            {
-                NCodAge = agencia.NCodAge,
-                Nombre = agencia.Nombre,
-                Direccion = agencia.Direccion,
-                Telefono = agencia.Telefono,
-                CorreoElectronico = agencia.CorreoElectronico
-            };
-            (exito, mensaje) = await AgenciaService.CrearAsync(request);
         }
         else
         {
-            var request = new ActualizarAgenciaRequest
-            {
-                Nombre = agencia.Nombre,
-                Direccion = agencia.Direccion,
-                Telefono = agencia.Telefono,
-                CorreoElectronico = agencia.CorreoElectronico
-            };
-            (exito, mensaje) = await AgenciaService.ActualizarAsync(agencia.NCodAge, request);
+            errorCarga = result.Message ?? "No se pudieron cargar las agencias.";
         }
 
-        Guardando = false;
+        cargando = false;
+    }
+
+    private void AbrirFormulario(AgenciaDto? agencia)
+    {
+        agenciaEnEdicion = agencia;
+        formularioAbierto = true;
+    }
+
+    private async Task GuardarAsync(AgenciaDto agencia)
+    {
+        var anterior = agenciaEnEdicion;
+        guardando = true;
+        var (exito, mensaje) = anterior is null
+            ? await AgenciaService.CrearAsync(ACrear(agencia))
+            : await AgenciaService.ActualizarAsync(anterior.NCodAge, AActualizar(agencia));
+        guardando = false;
 
         if (!exito)
         {
@@ -240,52 +218,82 @@
             return;
         }
 
-        await gridEstandar.Grid.UpdateRow(agencia);
-        backupOriginal = null;
-        filaEnEdicion = null;
-
-        Notifications.Success(
-            agencia.EsNueva ? "Agencia creada" : "Agencia actualizada",
-            "Los cambios se guardaron correctamente.");
-        await CargarAgenciasAsync();
+        formularioAbierto = false;
+        await CargarAsync();
+        MostrarAviso(
+            anterior is null ? $"Agencia «{agencia.Nombre}» creada" : $"Agencia «{agencia.Nombre}» actualizada",
+            anterior is null
+                ? () => AgenciaService.EliminarAsync(agencia.NCodAge)
+                : () => AgenciaService.ActualizarAsync(anterior.NCodAge, AActualizar(anterior)));
     }
 
-    private async Task EliminarAsync(AgenciaEdicionDto agencia)
+    private async Task EliminarAsync(AgenciaListItem item)
     {
-        var confirmado = await DialogService.Confirm(
-            $"¿Eliminar la agencia '{agencia.Nombre}'? Esta acción no se puede deshacer.",
-            "Confirmar eliminación",
-            new ConfirmOptions { OkButtonText = "Eliminar", CancelButtonText = "Cancelar" });
+        object? eleccion = await DialogService.OpenAsync<CdsDeleteDialog>(
+            $"¿Eliminar «{item.Nombre}»?",
+            new Dictionary<string, object?>
+            {
+                [nameof(CdsDeleteDialog.Nombre)] = item.Nombre,
+                [nameof(CdsDeleteDialog.Identificador)] = item.Codigo.ToString(),
+                [nameof(CdsDeleteDialog.PuedeDesactivar)] = false
+            },
+            new DialogOptions { Width = "min(460px, 92vw)", CloseDialogOnOverlayClick = true });
 
-        if (confirmado != true)
+        if (eleccion is not CdsDeleteChoice.Eliminar)
             return;
 
-        var (exito, mensaje) = await AgenciaService.EliminarAsync(agencia.NCodAge);
+        var anterior = item.Agencia;
+        var (exito, mensaje) = await AgenciaService.EliminarAsync(anterior.NCodAge);
         if (!exito)
         {
             Notifications.Error("No se pudo eliminar la agencia", mensaje);
             return;
         }
 
-        Notifications.Success("Agencia eliminada");
-        await CargarAgenciasAsync();
+        await CargarAsync();
+        MostrarAviso($"Agencia «{item.Nombre}» eliminada", () => AgenciaService.CrearAsync(ACrear(anterior)));
     }
 
-    private static AgenciaEdicionDto ClonarValores(AgenciaEdicionDto origen) => new()
+    private static CrearAgenciaRequest ACrear(AgenciaDto agencia) => new()
     {
-        NCodAge = origen.NCodAge,
-        Nombre = origen.Nombre,
-        Direccion = origen.Direccion,
-        Telefono = origen.Telefono,
-        CorreoElectronico = origen.CorreoElectronico,
-        EsNueva = origen.EsNueva
+        NCodAge = agencia.NCodAge,
+        Nombre = agencia.Nombre,
+        Direccion = agencia.Direccion,
+        Telefono = agencia.Telefono,
+        CorreoElectronico = agencia.CorreoElectronico
     };
 
-    private static void CopiarValores(AgenciaEdicionDto origen, AgenciaEdicionDto destino)
+    private static ActualizarAgenciaRequest AActualizar(AgenciaDto agencia) => new()
     {
-        destino.Nombre = origen.Nombre;
-        destino.Direccion = origen.Direccion;
-        destino.Telefono = origen.Telefono;
-        destino.CorreoElectronico = origen.CorreoElectronico;
+        Nombre = agencia.Nombre,
+        Direccion = agencia.Direccion,
+        Telefono = agencia.Telefono,
+        CorreoElectronico = agencia.CorreoElectronico
+    };
+
+    private void MostrarAviso(string mensaje, Func<Task<(bool Exito, string? Mensaje)>>? deshacer)
+    {
+        avisoMensaje = mensaje;
+        accionDeshacer = deshacer;
+        avisoVersion++;
+        avisoVisible = true;
+    }
+
+    private async Task DeshacerAsync()
+    {
+        avisoVisible = false;
+        if (accionDeshacer is null)
+            return;
+
+        var (exito, mensaje) = await accionDeshacer();
+        accionDeshacer = null;
+        if (!exito)
+        {
+            Notifications.Error("No se pudo deshacer el cambio", mensaje);
+            return;
+        }
+
+        await CargarAsync();
+        Notifications.Info("Cambio deshecho");
     }
 }

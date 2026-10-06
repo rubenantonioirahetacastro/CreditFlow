@@ -30,16 +30,15 @@
     gap: 12px;
 }
 
+/* Foto del solicitante de ejemplo, con aro de marca. */
 .scene__avatar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    flex: none;
     width: 38px;
     height: 38px;
     border-radius: 50%;
+    object-fit: cover;
     background: var(--cds-primary);
-    font-size: var(--cds-font-size-small);
-    font-weight: var(--cds-font-weight-strong);
+    box-shadow: 0 0 0 2px var(--cds-primary);
 }
 
 .scene__who {

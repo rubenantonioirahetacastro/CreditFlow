@@ -1,5 +1,6 @@
-::deep .celda-accion {
-    padding-left: 4px !important;
-    padding-right: 4px !important;
-    text-align: center;
+/* Distribución de la página. Tipografía, colores y alto vienen de .cds-page / .cds-page--fill (app.css);
+   la tarjeta del listado, de CdsListCard. */
+.line-page {
+    padding: var(--cds-space-page-y) var(--cds-space-page-x);
+    gap: var(--cds-space-card);
 }

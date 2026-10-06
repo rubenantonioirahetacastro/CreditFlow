@@ -1,30 +1,42 @@
-@* Campo de la pantalla de acceso: ícono, rótulo flotante y, en contraseñas, botón para mostrar u ocultar
-   (lo maneja wwwroot/js/auth.js porque el login se renderiza estático). *@
+@* Campo de la pantalla de acceso: ícono, rótulo flotante y, en contraseñas, botón para mostrar u ocultar y aviso
+   de Bloq Mayús (lo maneja wwwroot/js/auth.js porque el login se renderiza estático). *@
 <div class="auth-field @(Invalid ? "auth-field--invalid" : null)">
-    <span class="auth-field__icon" aria-hidden="true"><RadzenIcon Icon="@Icon" /></span>
-    <input id="@Id"
-           name="@Name"
-           type="@Type"
-           class="auth-field__input @(EsPassword ? "auth-field__input--toggle" : null)"
-           placeholder=" "
-           autocomplete="@Autocomplete"
-           autocapitalize="off"
-           spellcheck="false"
-           required="@Required"
-           autofocus="@Autofocus"
-           aria-invalid="@(Invalid ? "true" : "false")" />
-    <label class="auth-field__label" for="@Id">@Label</label>
+    <div class="auth-field__box">
+        <span class="auth-field__icon" aria-hidden="true"><RadzenIcon Icon="@Icon" /></span>
+        <input id="@Id"
+               name="@Name"
+               type="@Type"
+               class="auth-field__input @(EsPassword ? "auth-field__input--toggle" : null)"
+               value="@Value"
+               placeholder=" "
+               autocomplete="@Autocomplete"
+               autocapitalize="off"
+               spellcheck="false"
+               required="@Required"
+               autofocus="@Autofocus"
+               aria-invalid="@(Invalid ? "true" : "false")"
+               data-auth-caps="@(EsPassword ? "true" : null)" />
+        <label class="auth-field__label" for="@Id">@Label</label>
+
+        @if (EsPassword)
+        {
+            <button type="button"
+                    class="auth-field__toggle"
+                    data-auth-toggle="@Id"
+                    aria-label="Mostrar contraseña"
+                    aria-pressed="false"
+                    title="Mostrar contraseña">
+                <RadzenIcon Icon="visibility" />
+            </button>
+        }
+    </div>
 
     @if (EsPassword)
     {
-        <button type="button"
-                class="auth-field__toggle"
-                data-auth-toggle="@Id"
-                aria-label="Mostrar contraseña"
-                aria-pressed="false"
-                title="Mostrar contraseña">
-            <RadzenIcon Icon="visibility" />
-        </button>
+        <span class="auth-field__caps" role="status">
+            <RadzenIcon Icon="keyboard_capslock" />
+            Bloq Mayús está activado
+        </span>
     }
 </div>
 
@@ -38,6 +50,9 @@
     [Parameter] public string Type { get; set; } = "text";
 
     [Parameter] public string? Autocomplete { get; set; }
+
+    /// <summary>Valor inicial (p. ej. el documento recordado). Nunca se usa para la contraseña.</summary>
+    [Parameter] public string? Value { get; set; }
     [Parameter] public bool Required { get; set; }
     [Parameter] public bool Autofocus { get; set; }
     [Parameter] public bool Invalid { get; set; }

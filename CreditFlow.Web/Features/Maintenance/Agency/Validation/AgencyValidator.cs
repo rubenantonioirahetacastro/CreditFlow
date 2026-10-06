@@ -1,23 +1,36 @@
+using System.Globalization;
 using CreditFlow.Web.Core.Validation;
-using CreditFlow.Web.Features.Maintenance.Agency.Models;
 
 namespace CreditFlow.Web.Features.Maintenance.Agency.Validation;
 
+/// <summary>Errores por campo para la validación en vivo del formulario de agencia.</summary>
+public sealed record AgencyFormErrors(string? Codigo, string? Nombre, string? Correo)
+{
+    public bool HayErrores => Codigo is not null || Nombre is not null || Correo is not null;
+}
+
 public static class AgencyValidator
 {
-    public static UiValidationResult Validate(AgenciaDto agency, bool isNew)
+    /// <summary>Código numérico, positivo y único (solo al crear), nombre obligatorio y correo con formato válido.</summary>
+    public static AgencyFormErrors Validate(
+        string codigoTexto,
+        string nombre,
+        string correo,
+        IEnumerable<int> codigosExistentes,
+        bool esNueva)
     {
-        if (isNew && agency.NCodAge <= 0)
-            return UiValidationResult.Failure("El código de agencia debe ser mayor a cero.");
-
-        if (string.IsNullOrWhiteSpace(agency.Nombre))
-            return UiValidationResult.Failure("El nombre de la agencia es obligatorio.");
-
-        if (!EmailValidator.IsValid(agency.CorreoElectronico))
+        string? errorCodigo = null;
+        if (esNueva)
         {
-            return UiValidationResult.Failure("El correo electrónico no es válido.");
+            if (!int.TryParse(codigoTexto.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var codigo) || codigo <= 0)
+                errorCodigo = "El código debe ser un número entero mayor a cero.";
+            else if (codigosExistentes.Contains(codigo))
+                errorCodigo = $"El código {codigo} ya está en uso.";
         }
 
-        return UiValidationResult.Success();
+        return new AgencyFormErrors(
+            errorCodigo,
+            string.IsNullOrWhiteSpace(nombre) ? "El nombre de la agencia es obligatorio." : null,
+            EmailValidator.IsValid(correo) ? null : "El correo electrónico no es válido.");
     }
 }
