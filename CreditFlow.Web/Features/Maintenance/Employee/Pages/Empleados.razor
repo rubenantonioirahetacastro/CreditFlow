@@ -36,7 +36,7 @@ else
                 <CdsExportButton Format="CdsExportFormat.Excel"
                                  Disabled="@(EmpleadosFiltrados.Count == 0)"
                                  Click="@(() => grilla.ExportarExcelAsync())" />
-                @if (puedeEditar)
+                @if (puedeCrear)
                 {
                     <CdsButton Text="Nuevo empleado"
                                Icon="person_add"
@@ -136,7 +136,9 @@ else
     [Inject] private IAgenciaService AgenciaService { get; set; } = default!;
     [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
-    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
+    [Inject] private MenuPermissionService Permisos { get; set; } = default!;
+
+    private const string ClaveMenu = "mantenimientos.empleados";
 
     private enum FiltroEstado { Todos, Activos, Inactivos }
 
@@ -149,6 +151,7 @@ else
     private bool cargando = true;
     private string? errorCarga;
     private bool guardando;
+    private bool puedeCrear;
     private bool puedeEditar;
 
     private FiltroEstado filtroEstado = FiltroEstado.Todos;
@@ -183,11 +186,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthStateTask is not null)
-        {
-            var authState = await AuthStateTask;
-            puedeEditar = RoleAuthorization.HasAnyRoleId(authState.User, RoleIds.MaintenanceEditAccess);
-        }
+        // Acciones según «Permisos por rol» (la API mantiene sus políticas por rol como límite).
+        await Permisos.CargarAsync();
+        puedeCrear = Permisos.Puede(ClaveMenu, MenuActions.Crear);
+        puedeEditar = Permisos.Puede(ClaveMenu, MenuActions.Editar);
 
         await CargarAsync();
     }

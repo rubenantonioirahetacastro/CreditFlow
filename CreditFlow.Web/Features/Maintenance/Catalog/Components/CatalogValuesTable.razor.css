@@ -104,6 +104,10 @@
         color: var(--cds-primary);
     }
 
+.catalog-values__none {
+    color: var(--cds-color-hint);
+}
+
 .catalog-values__icon--danger:hover,
 .catalog-values__icon--danger:focus-visible {
     background: var(--cds-danger-surface);

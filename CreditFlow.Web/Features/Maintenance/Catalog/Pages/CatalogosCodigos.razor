@@ -25,10 +25,31 @@ else
 {
     <div class="cds-page cds-page--fill cat-page" @ref="paginaRootRef">
         <div class="cat-layout">
-            <CatalogList Grupos="@grupos"
-                         SelectedCodigo="@codigoSeleccionado"
-                         OnSelect="@Seleccionar"
-                         OnNew="@(() => nuevoCatalogoAbierto = true)" />
+            <CdsMasterList TItem="CatalogoGrupo"
+                           Title="Catálogos"
+                           Items="@grupos"
+                           ItemKey="@(g => g.Codigo)"
+                           ItemCode="@(g => g.Codigo.ToString())"
+                           ItemName="@(g => g.Nombre)"
+                           ItemDetail="@(g => g.Clave)"
+                           ItemCount="@(g => g.Valores.Count.ToString())"
+                           ItemCountTitle="@(g => $"{g.Valores.Count} valores")"
+                           SelectedKey="@codigoSeleccionado"
+                           OnSelect="@Seleccionar"
+                           SearchPlaceholder="Buscar por nombre, código o clave">
+                <Actions>
+                    @if (puedeCrear)
+                    {
+                        <CdsButton Text="Nuevo"
+                                   Icon="add"
+                                   Variant="Variant.Outlined"
+                                   ButtonStyle="ButtonStyle.Base"
+                                   Size="ButtonSize.Small"
+                                   title="Crear un catálogo"
+                                   Click="@(() => nuevoCatalogoAbierto = true)" />
+                    }
+                </Actions>
+            </CdsMasterList>
 
             <div class="cat-detail">
                 @if (Seleccionado is not { } grupo)
@@ -53,10 +74,13 @@ else
                                 <CdsExportButton Format="CdsExportFormat.Excel"
                                                  Disabled="@(grupo.Valores.Count == 0)"
                                                  Click="@(() => ExportarAsync(grupo))" />
-                                <CdsButton Text="Nuevo valor"
-                                           Icon="add"
-                                           Size="ButtonSize.Small"
-                                           Click="@(() => AbrirValor(null))" />
+                                @if (puedeCrear)
+                                {
+                                    <CdsButton Text="Nuevo valor"
+                                               Icon="add"
+                                               Size="ButtonSize.Small"
+                                               Click="@(() => AbrirValor(null))" />
+                                }
                             </Actions>
                         </CdsCardHeader>
 
@@ -89,7 +113,9 @@ else
                                 <CatalogValuesTable Valores="@ValoresFiltrados"
                                                     OnToggle="@(args => CambiarEstadoAsync(args.Valor, args.Activo))"
                                                     OnEdit="@(v => AbrirValor(v))"
-                                                    OnDelete="@EliminarAsync" />
+                                                    OnDelete="@EliminarAsync"
+                                                    PuedeEditar="@puedeEditar"
+                                                    PuedeEliminar="@puedeEliminar" />
                             }
                         </div>
 
@@ -127,6 +153,9 @@ else
     [Inject] private DialogService DialogService { get; set; } = default!;
     [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private MenuPermissionService Permisos { get; set; } = default!;
+
+    private const string ClaveMenu = "mantenimientos.catalogos";
 
     private enum FiltroEstado { Todos, Activos, Inactivos }
 
@@ -137,6 +166,9 @@ else
     private bool cargando = true;
     private string? errorCarga;
     private bool guardando;
+    private bool puedeCrear;
+    private bool puedeEditar;
+    private bool puedeEliminar;
 
     private FiltroEstado filtroEstado = FiltroEstado.Todos;
     private string filtroTexto = string.Empty;
@@ -166,7 +198,16 @@ else
                         v.NValor.ToString().Contains(filtroTexto.Trim()))
             .ToList();
 
-    protected override Task OnInitializedAsync() => CargarAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        // Acciones según «Permisos por rol» (la API mantiene sus políticas por rol como límite).
+        await Permisos.CargarAsync();
+        puedeCrear = Permisos.Puede(ClaveMenu, MenuActions.Crear);
+        puedeEditar = Permisos.Puede(ClaveMenu, MenuActions.Editar);
+        puedeEliminar = Permisos.Puede(ClaveMenu, MenuActions.Eliminar);
+
+        await CargarAsync();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

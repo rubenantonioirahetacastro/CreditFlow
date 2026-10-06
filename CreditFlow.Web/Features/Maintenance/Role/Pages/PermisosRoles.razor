@@ -1,0 +1,325 @@
+@page "/permisos-roles"
+@attribute [Authorize(Policy = AuthorizationPolicies.Maintenance)]
+@using CreditFlow.Web.Core.Navigation
+@using CreditFlow.Web.Features.Maintenance.Role.Components
+
+<CdsPageHeader Title="Permisos por rol"
+               Icon="lock_person"
+               Path="@(new PagePathItem[] { "Mantenimientos" })"
+               Description="Define qué menús y submenús ve cada rol y qué puede crear, editar o eliminar." />
+
+@if (cargando && roles.Count == 0)
+{
+    <CdsPageState Kind="CdsPageStateKind.Loading" Title="Cargando roles y permisos…" />
+}
+else if (errorCarga is not null && roles.Count == 0)
+{
+    <CdsPageState Kind="CdsPageStateKind.Error"
+                  Title="No pudimos cargar los permisos"
+                  Message="@errorCarga"
+                  OnAction="@CargarAsync" />
+}
+else
+{
+    <div class="cds-page cds-page--fill perm-page" @ref="paginaRootRef">
+        <div class="perm-layout">
+            <CdsMasterList TItem="RoleDto"
+                           Title="Roles"
+                           Items="@roles"
+                           ItemKey="@(r => r.IdRol)"
+                           ItemCode="@(r => r.IdRol.ToString())"
+                           ItemName="@(r => r.Nombre)"
+                           ItemDetail="@(r => r.Activo ? (string.IsNullOrWhiteSpace(r.Descripcion) ? "Activo" : r.Descripcion) : "Inactivo")"
+                           ItemCount="@(r => OpcionesDe(r.IdRol))"
+                           ItemCountTitle="@(r => $"{OpcionesDe(r.IdRol)} de {TotalOpciones} opciones habilitadas")"
+                           SelectedKey="@estado?.IdRol"
+                           OnSelect="@SeleccionarAsync"
+                           SearchPlaceholder="Buscar rol" />
+
+            <div class="perm-detail">
+                @if (estado is null || Seleccionado is not { } rol)
+                {
+                    <CdsCard>
+                        <CdsPageState Kind="CdsPageStateKind.Empty"
+                                      Title="Selecciona un rol"
+                                      Message="Elige un rol de la lista para ver y cambiar sus permisos."
+                                      ShowSurface="false"
+                                      Compact="true" />
+                    </CdsCard>
+                }
+                else
+                {
+                    <CdsCard Padding="CdsCardPadding.None" Class="perm-detail-card">
+                        <CdsCardHeader Title="@rol.Nombre"
+                                       Subtitle="@($"{estado.OpcionesHabilitadas} de {TotalOpciones} opciones habilitadas{(estado.HayCambios ? " · Cambios sin guardar" : string.Empty)}")">
+                            <Lead>
+                                <span class="perm-code cds-mono">@rol.IdRol</span>
+                            </Lead>
+                            <Actions>
+                                @if (puedeEditar)
+                                {
+                                    <CdsButton Text="Descartar"
+                                               Variant="Variant.Outlined"
+                                               ButtonStyle="ButtonStyle.Base"
+                                               Size="ButtonSize.Small"
+                                               Disabled="@(!estado.HayCambios || guardando)"
+                                               Click="@Descartar" />
+                                    <CdsButton Text="@(guardando ? "Guardando…" : "Guardar permisos")"
+                                               Icon="save"
+                                               Size="ButtonSize.Small"
+                                               Disabled="@(!estado.HayCambios || guardando)"
+                                               Click="@GuardarAsync" />
+                                }
+                            </Actions>
+                        </CdsCardHeader>
+
+                        <div class="perm-toolbar">
+                            @if (puedeEditar)
+                            {
+                                <div class="perm-toolbar__actions">
+                                    <CdsButton Text="Marcar todo"
+                                               Icon="done_all"
+                                               Variant="Variant.Outlined"
+                                               ButtonStyle="ButtonStyle.Base"
+                                               Size="ButtonSize.Small"
+                                               Click="@(() => estado.CambiarTodo(true))" />
+                                    <CdsButton Text="Quitar todo"
+                                               Icon="remove_done"
+                                               Variant="Variant.Outlined"
+                                               ButtonStyle="ButtonStyle.Base"
+                                               Size="ButtonSize.Small"
+                                               Click="@(() => estado.CambiarTodo(false))" />
+                                    <div class="perm-toolbar__copy">
+                                        <CdsDropdown TValue="int"
+                                                     Value="@rolACopiar"
+                                                     ValueChanged="@(v => rolACopiar = v)"
+                                                     Data="@roles.Where(r => r.IdRol != rol.IdRol).ToList()"
+                                                     TextProperty="@nameof(RoleDto.Nombre)"
+                                                     ValueProperty="@nameof(RoleDto.IdRol)"
+                                                     Placeholder="Copiar permisos de…"
+                                                     aria-label="Rol del que se copiarán los permisos" />
+                                        <CdsButton Text="Copiar"
+                                                   Icon="content_copy"
+                                                   Variant="Variant.Outlined"
+                                                   ButtonStyle="ButtonStyle.Base"
+                                                   Size="ButtonSize.Small"
+                                                   Disabled="@(rolACopiar == 0)"
+                                                   Click="@Copiar" />
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="perm-toolbar__readonly"><RadzenIcon Icon="visibility" />Solo lectura: tu rol puede ver los permisos pero no cambiarlos.</span>
+                            }
+                            <div class="perm-toolbar__search">
+                                <CdsTextField NativeForm="true"
+                                              Value="@filtro"
+                                              ValueChanged="@(v => filtro = v)"
+                                              Placeholder="Buscar opción del menú"
+                                              aria-label="Buscar opción del menú" />
+                            </div>
+                        </div>
+
+                        <div class="perm-table">
+                            <RolePermissionTree Estado="@estado"
+                                                ReadOnly="@(!puedeEditar)"
+                                                Filtro="@filtro"
+                                                OnChanged="@(() => StateHasChanged())" />
+                        </div>
+
+                        <div class="perm-footer">
+                            <RadzenIcon Icon="info" />
+                            <span>Los candados indican permisos que la API no permite a este rol o que siempre se conservan. Los usuarios ven los cambios al recargar la página.</span>
+                        </div>
+                    </CdsCard>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<CdsUndoToast Visible="@avisoVisible"
+              Version="@avisoVersion"
+              Message="@avisoMensaje"
+              OnUndo="@(accionDeshacer is null ? default : EventCallback.Factory.Create(this, DeshacerAsync))"
+              OnClose="@(() => avisoVisible = false)" />
+
+@code {
+    [Inject] private IRoleService RoleService { get; set; } = default!;
+    [Inject] private MenuPermissionService Permisos { get; set; } = default!;
+    [Inject] private DialogService DialogService { get; set; } = default!;
+    [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private ElementReference paginaRootRef;
+
+    private List<RoleDto> roles = [];
+    private readonly Dictionary<int, List<MenuPermission>> permisosPorRol = [];
+    private RolePermissionState? estado;
+    private bool cargando = true;
+    private string? errorCarga;
+    private bool guardando;
+    private bool puedeEditar;
+    private string filtro = string.Empty;
+    private int rolACopiar;
+
+    // Aviso con «Deshacer»: guarda la acción inversa del último cambio.
+    private bool avisoVisible;
+    private int avisoVersion;
+    private string avisoMensaje = string.Empty;
+    private Func<Task<(bool Exito, string? Mensaje)>>? accionDeshacer;
+
+    private static int TotalOpciones => MenuCatalog.Pages.Count();
+
+    private RoleDto? Seleccionado => roles.FirstOrDefault(r => r.IdRol == estado?.IdRol);
+
+    private string OpcionesDe(int idRol) =>
+        (estado?.IdRol == idRol ? estado.OpcionesHabilitadas
+            : permisosPorRol.TryGetValue(idRol, out var lista) ? lista.Count(p => p.Ver) : 0).ToString();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Permisos.CargarAsync();
+        puedeEditar = Permisos.Puede(MenuCatalog.RolePermissionsKey, MenuActions.Editar);
+        await CargarAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JS.FitAsync(paginaRootRef);
+    }
+
+    private async Task CargarAsync()
+    {
+        cargando = true;
+        var rolesResult = await RoleService.ObtenerTodosAsync();
+        if (!rolesResult.IsSuccess)
+        {
+            if (roles.Count == 0)
+                errorCarga = rolesResult.Message ?? "No se pudieron cargar los roles.";
+            else
+                Notifications.Error("No se pudieron actualizar los roles", rolesResult.Message);
+            cargando = false;
+            return;
+        }
+
+        roles = (rolesResult.Data ?? []).OrderBy(r => r.IdRol).ToList();
+
+        // Permisos de todos los roles en paralelo, para mostrar cuántas opciones tiene cada uno en la lista.
+        var cargas = roles.Select(async r => (r.IdRol, Resultado: await RoleService.ObtenerPermisosAsync(r.IdRol))).ToList();
+        foreach (var (idRol, resultado) in await Task.WhenAll(cargas))
+        {
+            if (resultado.IsSuccess)
+                permisosPorRol[idRol] = resultado.Data ?? [];
+        }
+
+        if (permisosPorRol.Count == 0)
+            errorCarga = "No se pudieron cargar los permisos de los roles.";
+        else
+            errorCarga = null;
+
+        var seleccionar = estado?.IdRol ?? roles.FirstOrDefault()?.IdRol;
+        if (seleccionar is { } id)
+            AbrirRol(id);
+
+        cargando = false;
+    }
+
+    private void AbrirRol(int idRol)
+    {
+        estado = new RolePermissionState(idRol, permisosPorRol.GetValueOrDefault(idRol) ?? []);
+        rolACopiar = 0;
+    }
+
+    private async Task SeleccionarAsync(int idRol)
+    {
+        if (estado?.IdRol == idRol)
+            return;
+
+        if (estado is { HayCambios: true })
+        {
+            var descartar = await DialogService.Confirm(
+                "Hay cambios sin guardar en los permisos de este rol. ¿Quieres descartarlos?",
+                "Cambios sin guardar",
+                new ConfirmOptions { OkButtonText = "Descartar cambios", CancelButtonText = "Seguir editando" });
+            if (descartar != true)
+                return;
+        }
+
+        AbrirRol(idRol);
+    }
+
+    private void Descartar()
+    {
+        if (estado is not null)
+            AbrirRol(estado.IdRol);
+    }
+
+    private void Copiar()
+    {
+        if (estado is null || !permisosPorRol.TryGetValue(rolACopiar, out var otros))
+            return;
+
+        estado.CopiarDe(otros);
+        var origen = roles.FirstOrDefault(r => r.IdRol == rolACopiar)?.Nombre;
+        Notifications.Info("Permisos copiados", $"Se copiaron los permisos de «{origen}». Revisa y guarda para aplicarlos.");
+        rolACopiar = 0;
+    }
+
+    private async Task GuardarAsync()
+    {
+        if (estado is null || Seleccionado is not { } rol)
+            return;
+
+        var anteriores = permisosPorRol.GetValueOrDefault(rol.IdRol) ?? [];
+        var nuevos = estado.Lista();
+
+        guardando = true;
+        var (exito, mensaje) = await RoleService.GuardarPermisosAsync(rol.IdRol, nuevos);
+        guardando = false;
+
+        if (!exito)
+        {
+            Notifications.Error("No se pudieron guardar los permisos", mensaje);
+            return;
+        }
+
+        permisosPorRol[rol.IdRol] = nuevos;
+        estado.ConfirmarGuardado();
+        await Permisos.RecargarAsync();
+
+        MostrarAviso(
+            $"Permisos de «{rol.Nombre}» guardados",
+            () => RoleService.GuardarPermisosAsync(rol.IdRol, anteriores));
+    }
+
+    private void MostrarAviso(string mensaje, Func<Task<(bool Exito, string? Mensaje)>>? deshacer)
+    {
+        avisoMensaje = mensaje;
+        accionDeshacer = deshacer;
+        avisoVersion++;
+        avisoVisible = true;
+    }
+
+    private async Task DeshacerAsync()
+    {
+        avisoVisible = false;
+        if (accionDeshacer is null)
+            return;
+
+        var (exito, mensaje) = await accionDeshacer();
+        accionDeshacer = null;
+        if (!exito)
+        {
+            Notifications.Error("No se pudo deshacer el cambio", mensaje);
+            return;
+        }
+
+        estado = null;
+        permisosPorRol.Clear();
+        await CargarAsync();
+        await Permisos.RecargarAsync();
+        Notifications.Info("Cambio deshecho");
+    }
+}

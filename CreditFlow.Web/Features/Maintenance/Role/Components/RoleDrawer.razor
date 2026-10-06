@@ -14,7 +14,7 @@
                 <CdsTextField NativeForm="true"
                               Value="@nombre"
                               ValueChanged="@(v => { nombre = v; nombreTocado = true; Validar(); })"
-                              MaxLength="100"
+                              MaxLength="50"
                               id="role-name"
                               aria-invalid="@((nombreTocado && errores.HayErrores).ToString().ToLowerInvariant())" />
             </CdsFormField>
@@ -23,7 +23,7 @@
                 <CdsTextField NativeForm="true"
                               Value="@descripcion"
                               ValueChanged="@(v => descripcion = v)"
-                              MaxLength="250"
+                              MaxLength="200"
                               id="role-description" />
             </CdsFormField>
 

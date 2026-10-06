@@ -1,0 +1,149 @@
+@using CreditFlow.Web.Core.Navigation
+@using CreditFlow.Web.Features.Maintenance.Role.Models
+
+@* Árbol de menús con una casilla por permiso: Ver, Crear, Editar y Eliminar. En grupos y secciones la casilla
+   marca o desmarca todas sus páginas y muestra «parcial» si solo algunas lo tienen. *@
+<div class="perm-tree" role="treegrid" aria-label="Permisos del rol por opción del menú">
+    <div class="perm-tree__row perm-tree__head" role="row">
+        <span role="columnheader" class="perm-tree__name">Opción del menú</span>
+        @foreach (var (accion, texto) in Columnas)
+        {
+            <span role="columnheader">@texto</span>
+        }
+    </div>
+
+    @foreach (var nodo in MenuCatalog.Tree.Where(Visible))
+    {
+        @Fila(nodo, 0)
+    }
+
+    @if (!MenuCatalog.Tree.Any(Visible))
+    {
+        <div class="perm-tree__empty">
+            <RadzenIcon Icon="search_off" />
+            <span>No hay opciones del menú que coincidan con «@Filtro».</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public RolePermissionState Estado { get; set; } = default!;
+
+    /// <summary>Sin permiso de edición: solo lectura.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
+    [Parameter] public string Filtro { get; set; } = string.Empty;
+
+    /// <summary>Se emite después de cada cambio (para recalcular conteos y el botón Guardar).</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private static readonly (MenuActions Accion, string Texto)[] Columnas =
+    [
+        (MenuActions.None, "Ver"),
+        (MenuActions.Crear, "Crear"),
+        (MenuActions.Editar, "Editar"),
+        (MenuActions.Eliminar, "Eliminar")
+    ];
+
+    private readonly HashSet<string> plegados = [];
+
+    private bool Buscando => !string.IsNullOrWhiteSpace(Filtro);
+
+    private bool Coincide(MenuNode nodo) => nodo.Title.Contains(Filtro.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private bool Visible(MenuNode nodo) => !Buscando || Coincide(nodo) || nodo.Items.Any(Visible);
+
+    private bool Abierto(MenuNode nodo) => Buscando || !plegados.Contains(nodo.Key);
+
+    private void Plegar(MenuNode nodo)
+    {
+        if (!plegados.Remove(nodo.Key))
+            plegados.Add(nodo.Key);
+    }
+
+    private async Task CambiarAsync(MenuNode nodo, MenuActions accion, bool valor)
+    {
+        if (nodo.IsPage)
+            Estado.Cambiar(nodo, accion, valor);
+        else
+            Estado.CambiarTodo(nodo, accion, valor);
+
+        await OnChanged.InvokeAsync();
+    }
+
+    /// <summary>Motivo por el que no se puede otorgar (se muestra con un candado); null si se puede.</summary>
+    private string? Bloqueo(MenuNode pagina, MenuActions accion)
+    {
+        if (Estado.EsBloqueadoPorSeguridad(pagina))
+            return "Administrador y Tecnología siempre conservan este permiso, para que nadie quede fuera de este mantenimiento.";
+
+        var permitido = accion == MenuActions.None ? pagina.ApiAllowsView(Estado.IdRol) : pagina.ApiAllowsActions(Estado.IdRol);
+        return permitido ? null : "La API no permite esta acción a este rol (sus políticas por rol son el límite).";
+    }
+
+    private RenderFragment Fila(MenuNode nodo, int nivel) => __builder =>
+    {
+        <div class="perm-tree__row @(nodo.IsPage ? null : "perm-tree__row--group")" role="row" style="--nivel:@nivel" @key="nodo.Key">
+            <span class="perm-tree__name" role="gridcell">
+                @if (nodo.IsPage)
+                {
+                    <span class="perm-tree__spacer" aria-hidden="true"></span>
+                }
+                else
+                {
+                    <button type="button" class="perm-tree__toggle" aria-expanded="@Abierto(nodo)"
+                            aria-label="@($"{(Abierto(nodo) ? "Plegar" : "Desplegar")} {nodo.Title}")"
+                            @onclick="() => Plegar(nodo)">
+                        <RadzenIcon Icon="@(Abierto(nodo) ? "expand_more" : "chevron_right")" />
+                    </button>
+                }
+                <RadzenIcon Icon="@nodo.Icon" class="perm-tree__icon" />
+                <span class="perm-tree__title">@nodo.Title</span>
+                @if (nodo.IsPage && nodo.Href is not null)
+                {
+                    <span class="perm-tree__path cds-mono">/@nodo.Href</span>
+                }
+            </span>
+
+            @foreach (var (accion, texto) in Columnas)
+            {
+                <span role="gridcell" class="perm-tree__cell">
+                    @if (nodo.IsPage && accion != MenuActions.None && !nodo.Actions.HasFlag(accion))
+                    {
+                        <span class="perm-tree__na" title="Esta pantalla no tiene esta acción">—</span>
+                    }
+                    else if (nodo.IsPage && Bloqueo(nodo, accion) is { } motivo)
+                    {
+                        <span class="perm-tree__lock" title="@motivo">
+                            <RadzenIcon Icon="lock" />
+                            @if (Estado.Tiene(nodo, accion))
+                            {
+                                <span class="perm-tree__lock-on">Sí</span>
+                            }
+                        </span>
+                    }
+                    else if (!nodo.IsPage && !Estado.Aplica(nodo, accion))
+                    {
+                        <span class="perm-tree__na">—</span>
+                    }
+                    else
+                    {
+                        <CdsCheckbox Checked="@Estado.Estado(nodo, accion)"
+                                     Disabled="@ReadOnly"
+                                     AriaLabel="@($"{texto}: {nodo.Title}")"
+                                     Title="@($"{texto} · {nodo.Title}")"
+                                     CheckedChanged="@(valor => CambiarAsync(nodo, accion, valor))" />
+                    }
+                </span>
+            }
+        </div>
+
+        @if (!nodo.IsPage && Abierto(nodo))
+        {
+            foreach (var hijo in nodo.Items.Where(h => Visible(h) || (Buscando && Coincide(nodo))))
+            {
+                @Fila(hijo, nivel + 1)
+            }
+        }
+    };
+}

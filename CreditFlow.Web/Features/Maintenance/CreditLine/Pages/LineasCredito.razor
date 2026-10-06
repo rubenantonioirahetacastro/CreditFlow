@@ -35,7 +35,7 @@ else
                 <CdsExportButton Format="CdsExportFormat.Excel"
                                  Disabled="@(LineasFiltradas.Count == 0)"
                                  Click="@(() => grilla.ExportarExcelAsync())" />
-                @if (puedeEditar)
+                @if (puedeCrear)
                 {
                     <CdsButton Text="Nueva línea"
                                Icon="add"
@@ -96,22 +96,28 @@ else
                         </Template>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn TItem="LineaCreditoListItem" Property="@nameof(LineaCreditoListItem.Usuario)" Title="Usuario" Width="140px" TextAlign="TextAlign.Center" />
-                    <RadzenDataGridColumn TItem="LineaCreditoListItem" Title="Acciones" Width="110px" Sortable="false" Filterable="false" TextAlign="TextAlign.Center" Visible="@puedeEditar">
+                    <RadzenDataGridColumn TItem="LineaCreditoListItem" Title="Acciones" Width="110px" Sortable="false" Filterable="false" TextAlign="TextAlign.Center" Visible="@(puedeEditar || puedeEliminar)">
                         <Template Context="linea">
-                            <CdsButton Icon="edit"
-                                       Variant="Variant.Text"
-                                       ButtonStyle="ButtonStyle.Base"
-                                       Size="ButtonSize.ExtraSmall"
-                                       title="Editar línea"
-                                       aria-label="@($"Editar {linea.Descripcion}")"
-                                       Click="@(() => AbrirFormulario(linea.Linea))" />
-                            <CdsButton Icon="delete"
-                                       Variant="Variant.Text"
-                                       ButtonStyle="ButtonStyle.Base"
-                                       Size="ButtonSize.ExtraSmall"
-                                       title="Eliminar línea"
-                                       aria-label="@($"Eliminar {linea.Descripcion}")"
-                                       Click="@(() => EliminarAsync(linea))" />
+                            @if (puedeEditar)
+                            {
+                                <CdsButton Icon="edit"
+                                           Variant="Variant.Text"
+                                           ButtonStyle="ButtonStyle.Base"
+                                           Size="ButtonSize.ExtraSmall"
+                                           title="Editar línea"
+                                           aria-label="@($"Editar {linea.Descripcion}")"
+                                           Click="@(() => AbrirFormulario(linea.Linea))" />
+                            }
+                            @if (puedeEliminar)
+                            {
+                                <CdsButton Icon="delete"
+                                           Variant="Variant.Text"
+                                           ButtonStyle="ButtonStyle.Base"
+                                           Size="ButtonSize.ExtraSmall"
+                                           title="Eliminar línea"
+                                           aria-label="@($"Eliminar {linea.Descripcion}")"
+                                           Click="@(() => EliminarAsync(linea))" />
+                            }
                         </Template>
                     </RadzenDataGridColumn>
                 </GridEstandar>
@@ -137,7 +143,9 @@ else
     [Inject] private DialogService DialogService { get; set; } = default!;
     [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
-    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
+    [Inject] private MenuPermissionService Permisos { get; set; } = default!;
+
+    private const string ClaveMenu = "mantenimientos.lineas";
 
     private enum FiltroEstado { Todas, Activas, Inactivas }
 
@@ -148,7 +156,9 @@ else
     private bool cargando = true;
     private string? errorCarga;
     private bool guardando;
+    private bool puedeCrear;
     private bool puedeEditar;
+    private bool puedeEliminar;
 
     private FiltroEstado filtroEstado = FiltroEstado.Todas;
     private string filtroTexto = string.Empty;
@@ -177,11 +187,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthStateTask is not null)
-        {
-            var authState = await AuthStateTask;
-            puedeEditar = RoleAuthorization.HasAnyRoleId(authState.User, RoleIds.MaintenanceEditAccess);
-        }
+        // Acciones según «Permisos por rol» (la API mantiene sus políticas por rol como límite).
+        await Permisos.CargarAsync();
+        puedeCrear = Permisos.Puede(ClaveMenu, MenuActions.Crear);
+        puedeEditar = Permisos.Puede(ClaveMenu, MenuActions.Editar);
+        puedeEliminar = Permisos.Puede(ClaveMenu, MenuActions.Eliminar);
 
         await CargarAsync();
     }
