@@ -64,7 +64,7 @@ public class VerificarSolicitudCreditoController(
         var requestFolder = $"verificaciones/{nCodAge}-{nCodCred}/{Guid.NewGuid()}";
 
         await using var transaction = await context.Database.BeginTransactionAsync();
-            await ActualizarPersonaAsync(persona, request.Persona, $"{requestFolder}/personas");
+            ActualizarPersona(persona, request.Persona);
             await ActualizarConyugeAsync(credito, request.Conyuge);
             await ActualizarFiadorAsync(credito, request.Fiador);
             await ActualizarNegocioAsync(
@@ -135,10 +135,7 @@ public class VerificarSolicitudCreditoController(
         return (empleado.IdEmpleado, nombre);
     }
 
-    private async Task ActualizarPersonaAsync(
-        Persona persona,
-        PersonaRequest request,
-        string folder)
+    private static void ActualizarPersona(Persona persona, PersonaRequest request)
     {
         persona.NTipoDocumento = request.NTipoDocumento;
         persona.CDocumento = request.CDocumento;
@@ -161,12 +158,7 @@ public class VerificarSolicitudCreditoController(
         persona.CDireccion = request.CDireccion;
         persona.CTelefono = request.CTelefono;
         persona.CCelular = request.CCelular;
-        var profilePath = await ImageUploadHelper.ValidateAndUploadAsync(
-            request.FotoPerfil,
-            folder,
-            blobService);
-        if (!string.IsNullOrWhiteSpace(profilePath))
-            persona.VFotoPerfil = profilePath;
+        // La foto de perfil no se sube ni se modifica aquí: queda como se envió en la solicitud.
     }
 
     private async Task ActualizarConyugeAsync(Credito credito, ConyugeRequest? request)

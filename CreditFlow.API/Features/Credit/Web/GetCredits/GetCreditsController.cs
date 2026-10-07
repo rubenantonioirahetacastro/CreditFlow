@@ -51,7 +51,10 @@ public sealed class GetCreditsController(DbNegocioContext context) : ControllerB
                         : (person.CNombres + " " + person.CPrimerApellido + " " +
                            (person.CSegundoApellido ?? "")).Trim(),
                     IdPersona = person == null ? null : person.IdPersona,
-                    FotoUrl = person == null ? null : person.VFotoPerfil,
+                    FotoUrl = person == null ? null : (context.UsuarioLogins
+                        .Where(login => login.IdUsuario == person.IdUsuario)
+                        .Select(login => login.VFoto)
+                        .FirstOrDefault() ?? person.VFotoPerfil),
                     UsuarioGestion = person == null ? null : person.CUsuarioGestion
                 }).ToListAsync();
 

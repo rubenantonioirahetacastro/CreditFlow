@@ -61,10 +61,9 @@ public sealed class EmployeeLoginHandler(
             true,
             "Autenticación exitosa",
             token,
-            session.PersonId,
+            session.UserId,
             user.BContrasenaTemporal == true,
-            session.RoleId,
-            session.RoleIds);
+            session.Capabilities);
     }
 
     private async Task RegisterFailedAttemptAsync(

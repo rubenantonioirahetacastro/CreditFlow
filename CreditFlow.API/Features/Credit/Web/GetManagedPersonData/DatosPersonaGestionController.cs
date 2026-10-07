@@ -35,7 +35,10 @@ namespace CreditFlow.API.Features.Credit.Web.GetManagedPersonData
                     CCorreo = p.CCorreo,
                     CTelefono = p.CTelefono,
                     CCelular = p.CCelular,
-                    VFotoPerfil = p.VFotoPerfil,
+                    VFotoPerfil = _context.UsuarioLogins
+                        .Where(login => login.IdUsuario == p.IdUsuario)
+                        .Select(login => login.VFoto)
+                        .FirstOrDefault() ?? p.VFotoPerfil,
                     CUsuarioGestion = p.CUsuarioGestion
                 }
             ).FirstOrDefaultAsync();

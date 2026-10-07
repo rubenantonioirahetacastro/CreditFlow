@@ -18,6 +18,7 @@ public interface ICrearSolicitudCreditoHandler
         CapacidadPago? capacidadPago,
         List<Compra>? compra,
         List<Venta>? venta,
-        Credito credito
+        Credito credito,
+        string? fotoPerfil = null
     );
 }

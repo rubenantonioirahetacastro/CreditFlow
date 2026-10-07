@@ -39,7 +39,10 @@ namespace CreditFlow.API.Features.Credit.Mobile.GetCreditDetail
                     CNombres = p.CNombres,
                     CPrimerApellido = p.CPrimerApellido,
                     CSegundoApellido = p.CSegundoApellido,
-                    FotoUrl = p.VFotoPerfil,
+                    FotoUrl = _context.UsuarioLogins
+                        .Where(login => login.IdUsuario == p.IdUsuario)
+                        .Select(login => login.VFoto)
+                        .FirstOrDefault() ?? p.VFotoPerfil,
                     CUsuarioGestion = p.CUsuarioGestion,
                     NProd = c.NProd,
                     NSubProd = c.NSubProd,
@@ -68,6 +71,11 @@ namespace CreditFlow.API.Features.Credit.Mobile.GetCreditDetail
 
             if (persona == null)
                 return NotFound(new { Mensaje = "La solicitud no tiene un cliente asociado." });
+
+            var fotoPerfil = await _context.UsuarioLogins.AsNoTracking()
+                .Where(u => u.IdUsuario == persona.IdUsuario)
+                .Select(u => u.VFoto)
+                .FirstOrDefaultAsync() ?? persona.VFotoPerfil;
 
             var conyuge = credito.IdConyuge.HasValue
                 ? await _context.Conyuges.AsNoTracking().FirstOrDefaultAsync(x => x.IdConyuge == credito.IdConyuge.Value)
@@ -146,7 +154,7 @@ namespace CreditFlow.API.Features.Credit.Mobile.GetCreditDetail
                     CDireccion = persona.CDireccion,
                     CTelefono = persona.CTelefono,
                     CCelular = persona.CCelular,
-                    VFotoPerfil = persona.VFotoPerfil,
+                    VFotoPerfil = fotoPerfil,
                     Fotos = fotosId.Select(f => new FotoDto { IdFoto = f.IdFoto, Ruta = f.VFoto, TipoFoto = f.NTipoFoto }).ToList()
                 },
                 Conyuge = conyuge == null ? null : new ConyugeDetalleDto
@@ -255,7 +263,10 @@ namespace CreditFlow.API.Features.Credit.Mobile.GetCreditDetail
         {
             var fotoPath = await _context.Personas.AsNoTracking()
                 .Where(p => p.IdPersona == idPersona)
-                .Select(p => p.VFotoPerfil)
+                .Select(p => _context.UsuarioLogins
+                    .Where(login => login.IdUsuario == p.IdUsuario)
+                    .Select(login => login.VFoto)
+                    .FirstOrDefault() ?? p.VFotoPerfil)
                 .FirstOrDefaultAsync();
 
             if (string.IsNullOrWhiteSpace(fotoPath))

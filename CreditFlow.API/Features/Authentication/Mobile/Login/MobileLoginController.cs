@@ -130,11 +130,7 @@ public class MobileLoginController : ControllerBase
             Mensaje = "Autenticación exitosa",
             Token = tokenString,
             IdUsuario = session.UserId,
-            IdEmpleado = session.EmployeeId,
-            IdPersona = session.PersonId,
             bTemporal = user.BContrasenaTemporal == true,
-            IdRol = session.RoleId,
-            IdRoles = session.RoleIds,
             Capacidades = session.Capabilities
         });
     }

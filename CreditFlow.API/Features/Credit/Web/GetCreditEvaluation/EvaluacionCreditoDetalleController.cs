@@ -42,6 +42,11 @@ namespace CreditFlow.API.Features.Credit.Web.GetCreditEvaluation
             if (persona == null)
                 return NotFound(new { Mensaje = "La solicitud no tiene un cliente asociado." });
 
+            var fotoPerfil = await _context.UsuarioLogins.AsNoTracking()
+                .Where(u => u.IdUsuario == persona.IdUsuario)
+                .Select(u => u.VFoto)
+                .FirstOrDefaultAsync() ?? persona.VFotoPerfil;
+
             var agencia = await _context.Agencias.AsNoTracking()
                 .Where(a => a.NCodAge == credito.NCodAge)
                 .Select(a => a.CNomAge)
@@ -149,7 +154,7 @@ namespace CreditFlow.API.Features.Credit.Web.GetCreditEvaluation
                     NProfesion = persona.NProfesion,
                     CCorreo = persona.CCorreo,
                     CCelular = persona.CCelular,
-                    FotoUrl = persona.VFotoPerfil,
+                    FotoUrl = fotoPerfil,
                     FotosDocumento = fotosDocumentoIdentidad
                         .Select(f => new FotoEvaluacionDto { IdFoto = f.IdFoto, TipoFoto = f.NTipoFoto })
                         .ToList(),

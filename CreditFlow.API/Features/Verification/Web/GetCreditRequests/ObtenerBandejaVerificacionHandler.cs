@@ -44,7 +44,10 @@ public sealed class ObtenerBandejaVerificacionHandler(
                     : (persona.CNombres + " " + persona.CPrimerApellido + " " +
                         (persona.CSegundoApellido ?? "")).Trim(),
                 IdPersona = persona == null ? null : persona.IdPersona,
-                FotoUrl = persona == null ? null : persona.VFotoPerfil,
+                FotoUrl = persona == null ? null : (context.UsuarioLogins
+                    .Where(login => login.IdUsuario == persona.IdUsuario)
+                    .Select(login => login.VFoto)
+                    .FirstOrDefault() ?? persona.VFotoPerfil),
                 UsuarioGestion = persona == null ? null : persona.CUsuarioGestion,
                 MontoSolicitado = credito.NPrestamo,
                 DFecVig = credito.DFecVig,

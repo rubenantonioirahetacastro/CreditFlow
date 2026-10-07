@@ -123,8 +123,9 @@ namespace CreditFlow.API.Features.Credit.Mobile.CreateCredit
                     }
                 }
 
-                // Foto de perfil
-                var vFotoPerfil = await ImageUploadHelper.ValidateAndUploadAsync(request.Persona.FotoPerfil, personaFolder, _blobService);
+                // Foto de perfil: se guarda en UsuarioLogin.VFoto (cliente/{documento}), no en Persona
+                var vFotoPerfil = await ImageUploadHelper.ValidateAndUploadAsync(
+                    request.Persona.FotoPerfil, $"cliente/{request.Persona.CDocumento}", _blobService);
 
                 // Map DTOs -> entidades de dominio (los campos que el servidor genera se
                 var persona = new Persona
@@ -150,8 +151,7 @@ namespace CreditFlow.API.Features.Credit.Mobile.CreateCredit
                     CDireccion = request.Persona.CDireccion,
                     CTelefono = request.Persona.CTelefono,
                     CCelular = request.Persona.CCelular,
-                    CUsuarioGestion = cUsuarioGestion,
-                    VFotoPerfil = vFotoPerfil
+                    CUsuarioGestion = cUsuarioGestion
                 };
 
                 Conyuge? conyuge = request.Conyuge == null ? null : new Conyuge
@@ -252,7 +252,8 @@ namespace CreditFlow.API.Features.Credit.Mobile.CreateCredit
                     capacidadPago,
                     compra,
                     venta,
-                    credito
+                    credito,
+                    vFotoPerfil
                 );
 
                 return Ok(new CrearSolicitudCreditoResponse(filas));

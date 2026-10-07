@@ -33,7 +33,8 @@ namespace CreditFlow.API.Features.Credit.Mobile.CreateCredit
             CapacidadPago? capacidadPago,
             List<Compra>? compra,
             List<Venta>? venta,
-            Credito credito)
+            Credito credito,
+            string? fotoPerfil = null)
         {
             var solicitudExistente = await context.Personas
                 .AsNoTracking()
@@ -82,7 +83,8 @@ namespace CreditFlow.API.Features.Credit.Mobile.CreateCredit
                 var usuario = new UsuarioLogin
                 {
                     CDocumento = persona.CDocumento,
-                    CCodUsu = string.Empty, 
+                    CCodUsu = string.Empty,
+                    VFoto = fotoPerfil,
                     CCorreo = correo,
                     Password = BCrypt.Net.BCrypt.HashPassword(passwordTemporal),
                     Token = tokenInt,
