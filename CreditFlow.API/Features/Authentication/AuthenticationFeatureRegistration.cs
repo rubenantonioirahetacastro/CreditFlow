@@ -1,3 +1,4 @@
+using CreditFlow.API.Features.Authentication.Mobile.EmployeeLogin;
 using CreditFlow.API.Features.Authentication.Shared.Session;
 using CreditFlow.API.Features.Authentication.Shared.Token;
 
@@ -9,6 +10,8 @@ public static class AuthenticationFeatureRegistration
     {
         services.AddScoped<IUserSessionService, UserSessionService>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<EmployeeLoginHandler>();
         return services;
     }
 }

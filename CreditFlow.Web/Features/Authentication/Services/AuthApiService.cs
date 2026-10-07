@@ -20,4 +20,15 @@ public sealed class AuthApiService(IApiClient apiClient) : IAuthService
         };
     }
 
+    // Se pide una vez por circuito (el servicio es scoped): la barra superior se vuelve a dibujar en cada página.
+    private Task<string?>? fotoPerfil;
+
+    public Task<string?> ObtenerFotoPerfilAsync() => fotoPerfil ??= CargarFotoPerfilAsync();
+
+    private async Task<string?> CargarFotoPerfilAsync()
+    {
+        var result = await apiClient.GetImageDataUrlAsync("api/auth/me/foto");
+        return result.IsSuccess ? result.Data : null;
+    }
+
 }

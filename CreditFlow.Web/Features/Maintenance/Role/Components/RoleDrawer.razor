@@ -1,0 +1,106 @@
+@using CreditFlow.Web.Features.Maintenance.Role.Models
+@using CreditFlow.Web.Features.Maintenance.Role.Validation
+
+<CdsDrawer Open="@Open"
+           Title="@(esNuevo ? "Nuevo rol" : "Editar rol")"
+           Subtitle="@(esNuevo ? "Los roles definen a qué opciones del sistema accede cada usuario." : $"Rol {Rol?.IdRol}")"
+           OnClose="@OnClose">
+    <ChildContent>
+        <div class="role-form">
+            <CdsFormField Label="Nombre"
+                          For="role-name"
+                          Error="@(nombreTocado ? errores.Nombre ?? errores.Duplicado : null)"
+                          Hint="Nombre corto y reconocible, por ejemplo «Oficial de crédito».">
+                <CdsTextField NativeForm="true"
+                              Value="@nombre"
+                              ValueChanged="@(v => { nombre = v; nombreTocado = true; Validar(); })"
+                              MaxLength="50"
+                              id="role-name"
+                              aria-invalid="@((nombreTocado && errores.HayErrores).ToString().ToLowerInvariant())" />
+            </CdsFormField>
+
+            <CdsFormField Label="Descripción" For="role-description" Hint="Opcional. Explica qué hace quien tiene este rol.">
+                <CdsTextField NativeForm="true"
+                              Value="@descripcion"
+                              ValueChanged="@(v => descripcion = v)"
+                              MaxLength="200"
+                              id="role-description" />
+            </CdsFormField>
+
+            @if (!esNuevo)
+            {
+                <div class="role-form__switch">
+                    <CdsSwitch Value="@activo" ValueChanged="@(v => activo = v)" Text="@(activo ? "Rol activo" : "Rol inactivo")" />
+                </div>
+            }
+        </div>
+    </ChildContent>
+    <Footer>
+        <CdsButton Text="Cancelar"
+                   Variant="Variant.Outlined"
+                   ButtonStyle="ButtonStyle.Base"
+                   Size="ButtonSize.Small"
+                   Click="@OnClose" />
+        <CdsButton Text="@(Guardando ? "Guardando…" : esNuevo ? "Crear rol" : "Guardar cambios")"
+                   Icon="save"
+                   Size="ButtonSize.Small"
+                   Disabled="@(Guardando || errores.HayErrores)"
+                   Click="@GuardarAsync" />
+    </Footer>
+</CdsDrawer>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+
+    /// <summary>Rol a editar; nulo para crear uno nuevo.</summary>
+    [Parameter] public RoleDto? Rol { get; set; }
+
+    /// <summary>Nombres de los demás roles, para evitar duplicados.</summary>
+    [Parameter] public IReadOnlyCollection<string> NombresExistentes { get; set; } = [];
+
+    [Parameter] public bool Guardando { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<RoleDto> OnSave { get; set; }
+
+    private bool abiertoAntes;
+    private bool esNuevo;
+    private string nombre = string.Empty;
+    private string descripcion = string.Empty;
+    private bool activo = true;
+    private bool nombreTocado;
+    private RoleFormErrors errores = new(null, null);
+
+    protected override void OnParametersSet()
+    {
+        // Se inicializa cada vez que el panel se abre.
+        if (Open && !abiertoAntes)
+        {
+            esNuevo = Rol is null;
+            nombre = Rol?.Nombre ?? string.Empty;
+            descripcion = Rol?.Descripcion ?? string.Empty;
+            activo = Rol?.Activo ?? true;
+            nombreTocado = !esNuevo;
+            Validar();
+        }
+
+        abiertoAntes = Open;
+    }
+
+    private void Validar() => errores = RoleValidator.Validate(nombre, NombresExistentes);
+
+    private Task GuardarAsync()
+    {
+        nombreTocado = true;
+        Validar();
+        if (errores.HayErrores)
+            return Task.CompletedTask;
+
+        return OnSave.InvokeAsync(new RoleDto
+        {
+            IdRol = Rol?.IdRol ?? 0,
+            Nombre = nombre.Trim(),
+            Descripcion = string.IsNullOrWhiteSpace(descripcion) ? null : descripcion.Trim(),
+            Activo = activo
+        });
+    }
+}

@@ -1,0 +1,26 @@
+@* Casilla de verificación con estado parcial (Checked = null), p. ej. un grupo con solo algunas opciones
+   marcadas. Al hacer clic emite el valor contrario (parcial → marcada). *@
+<button type="button"
+        role="checkbox"
+        aria-checked="@(Checked is null ? "mixed" : Checked.Value ? "true" : "false")"
+        aria-label="@AriaLabel"
+        title="@Title"
+        disabled="@Disabled"
+        class="cds-checkbox @(Checked is null ? "cds-checkbox--mixed" : Checked.Value ? "cds-checkbox--checked" : null)"
+        @onclick="AlternarAsync">
+    <span class="cds-checkbox__box" aria-hidden="true">
+        <RadzenIcon Icon="@(Checked is null ? "remove" : "check")" />
+    </span>
+</button>
+
+@code {
+    /// <summary>Marcada, desmarcada o parcial (null).</summary>
+    [Parameter] public bool? Checked { get; set; }
+
+    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public string? Title { get; set; }
+
+    private Task AlternarAsync() => CheckedChanged.InvokeAsync(Checked != true);
+}

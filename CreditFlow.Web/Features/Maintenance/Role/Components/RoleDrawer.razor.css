@@ -1,0 +1,9 @@
+.role-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.role-form__switch {
+    padding-top: 4px;
+}

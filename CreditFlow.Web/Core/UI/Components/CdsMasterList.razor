@@ -1,0 +1,93 @@
+@typeparam TItem
+@* Lista maestra de una pantalla maestro–detalle (DESIGN.md «Mantenimiento maestro–detalle»): encabezado con
+   conteo y acciones, buscador e ítems con insignia de código, nombre, detalle y conteo. *@
+<div class="cds-master-list">
+    <CdsCard Padding="CdsCardPadding.None" Class="cds-master-list-card">
+        <CdsCardHeader Title="@Title" Badge="@Items.Count.ToString()" Actions="@Actions" />
+
+        <div class="cds-master-list__search">
+            <CdsTextField NativeForm="true"
+                          Value="@busqueda"
+                          ValueChanged="@(v => busqueda = v)"
+                          Placeholder="@SearchPlaceholder"
+                          aria-label="@SearchPlaceholder" />
+        </div>
+
+        <div class="cds-master-list__items" role="listbox" aria-label="@Title">
+            @if (Filtrados.Count == 0)
+            {
+                <div class="cds-master-list__empty">
+                    <RadzenIcon Icon="search_off" />
+                    <span>No hay resultados que coincidan con «@busqueda».</span>
+                </div>
+            }
+            else
+            {
+                @foreach (var item in Filtrados)
+                {
+                    var key = ItemKey(item);
+                    var seleccionado = Equals(key, SelectedKey);
+                    <button type="button"
+                            role="option"
+                            aria-selected="@seleccionado"
+                            class="cds-master-item @(seleccionado ? "cds-master-item--selected" : null)"
+                            @key="key"
+                            @onclick="() => OnSelect.InvokeAsync(key)">
+                        <span class="cds-master-item__code cds-mono">@ItemCode(item)</span>
+                        <span class="cds-master-item__text">
+                            <span class="cds-master-item__name">@ItemName(item)</span>
+                            @if (ItemDetail is not null)
+                            {
+                                <span class="cds-master-item__detail">@ItemDetail(item)</span>
+                            }
+                        </span>
+                        @if (ItemCount is not null)
+                        {
+                            <span class="cds-master-item__count" title="@ItemCountTitle?.Invoke(item)">@ItemCount(item)</span>
+                        }
+                    </button>
+                }
+            }
+        </div>
+    </CdsCard>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public IReadOnlyList<TItem> Items { get; set; } = [];
+    [Parameter, EditorRequired] public Func<TItem, int> ItemKey { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<TItem, string> ItemCode { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<TItem, string> ItemName { get; set; } = default!;
+
+    /// <summary>Línea secundaria bajo el nombre (p. ej. la clave técnica o la descripción).</summary>
+    [Parameter] public Func<TItem, string>? ItemDetail { get; set; }
+
+    /// <summary>Conteo a la derecha del ítem (p. ej. valores u opciones habilitadas).</summary>
+    [Parameter] public Func<TItem, string>? ItemCount { get; set; }
+    [Parameter] public Func<TItem, string>? ItemCountTitle { get; set; }
+
+    [Parameter] public int? SelectedKey { get; set; }
+    [Parameter] public EventCallback<int> OnSelect { get; set; }
+
+    /// <summary>Acciones del encabezado (p. ej. «Nuevo»).</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    [Parameter] public string SearchPlaceholder { get; set; } = "Buscar";
+
+    private string busqueda = string.Empty;
+
+    private List<TItem> Filtrados
+    {
+        get
+        {
+            var texto = busqueda.Trim();
+            return string.IsNullOrEmpty(texto)
+                ? Items.ToList()
+                : Items.Where(item =>
+                        ItemName(item).Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                        ItemCode(item).Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                        (ItemDetail?.Invoke(item).Contains(texto, StringComparison.OrdinalIgnoreCase) ?? false))
+                    .ToList();
+        }
+    }
+}

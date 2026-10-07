@@ -1,0 +1,59 @@
+/* Ocupa el alto restante de una página .cds-page--fill. */
+.cds-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+    .cds-list ::deep .cds-list-card {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+.cds-list-card__filters {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 52px;
+    /* Sin relleno vertical: la línea de la pestaña activa queda apoyada sobre el borde inferior. */
+    padding: 0 16px 0 12px;
+    border-bottom: 1px solid var(--cds-border-soft);
+}
+
+.cds-list-card__tabs {
+    align-self: stretch;
+    display: flex;
+    align-items: flex-end;
+}
+
+.cds-list-card__search {
+    width: 320px;
+    padding: 8px 0;
+}
+
+.cds-list-card__body {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 900px) {
+    .cds-list-card__filters {
+        flex-wrap: wrap;
+    }
+
+    .cds-list-card__search {
+        width: 100%;
+    }
+
+    .cds-list-card__body {
+        height: 560px;
+    }
+}

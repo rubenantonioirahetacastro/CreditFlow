@@ -1,0 +1,53 @@
+@inject DialogService DialogService
+
+@* Contenido del diálogo de eliminación (se abre con DialogService.OpenAsync<CdsDeleteDialog>).
+   Devuelve CdsDeleteChoice, o null si se cancela. Ofrece «Desactivar» como alternativa segura cuando aplica. *@
+<div class="cds-delete-dialog">
+    <div class="cds-delete-dialog__icon" aria-hidden="true"><RadzenIcon Icon="delete" /></div>
+    <p class="cds-delete-dialog__text">
+        Se eliminará <strong>@Nombre</strong>
+        @if (!string.IsNullOrWhiteSpace(Identificador))
+        {
+            <text>(@IdentificadorEtiqueta <span class="cds-mono">@Identificador</span>)</text>
+        }
+        de forma definitiva.
+        @if (PuedeDesactivar)
+        {
+            <span class="cds-delete-dialog__hint">Si solo quieres dejar de usarlo, desactívalo: podrás reactivarlo cuando quieras.</span>
+        }
+    </p>
+    <div class="cds-delete-dialog__actions">
+        <CdsButton Text="Cancelar"
+                   Variant="Variant.Outlined"
+                   ButtonStyle="ButtonStyle.Base"
+                   Size="ButtonSize.Small"
+                   Click="@(() => DialogService.Close(null))" />
+        @if (PuedeDesactivar)
+        {
+            <CdsButton Text="Desactivar"
+                       Icon="toggle_off"
+                       Variant="Variant.Outlined"
+                       ButtonStyle="ButtonStyle.Base"
+                       Size="ButtonSize.Small"
+                       Click="@(() => DialogService.Close(CdsDeleteChoice.Desactivar))" />
+        }
+        <CdsButton Text="Eliminar"
+                   Icon="delete"
+                   ButtonStyle="ButtonStyle.Danger"
+                   Size="ButtonSize.Small"
+                   Click="@(() => DialogService.Close(CdsDeleteChoice.Eliminar))" />
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Nombre { get; set; } = string.Empty;
+
+    /// <summary>Identificador técnico del registro (p. ej. el valor o el código), en cifras tabulares.</summary>
+    [Parameter] public string? Identificador { get; set; }
+
+    /// <summary>Cómo se llama el identificador en el texto: «valor», «código»…</summary>
+    [Parameter] public string IdentificadorEtiqueta { get; set; } = "código";
+
+    /// <summary>Falso si el registro ya está inactivo o no admite desactivarse.</summary>
+    [Parameter] public bool PuedeDesactivar { get; set; } = true;
+}

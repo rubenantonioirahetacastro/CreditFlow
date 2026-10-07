@@ -1,0 +1,162 @@
+/* Especificación de tabla (DESIGN.md §7 «Tablas»): encabezados centrados, celdas small, nombres a la izquierda. */
+.perm-tree {
+    display: flex;
+    flex-direction: column;
+    font-size: var(--cds-font-size-small);
+    line-height: var(--cds-line-height);
+    --rz-icon-weight: var(--cds-icon-weight);
+    --rz-icon-grade: var(--cds-icon-grade);
+}
+
+.perm-tree__row {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) repeat(4, 96px);
+    align-items: center;
+    column-gap: var(--cds-space-cell-x);
+    min-height: 48px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--cds-surface-muted);
+    text-align: center;
+    color: var(--cds-color-label);
+    transition: background-color .15s ease;
+}
+
+    .perm-tree__row:not(.perm-tree__head):hover {
+        background: var(--cds-surface-hover);
+    }
+
+.perm-tree__head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-height: 40px;
+    background: var(--cds-surface-subtle);
+    border-bottom-color: var(--cds-border-soft);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-content);
+}
+
+/* Grupos y secciones: fondo sutil y título en negrita (la única columna destacada de la fila). */
+.perm-tree__row--group {
+    background: var(--cds-surface-subtle);
+}
+
+    .perm-tree__row--group .perm-tree__title {
+        font-weight: var(--cds-font-weight-strong);
+        color: var(--cds-color-value);
+    }
+
+.perm-tree__name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding-left: calc(var(--nivel, 0) * 24px);
+    text-align: left;
+}
+
+.perm-tree__head .perm-tree__name {
+    justify-content: center;
+    padding-left: 0;
+}
+
+.perm-tree__toggle,
+.perm-tree__spacer {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.perm-tree__toggle {
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--cds-color-label);
+    cursor: pointer;
+}
+
+    .perm-tree__toggle:hover,
+    .perm-tree__toggle:focus-visible {
+        outline: none;
+        background: var(--cds-surface-muted);
+        color: var(--cds-color-value);
+    }
+
+    .perm-tree__toggle ::deep .rzi {
+        font-size: 18px;
+    }
+
+.perm-tree__name ::deep .perm-tree__icon {
+    flex: none;
+    font-size: 18px;
+    color: var(--cds-color-hint);
+}
+
+.perm-tree__title {
+    color: var(--cds-color-content);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.perm-tree__path {
+    flex: none;
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-color-hint);
+}
+
+.perm-tree__cell {
+    display: inline-flex;
+    justify-content: center;
+}
+
+.perm-tree__na {
+    color: var(--cds-color-hint);
+}
+
+.perm-tree__lock {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--cds-color-hint);
+    cursor: help;
+}
+
+    .perm-tree__lock ::deep .rzi {
+        font-size: 16px;
+    }
+
+.perm-tree__lock-on {
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-strong);
+    color: var(--cds-color-label);
+}
+
+.perm-tree__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 32px 16px;
+    color: var(--cds-color-label);
+}
+
+    .perm-tree__empty ::deep .rzi {
+        font-size: 28px;
+        color: var(--cds-color-hint);
+    }
+
+@media (max-width: 900px) {
+    .perm-tree__path {
+        display: none;
+    }
+
+    .perm-tree__row {
+        grid-template-columns: minmax(180px, 1fr) repeat(4, 64px);
+        padding: 0 12px;
+    }
+}

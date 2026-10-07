@@ -58,6 +58,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<IApiClient, ApiClient>();
 builder.Services.AddScoped<PageHeaderService>();
+builder.Services.AddScoped<MenuPermissionService>();
 builder.Services
     .AddCoreUi()
     .AddMaintenanceFeature()

@@ -10,14 +10,65 @@
 }
 
 .login-page__panel {
+    position: relative;
+    overflow: hidden;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 48px 32px;
+    padding: 48px 32px 72px;
     background:
         radial-gradient(circle at 85% 10%, var(--cds-auth-panel-glow), transparent 45%),
         radial-gradient(circle at 10% 95%, var(--cds-auth-panel-glow), transparent 40%),
         var(--cds-white);
+    isolation: isolate;
+}
+
+    /* Textura de puntos que se desvanece hacia el centro, para que el formulario quede limpio. */
+    .login-page__panel::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background-image: radial-gradient(var(--cds-auth-dot) 1px, transparent 1.5px);
+        background-size: 22px 22px;
+        mask-image: radial-gradient(ellipse at 50% 50%, transparent 35%, var(--cds-white) 85%);
+        -webkit-mask-image: radial-gradient(ellipse at 50% 50%, transparent 35%, var(--cds-white) 85%);
+    }
+
+    /* Luz de marca que se desplaza muy lentamente detrás del formulario. */
+    .login-page__panel::after {
+        content: "";
+        position: absolute;
+        z-index: -1;
+        width: 380px;
+        height: 380px;
+        top: 12%;
+        right: -120px;
+        border-radius: 50%;
+        background: var(--cds-auth-panel-glow);
+        filter: blur(60px);
+        animation: login-panel-drift 16s ease-in-out infinite alternate;
+    }
+
+.login-page__footer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 24px;
+    text-align: center;
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-color-hint);
+}
+
+@keyframes login-panel-drift {
+    to { transform: translate(-160px, 220px) scale(1.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-page__panel::after {
+        animation: none;
+    }
 }
 
 @media (max-width: 960px) {
@@ -30,7 +81,7 @@
         }
 
     .login-page__panel {
-        padding: 40px 20px;
+        padding: 40px 20px 72px;
         background:
             radial-gradient(circle at 50% 0%, var(--cds-auth-panel-glow), transparent 60%),
             var(--cds-white);

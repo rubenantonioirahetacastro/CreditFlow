@@ -1,50 +1,11 @@
-/* Distribución de la página. Tipografía, colores y alto vienen de .cds-page / .cds-page--fill (app.css). */
+/* Distribución de la página. Tipografía, colores y alto vienen de .cds-page / .cds-page--fill (app.css);
+   la tarjeta del listado, de CdsListCard. */
 .emp-page {
     padding: var(--cds-space-page-y) var(--cds-space-page-x);
     gap: var(--cds-space-card);
 }
 
-::deep .emp-table-card {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.emp-filters {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    /* Sin relleno vertical: la línea de la pestaña activa queda apoyada sobre el borde inferior. */
-    padding: 0 16px 0 12px;
-    border-bottom: 1px solid var(--cds-border-soft);
-}
-
-.emp-filters__search {
-    width: 320px;
-    padding: 8px 0;
-}
-
-.emp-grid {
-    flex: 1 1 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-@media (max-width: 900px) {
-    .emp-filters {
-        flex-wrap: wrap;
-    }
-
-    .emp-filters__search {
-        width: 100%;
-    }
-
-    .emp-grid {
-        height: 560px;
-    }
+/* Usuario alineado a la izquierda: margen inicial más amplio para que no quede pegado al borde de la tarjeta. */
+::deep td.emp-col-usuario {
+    padding-inline-start: calc(var(--cds-space-cell-x) * 2) !important;
 }

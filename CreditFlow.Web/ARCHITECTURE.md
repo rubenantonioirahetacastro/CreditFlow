@@ -112,6 +112,14 @@ Un componente visual no debe contener reglas de negocio. Por ejemplo, `CdsDocume
 - Los errores de validación se muestran junto al formulario o campo correspondiente; no se convierten en estados de página ni en notificaciones globales.
 - Los componentes compartidos conservan semántica accesible: progreso y vacío anuncian `status`; los errores bloqueantes anuncian `alert`.
 
+## Menú y permisos por rol
+
+- El árbol de menús y submenús vive en `Core/Navigation/MenuCatalog.cs`: es la única fuente para el menú lateral, el mantenimiento «Permisos por rol» (`/permisos-roles`) y la protección de páginas. Cada opción tiene una clave estable (p. ej. `mantenimientos.empleados`) que se guarda en la tabla `RolMenuPermiso` de la API; no se cambia una clave existente.
+- Toda pantalla nueva del menú se agrega como nodo en `MenuCatalog` (clave, título, ícono, ruta, acciones que admite y, si la API la restringe, los roles que la API permite). Sin ese nodo no aparece en el menú ni en «Permisos por rol».
+- `Core/Security/MenuPermissionService` carga una vez por circuito los permisos del usuario (suma de sus roles, `api/roles/mis-permisos`). El menú muestra solo lo permitido; `Components/Layout/MenuAccessGuard` muestra «Sin acceso» si se entra por URL a una opción no permitida.
+- Las pantallas deciden crear, editar y eliminar con `MenuPermissionService.Puede(clave, MenuActions.…)`, no comparando IDs de rol.
+- La API conserva sus políticas por rol como límite superior: «Permisos por rol» no permite otorgar lo que la API rechazaría (se muestra con candado). Administrador y Tecnología siempre conservan «Permisos por rol».
+
 ## Consumo de API
 
 - Toda petición pasa por `Core/HttpClient/IApiClient`.

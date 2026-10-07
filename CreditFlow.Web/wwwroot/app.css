@@ -130,6 +130,10 @@
     --cds-auth-glass-border: rgba(255, 255, 255, 0.14);
     --cds-auth-panel-glow: rgba(48, 97, 242, 0.07);
     --cds-auth-shadow: rgba(14, 27, 61, 0.18);
+    --cds-auth-gold-light: #FFE29A;                         /* brillo del degradado dorado del titular */
+    --cds-auth-spotlight: rgba(128, 157, 242, 0.22);        /* luz que sigue al cursor */
+    --cds-auth-shine: rgba(255, 255, 255, 0.35);            /* destello que recorre el botón principal */
+    --cds-auth-dot: rgba(48, 97, 242, 0.10);                /* textura de puntos del panel del formulario */
     --cds-surface-table-success: #e6f7ec;
     --cds-surface-table-info: var(--cds-brand-tint);
     --cds-surface-table-header: #eef2f7;

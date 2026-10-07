@@ -1,0 +1,205 @@
+@using CreditFlow.Web.Features.Maintenance.CreditLine.Models
+@using CreditFlow.Web.Features.Maintenance.CreditLine.Validation
+
+<CdsDrawer Open="@Open"
+           Title="@(esNueva ? "Nueva línea de crédito" : "Editar línea de crédito")"
+           Subtitle="@(esNueva ? "Define las condiciones con las que se otorgan los créditos de esta línea." : $"Línea {Linea?.NCodLinea}")"
+           OnClose="@OnClose">
+    <ChildContent>
+        <div class="line-form">
+            <CdsFormField Label="Descripción"
+                          For="line-description"
+                          Error="@Mostrar(nameof(CreditLineFormErrors.Descripcion), errores.Descripcion)">
+                <CdsTextField NativeForm="true"
+                              Value="@formulario.Descripcion"
+                              ValueChanged="@(v => Cambiar(nameof(CreditLineFormErrors.Descripcion), () => formulario.Descripcion = v))"
+                              Placeholder="Por ejemplo: Microcrédito mensual"
+                              MaxLength="CreditLineValidator.MaxDescriptionLength"
+                              id="line-description" />
+            </CdsFormField>
+
+            <div class="line-form__row">
+                <CdsFormField Label="Producto" For="line-product" Error="@Mostrar(nameof(CreditLineFormErrors.Producto), errores.Producto)">
+                    <CdsTextField NativeForm="true"
+                                  Class="cds-mono"
+                                  Value="@formulario.Producto"
+                                  ValueChanged="@(v => Cambiar(nameof(CreditLineFormErrors.Producto), () => formulario.Producto = v))"
+                                  inputmode="numeric"
+                                  id="line-product" />
+                </CdsFormField>
+                <CdsFormField Label="Subproducto" For="line-subproduct" Error="@Mostrar(nameof(CreditLineFormErrors.SubProducto), errores.SubProducto)">
+                    <CdsTextField NativeForm="true"
+                                  Class="cds-mono"
+                                  Value="@formulario.SubProducto"
+                                  ValueChanged="@(v => Cambiar(nameof(CreditLineFormErrors.SubProducto), () => formulario.SubProducto = v))"
+                                  inputmode="numeric"
+                                  id="line-subproduct" />
+                </CdsFormField>
+            </div>
+
+            <CdsFormField Label="Tasa de comisión (%)"
+                          For="line-rate"
+                          Error="@Mostrar(nameof(CreditLineFormErrors.Tasa), errores.Tasa)"
+                          Hint="Usa punto para los decimales, por ejemplo 2.5.">
+                <CdsTextField NativeForm="true"
+                              Class="cds-mono"
+                              Value="@formulario.TasaComision"
+                              ValueChanged="@(v => Cambiar(nameof(CreditLineFormErrors.Tasa), () => formulario.TasaComision = v))"
+                              inputmode="decimal"
+                              id="line-rate" />
+            </CdsFormField>
+
+            <section class="line-form__section" aria-label="Condiciones">
+                <span class="line-form__section-title"><RadzenIcon Icon="tune" />Condiciones del crédito</span>
+
+                <CdsFormField Label="Plazo (cuotas)" Error="@Mostrar(nameof(CreditLineFormErrors.Plazo), errores.Plazo)">
+                    <div class="line-form__row">
+                        <CdsTextField NativeForm="true"
+                                      Class="cds-mono"
+                                      Value="@formulario.PlazoMinimo"
+                                      ValueChanged="@(v => Cambiar(nameof(CreditLineFormErrors.Plazo), () => formulario.PlazoMinimo = v))"
+                                      Placeholder="Mínimo"
+                                      inputmode="numeric"
+                                      aria-label="Plazo mínimo" />
+                        <CdsTextField NativeForm="true"
+                                      Class="cds-mono"
+                                      Value="@formulario.PlazoMaximo"
+                                      ValueChanged="@(v => Cambiar(nameof(CreditLineFormErrors.Plazo), () => formulario.PlazoMaximo = v))"
+                                      Placeholder="Máximo"
+                                      inputmode="numeric"
+                                      aria-label="Plazo máximo" />
+                    </div>
+                </CdsFormField>
+
+                <CdsFormField Label="Monto ($)" Error="@Mostrar(nameof(CreditLineFormErrors.Monto), errores.Monto)">
+                    <div class="line-form__row">
+                        <CdsTextField NativeForm="true"
+                                      Class="cds-mono"
+                                      Value="@formulario.MontoMinimo"
+                                      ValueChanged="@(v => Cambiar(nameof(CreditLineFormErrors.Monto), () => formulario.MontoMinimo = v))"
+                                      Placeholder="Mínimo"
+                                      inputmode="decimal"
+                                      aria-label="Monto mínimo" />
+                        <CdsTextField NativeForm="true"
+                                      Class="cds-mono"
+                                      Value="@formulario.MontoMaximo"
+                                      ValueChanged="@(v => Cambiar(nameof(CreditLineFormErrors.Monto), () => formulario.MontoMaximo = v))"
+                                      Placeholder="Máximo"
+                                      inputmode="decimal"
+                                      aria-label="Monto máximo" />
+                    </div>
+                </CdsFormField>
+
+                <CdsFormField Label="Número de préstamos del cliente"
+                              Error="@Mostrar(nameof(CreditLineFormErrors.Prestamos), errores.Prestamos)"
+                              Hint="Opcional. Déjalo vacío para no limitar.">
+                    <div class="line-form__row">
+                        <CdsTextField NativeForm="true"
+                                      Class="cds-mono"
+                                      Value="@formulario.PrestamosMinimo"
+                                      ValueChanged="@(v => Cambiar(nameof(CreditLineFormErrors.Prestamos), () => formulario.PrestamosMinimo = v))"
+                                      Placeholder="Mínimo"
+                                      inputmode="numeric"
+                                      aria-label="Préstamos mínimos" />
+                        <CdsTextField NativeForm="true"
+                                      Class="cds-mono"
+                                      Value="@formulario.PrestamosMaximo"
+                                      ValueChanged="@(v => Cambiar(nameof(CreditLineFormErrors.Prestamos), () => formulario.PrestamosMaximo = v))"
+                                      Placeholder="Máximo"
+                                      inputmode="numeric"
+                                      aria-label="Préstamos máximos" />
+                    </div>
+                </CdsFormField>
+
+                <CdsFormField Label="Refinanciamiento">
+                    <div class="line-form__row" role="radiogroup" aria-label="Refinanciamiento">
+                        <CdsOptionCard Text="No aplica"
+                                       Icon="block"
+                                       Description="Solo créditos nuevos"
+                                       Selected="@(!formulario.AplicaRefinanciamiento)"
+                                       OnClick="@(() => formulario.AplicaRefinanciamiento = false)" />
+                        <CdsOptionCard Text="Aplica"
+                                       Icon="autorenew"
+                                       Description="Permite refinanciar"
+                                       Selected="@formulario.AplicaRefinanciamiento"
+                                       OnClick="@(() => formulario.AplicaRefinanciamiento = true)" />
+                    </div>
+                </CdsFormField>
+            </section>
+
+            @if (!esNueva)
+            {
+                <div class="line-form__switch">
+                    <CdsSwitch Value="@formulario.Activa"
+                               ValueChanged="@(v => formulario.Activa = v)"
+                               Text="@(formulario.Activa ? "Línea activa" : "Línea inactiva")" />
+                </div>
+            }
+        </div>
+    </ChildContent>
+    <Footer>
+        <CdsButton Text="Cancelar"
+                   Variant="Variant.Outlined"
+                   ButtonStyle="ButtonStyle.Base"
+                   Size="ButtonSize.Small"
+                   Click="@OnClose" />
+        <CdsButton Text="@(Guardando ? "Guardando…" : esNueva ? "Crear línea" : "Guardar cambios")"
+                   Icon="save"
+                   Size="ButtonSize.Small"
+                   Disabled="@(Guardando || errores.HayErrores)"
+                   Click="@GuardarAsync" />
+    </Footer>
+</CdsDrawer>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+
+    /// <summary>Línea a editar; nula para crear una nueva.</summary>
+    [Parameter] public LineaCreditoDto? Linea { get; set; }
+
+    [Parameter] public bool Guardando { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<LineaCreditoDto> OnSave { get; set; }
+
+    private bool abiertoAntes;
+    private bool esNueva;
+    private LineaCreditoFormulario formulario = new();
+    private CreditLineFormErrors errores = new(null, null, null, null, null, null, null);
+    private readonly HashSet<string> tocados = [];
+
+    protected override void OnParametersSet()
+    {
+        // Se inicializa cada vez que el panel se abre.
+        if (Open && !abiertoAntes)
+        {
+            esNueva = Linea is null;
+            formulario = Linea is null ? new LineaCreditoFormulario() : LineaCreditoFormulario.Desde(Linea);
+            tocados.Clear();
+            Validar();
+        }
+
+        abiertoAntes = Open;
+    }
+
+    private string? Mostrar(string campo, string? error) => !esNueva || tocados.Contains(campo) ? error : null;
+
+    private void Cambiar(string campo, Action asignar)
+    {
+        asignar();
+        tocados.Add(campo);
+        Validar();
+    }
+
+    private void Validar() => errores = CreditLineValidator.Validate(formulario);
+
+    private Task GuardarAsync()
+    {
+        foreach (var campo in typeof(CreditLineFormErrors).GetProperties().Select(p => p.Name))
+            tocados.Add(campo);
+
+        Validar();
+        return errores.HayErrores
+            ? Task.CompletedTask
+            : OnSave.InvokeAsync(formulario.ADto(Linea?.NCodLinea ?? 0));
+    }
+}

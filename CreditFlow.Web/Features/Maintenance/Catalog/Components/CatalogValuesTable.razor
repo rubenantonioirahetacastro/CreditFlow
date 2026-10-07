@@ -26,17 +26,28 @@
                 <CdsSwitch Value="@activo"
                            Text="@(activo ? "Activo" : "Inactivo")"
                            AriaLabel="@($"Estado de {valor.CNomCod}")"
+                           Disabled="@(!PuedeEditar)"
                            ValueChanged="@(nuevo => OnToggle.InvokeAsync((valor, nuevo)))" />
             </span>
             <span role="cell" class="catalog-values__actions">
-                <button type="button" class="catalog-values__icon" title="Editar" aria-label="@($"Editar {valor.CNomCod}")"
-                        @onclick="() => OnEdit.InvokeAsync(valor)">
-                    <RadzenIcon Icon="edit" />
-                </button>
-                <button type="button" class="catalog-values__icon catalog-values__icon--danger" title="Eliminar" aria-label="@($"Eliminar {valor.CNomCod}")"
-                        @onclick="() => OnDelete.InvokeAsync(valor)">
-                    <RadzenIcon Icon="delete" />
-                </button>
+                @if (PuedeEditar)
+                {
+                    <button type="button" class="catalog-values__icon" title="Editar" aria-label="@($"Editar {valor.CNomCod}")"
+                            @onclick="() => OnEdit.InvokeAsync(valor)">
+                        <RadzenIcon Icon="edit" />
+                    </button>
+                }
+                @if (PuedeEliminar)
+                {
+                    <button type="button" class="catalog-values__icon catalog-values__icon--danger" title="Eliminar" aria-label="@($"Eliminar {valor.CNomCod}")"
+                            @onclick="() => OnDelete.InvokeAsync(valor)">
+                        <RadzenIcon Icon="delete" />
+                    </button>
+                }
+                @if (!PuedeEditar && !PuedeEliminar)
+                {
+                    <span class="catalog-values__none">—</span>
+                }
             </span>
         </div>
     }
@@ -47,4 +58,9 @@
     [Parameter] public EventCallback<(CatalogoCodigoDto Valor, bool Activo)> OnToggle { get; set; }
     [Parameter] public EventCallback<CatalogoCodigoDto> OnEdit { get; set; }
     [Parameter] public EventCallback<CatalogoCodigoDto> OnDelete { get; set; }
+
+    /// <summary>Permite cambiar el estado y editar (según «Permisos por rol»).</summary>
+    [Parameter] public bool PuedeEditar { get; set; } = true;
+
+    [Parameter] public bool PuedeEliminar { get; set; } = true;
 }

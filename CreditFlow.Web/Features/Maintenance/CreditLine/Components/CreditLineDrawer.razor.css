@@ -1,0 +1,46 @@
+.line-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.line-form__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+}
+
+/* Sección separada por una línea fina, con título e ícono (DESIGN.md «Sección avanzada»). */
+.line-form__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cds-space-stack);
+    padding-top: var(--cds-space-stack);
+    border-top: 1px solid var(--cds-border-soft);
+}
+
+.line-form__section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--cds-font-size-label);
+    font-weight: var(--cds-font-weight-strong);
+    letter-spacing: var(--cds-letter-spacing-label);
+    color: var(--cds-color-content);
+    --rz-icon-weight: var(--cds-icon-weight);
+    --rz-icon-grade: var(--cds-icon-grade);
+}
+
+    .line-form__section-title ::deep .rzi {
+        font-size: 18px;
+        color: var(--cds-color-hint);
+    }
+
+/* Montos y plazos: cifras alineadas a la derecha (DESIGN.md «Input numérico corto»). */
+.line-form__row ::deep .cds-native-field.cds-mono {
+    text-align: right;
+}
+
+.line-form__switch {
+    padding-top: 4px;
+}
