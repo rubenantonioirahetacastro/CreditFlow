@@ -19,6 +19,14 @@ public static class RoleCapabilities
         Capabilities.Profile,
     ];
 
+    private static readonly string[] ProspectorSet =
+    [
+        Capabilities.Simulate,
+        Capabilities.Prospect,
+        Capabilities.OfflineSync,
+        Capabilities.Profile,
+    ];
+
     // Cashier conserva su acceso al login móvil, sin verificación (como antes de unificar las listas).
     private static readonly string[] CashierSet = [Capabilities.Simulate];
 
@@ -28,6 +36,7 @@ public static class RoleCapabilities
         [RoleIds.Verifier] = FieldStaffSet,
         [RoleIds.Administrator] = FieldStaffSet,
         [RoleIds.Supervisor] = FieldStaffSet,
+        [RoleIds.CreditOfficer] = ProspectorSet,
         [RoleIds.Cashier] = CashierSet,
         [RoleIds.Technology] = FieldStaffSet,
     };
@@ -37,6 +46,12 @@ public static class RoleCapabilities
         .Where(item => item.Value.Length > 0)
         .Select(item => item.Key)
         .ToArray();
+
+    // Acceso a datos comunes de empleados móviles, sin conceder operaciones de verificación.
+    public static readonly int[] EmployeeAccess = RolesWithAny(
+        Capabilities.Prospect,
+        Capabilities.Verify,
+        Capabilities.AssignedClients);
 
     // Acceso a los endpoints de verificación: roles con la capacidad "verify".
     public static readonly int[] VerificationAccess = RolesWith(Capabilities.Verify);
@@ -49,6 +64,11 @@ public static class RoleCapabilities
 
     private static int[] RolesWith(string capability) => ByRole
         .Where(item => item.Value.Contains(capability))
+        .Select(item => item.Key)
+        .ToArray();
+
+    private static int[] RolesWithAny(params string[] capabilities) => ByRole
+        .Where(item => item.Value.Any(capabilities.Contains))
         .Select(item => item.Key)
         .ToArray();
 }

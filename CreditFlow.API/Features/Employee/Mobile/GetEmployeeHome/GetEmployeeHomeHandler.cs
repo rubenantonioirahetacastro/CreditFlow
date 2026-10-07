@@ -1,4 +1,5 @@
 using CreditFlow.API.Infrastructure.Data;
+using CreditFlow.API.Core.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -32,13 +33,20 @@ public sealed class GetEmployeeHomeHandler(
             .Select(role => role.Nombre)
             .FirstOrDefaultAsync() ?? roleId.ToString();
 
-        var (startUtc, endUtc) = GetCurrentLocalDayUtcRange();
-        var completedToday = await context.VerificacionCreditos
-            .AsNoTracking()
-            .CountAsync(item =>
-                item.IdEmpleado == employee.IdEmpleado &&
-                item.DFecha >= startUtc &&
-                item.DFecha < endUtc);
+        var canVerify = RoleCapabilities.For([roleId]).Contains(Capabilities.Verify);
+        var completedToday = 0;
+        var dailyGoal = 0;
+        if (canVerify)
+        {
+            var (startUtc, endUtc) = GetCurrentLocalDayUtcRange();
+            completedToday = await context.VerificacionCreditos
+                .AsNoTracking()
+                .CountAsync(item =>
+                    item.IdEmpleado == employee.IdEmpleado &&
+                    item.DFecha >= startUtc &&
+                    item.DFecha < endUtc);
+            dailyGoal = options.Value.VerifierDailyGoal;
+        }
 
         var fullName = string.Join(
             " ",
@@ -58,7 +66,7 @@ public sealed class GetEmployeeHomeHandler(
                 employee.NCodAge),
             new EmployeeProgressDto(
                 completedToday,
-                options.Value.VerifierDailyGoal));
+                dailyGoal));
     }
 
     private (DateTime StartUtc, DateTime EndUtc) GetCurrentLocalDayUtcRange()

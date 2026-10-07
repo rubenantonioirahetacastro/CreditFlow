@@ -129,6 +129,17 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(
+        AuthorizationPolicies.MobileEmployee,
+        policy => policy
+            .RequireAuthenticatedUser()
+            .RequireAssertion(context =>
+            {
+                return RoleAuthorization.HasAnyRoleId(
+                    context.User,
+                    RoleCapabilities.EmployeeAccess);
+            }));
+
+    options.AddPolicy(
         AuthorizationPolicies.MobileVerifier,
         policy => policy
             .RequireAuthenticatedUser()

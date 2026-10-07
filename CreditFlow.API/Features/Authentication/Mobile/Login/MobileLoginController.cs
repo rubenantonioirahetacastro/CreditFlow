@@ -129,6 +129,8 @@ public class MobileLoginController : ControllerBase
             Exito = true,
             Mensaje = "Autenticación exitosa",
             Token = tokenString,
+            IdUsuario = session.UserId,
+            IdEmpleado = session.EmployeeId,
             IdPersona = session.PersonId,
             bTemporal = user.BContrasenaTemporal == true,
             IdRol = session.RoleId,

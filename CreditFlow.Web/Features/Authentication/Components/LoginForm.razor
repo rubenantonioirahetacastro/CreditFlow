@@ -79,10 +79,17 @@
     private bool Recordado => !string.IsNullOrWhiteSpace(DocumentoRecordado);
 
     // Saludo según la hora local del servidor (la Web corre en la misma zona horaria que sus usuarios).
-    private static (string Texto, string Icono) Saludo => DateTime.Now.Hour switch
+    private static (string Texto, string Icono) Saludo
     {
-        < 12 => ("Buenos días", "wb_sunny"),
-        < 19 => ("Buenas tardes", "wb_twilight"),
-        _ => ("Buenas noches", "dark_mode")
-    };
+        get
+        {
+            var hora = DateTime.Now.Hour;
+            if (hora < 12)
+                return ("Buenos días", "wb_sunny");
+
+            return hora < 19
+                ? ("Buenas tardes", "wb_twilight")
+                : ("Buenas noches", "dark_mode");
+        }
+    }
 }

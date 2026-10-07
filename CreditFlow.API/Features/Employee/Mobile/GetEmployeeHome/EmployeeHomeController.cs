@@ -6,7 +6,7 @@ namespace CreditFlow.API.Features.Employee.Mobile.GetEmployeeHome;
 
 [Route("api/movil/inicio-empleado")]
 [ApiController]
-[Authorize(Policy = AuthorizationPolicies.MobileVerifier)]
+[Authorize(Policy = AuthorizationPolicies.MobileEmployee)]
 public sealed class EmployeeHomeController(IGetEmployeeHomeHandler handler) : ControllerBase
 {
     [HttpGet]

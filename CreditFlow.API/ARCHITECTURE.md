@@ -373,8 +373,8 @@ La única excepción válida es una operación administrativa cuyo propósito se
 ### Capacidades
 
 - `Core/Security/Capabilities.cs` define los códigos estables (`credit_request`, `simulate`, `prospect`, `verify`, `assigned_clients`, `offline_sync`) y `Core/Security/RoleCapabilities.cs` es el único mapa rol -> capacidades.
-- El login móvil devuelve `Capacidades` junto a `IdRol` e `IdRoles` (contrato aditivo). Los clientes solo las usan para decidir la experiencia; la autorización sigue resolviéndose en el servidor con policies.
-- `RoleCapabilities.MobileAccess` (login móvil) y `RoleCapabilities.VerificationAccess` (endpoints de verificación) **se derivan del mismo mapa**: el acceso real y lo que ve la app no pueden desalinearse. No se mantienen listas de roles aparte para estas capacidades.
+- El login móvil devuelve `Capacidades` junto a `IdRol` e `IdRoles`, y también `IdUsuario` e `IdEmpleado` (contrato aditivo). `IdPersona` puede ser nulo (un empleado puede no tener registro en `Personas`); la identidad que nunca falta es `IdUsuario`, y es la que la app usa como dueño de sus datos locales. Los clientes solo las usan para decidir la experiencia; la autorización sigue resolviéndose en el servidor con policies.
+- `RoleCapabilities.MobileAccess` (login móvil), `RoleCapabilities.EmployeeAccess` (datos comunes del empleado) y `RoleCapabilities.VerificationAccess` (operaciones de verificación) **se derivan del mismo mapa**: el acceso real y lo que ve la app no pueden desalinearse. No se mantienen listas de roles aparte para estas capacidades.
 - Un rol nuevo se registra en `RoleIds` y en `RoleCapabilities`; no se agrega lógica por rol en móvil ni web.
 
 ### Policies
