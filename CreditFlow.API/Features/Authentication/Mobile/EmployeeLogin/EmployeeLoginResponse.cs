@@ -5,5 +5,9 @@ public sealed record EmployeeLoginResponse(
     string Mensaje,
     string Token,
     int IdUsuario,
+    int? IdEmpleado,
+    int? IdPersona,
     bool BTemporal,
+    int IdRol,
+    IReadOnlyList<int> IdRoles,
     IReadOnlyList<string> Capacidades);

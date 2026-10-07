@@ -456,6 +456,7 @@ Estas reglas deben preservarse mientras negocio no solicite un cambio explícito
 ### Autenticación
 
 - Los permisos se evalúan por ID de rol, nunca por nombre.
+- El cliente móvil inicia sesión con `documento` en `login-cliente`; el empleado móvil inicia sesión con `cCodUsu` en `login-empleado`. Ambos contratos permanecen separados.
 - Los roles activos se incluyen en el token al iniciar sesión.
 - Los endpoints operativos no aceptan roles declarados por el cliente.
 - Los errores de login mantienen `Exito` y `Mensaje` por compatibilidad, y además deben incluir `Codigo` cuando sean modificados o creados.

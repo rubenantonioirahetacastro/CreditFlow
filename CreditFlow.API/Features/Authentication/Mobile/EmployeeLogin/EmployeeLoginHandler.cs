@@ -62,7 +62,11 @@ public sealed class EmployeeLoginHandler(
             "Autenticación exitosa",
             token,
             session.UserId,
+            session.EmployeeId,
+            session.PersonId,
             user.BContrasenaTemporal == true,
+            session.RoleId,
+            session.RoleIds,
             session.Capabilities);
     }
 
