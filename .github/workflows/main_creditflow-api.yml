@@ -1,7 +1,8 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
+# Pipeline: build -> uat -> calidad -> produccion
+# Cada etapa de despliegue usa un GitHub Environment (Settings > Environments),
+# donde se pueden configurar aprobaciones manuales y secretos propios.
 
-name: Build and deploy ASP.Net Core app to Azure Web App - CreditFlow-API
+name: CI/CD - CreditFlow-API
 
 on:
   push:
@@ -10,6 +11,9 @@ on:
     paths:
       - 'CreditFlow.API/**'
   workflow_dispatch:
+
+env:
+  APP_NAME: CreditFlow-API
 
 jobs:
   build:
@@ -37,19 +41,19 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
-  deploy:
+  uat:
     runs-on: windows-latest
     needs: build
+    environment: uat
     permissions:
       id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: .net-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -57,11 +61,63 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8F2DB564397044A9BAE9739E02CEBD36 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1FF5C9E3525E475C99FFCD246273F6D3 }}
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Deploy to UAT
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'CreditFlow-API'
+          app-name: ${{ env.APP_NAME }}
+          slot-name: 'uat'
+          package: .
+
+  calidad:
+    runs-on: windows-latest
+    needs: uat
+    environment: calidad
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_8DD3218090484411BF77757E7CFF0774 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8F2DB564397044A9BAE9739E02CEBD36 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1FF5C9E3525E475C99FFCD246273F6D3 }}
+
+      - name: Deploy to Calidad
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_NAME }}
+          slot-name: 'calidad'
+          package: .
+
+  produccion:
+    runs-on: windows-latest
+    needs: calidad
+    environment: produccion
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_8DD3218090484411BF77757E7CFF0774 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8F2DB564397044A9BAE9739E02CEBD36 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1FF5C9E3525E475C99FFCD246273F6D3 }}
+
+      - name: Deploy to Production
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_NAME }}
           slot-name: 'Production'
           package: .
-          
