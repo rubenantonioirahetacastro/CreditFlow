@@ -29,7 +29,7 @@ public class MobileLoginController : ControllerBase
         _jwtTokenService = jwtTokenService;
     }
 
-    [HttpPost("login-app")]
+    [HttpPost("login-cliente")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var rawDocument = request.Documento.Trim();
