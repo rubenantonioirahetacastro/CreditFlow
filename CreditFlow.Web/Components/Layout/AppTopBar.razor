@@ -4,6 +4,7 @@
 @inject ICdsNotificationService Notifications
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject CreditFlow.Web.Features.Authentication.Services.IAuthService AuthService
 
 <div class="topbar @(SidebarExpanded ? null : "topbar--collapsed")">
     <div class="topbar-brand">
@@ -75,10 +76,13 @@
                 <div class="topbar-user">
                     <button type="button" class="topbar-user-trigger" aria-haspopup="menu" aria-expanded="@menuUsuarioAbierto"
                             @onclick="() => menuUsuarioAbierto = !menuUsuarioAbierto">
-                        <Avatar Iniciales=""
+                        @* Id fijo: es siempre el usuario de la sesión; la foto se pide una sola vez. *@
+                        <Avatar Id="1"
+                                TieneFoto="true"
+                                Iniciales=""
                                 Tamano="32"
                                 Sutil="true"
-                                ObtenerFotoDataUrl="@(_ => Task.FromResult<string?>(null))" />
+                                ObtenerFotoDataUrl="@(_ => AuthService.ObtenerFotoPerfilAsync())" />
                         <span class="topbar-user-info">
                             <span class="topbar-user-name">@context.User.Identity?.Name</span>
                             <span class="topbar-user-role">@RoleDisplayNames.ForUser(context.User)</span>
@@ -90,6 +94,18 @@
                     {
                         <div class="topbar-user-backdrop" @onclick="() => menuUsuarioAbierto = false"></div>
                         <div class="topbar-user-menu" role="menu">
+                            <div class="topbar-user-profile">
+                                <Avatar Id="1"
+                                        TieneFoto="true"
+                                        Iniciales=""
+                                        Tamano="44"
+                                        Sutil="true"
+                                        ObtenerFotoDataUrl="@(_ => AuthService.ObtenerFotoPerfilAsync())" />
+                                <span class="topbar-user-info">
+                                    <span class="topbar-user-name">@context.User.Identity?.Name</span>
+                                    <span class="topbar-user-role">@RoleDisplayNames.ForUser(context.User)</span>
+                                </span>
+                            </div>
                             <form method="post" action="/logout">
                                 <AntiforgeryToken />
                                 <button type="submit" class="topbar-user-item" role="menuitem">

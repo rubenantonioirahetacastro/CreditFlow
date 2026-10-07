@@ -1,0 +1,112 @@
+/* Maestro–detalle (referencia: Catálogos de códigos). Tipografía y colores vienen de .cds-page y de los componentes. */
+.perm-page {
+    padding: var(--cds-space-page-y) var(--cds-space-page-x);
+    gap: var(--cds-space-card);
+}
+
+.perm-layout {
+    flex: 1 1 0;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    gap: var(--cds-space-columns);
+}
+
+.perm-detail {
+    min-width: 0;
+    min-height: 0;
+}
+
+    .perm-detail ::deep .perm-detail-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+.perm-code {
+    min-width: 42px;
+    padding: 3px 8px;
+    border-radius: var(--cds-radius-badge);
+    background: var(--cds-primary);
+    color: var(--cds-white);
+    font-size: var(--cds-font-size-small);
+    font-weight: var(--cds-font-weight-strong);
+    text-align: center;
+}
+
+.perm-toolbar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--cds-border-soft);
+}
+
+.perm-toolbar__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.perm-toolbar__copy {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 300px;
+}
+
+.perm-toolbar__readonly {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--cds-font-size-small);
+    color: var(--cds-color-label);
+}
+
+    .perm-toolbar__readonly ::deep .rzi {
+        font-size: 18px;
+        color: var(--cds-color-hint);
+    }
+
+.perm-toolbar__search {
+    width: 260px;
+}
+
+.perm-table {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.perm-footer {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-top: 1px solid var(--cds-border-soft);
+    font-size: var(--cds-font-size-label);
+    color: var(--cds-color-label);
+}
+
+    .perm-footer ::deep .rzi {
+        flex: none;
+        font-size: 16px;
+        color: var(--cds-color-hint);
+    }
+
+@media (max-width: 1100px) {
+    .perm-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .perm-toolbar__copy,
+    .perm-toolbar__search {
+        width: 100%;
+    }
+}

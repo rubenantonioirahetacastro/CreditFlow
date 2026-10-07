@@ -1,3 +1,9 @@
+@using CreditFlow.Web.Core.Navigation
+@implements IDisposable
+@inject MenuPermissionService Permisos
+
+@* Menú lateral armado desde MenuCatalog: cada usuario ve solo las opciones que permiten sus roles
+   (mantenimiento «Permisos por rol»). El buscador filtra por título en cualquier nivel. *@
 <AuthorizeView>
     <Authorized>
         <div class="nav-shell">
@@ -10,269 +16,20 @@
             </div>
 
             <nav class="nav-scroll flex-column">
-                @if (Mostrar("Home"))
+                @if (Permisos.ErrorDeCarga)
                 {
                     <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                            <RadzenIcon Icon="home" />
-                            <span>Home</span>
-                        </NavLink>
+                        <button type="button" class="nav-link btn btn-link text-start w-100" @onclick="ReintentarAsync">
+                            <RadzenIcon Icon="refresh" />
+                            <span>No se pudo cargar el menú. Reintentar</span>
+                        </button>
                     </div>
                 }
 
-                @if (Mostrar("Simulador de Crédito") || Mostrar("Simulador de Credito"))
+                @foreach (var nodo in MenuCatalog.Tree.Where(Visible))
                 {
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="simulador-credito" title="Simulador de Crédito">
-                            <RadzenIcon Icon="calculate" />
-                            <span>Simulador de Crédito</span>
-                        </NavLink>
-                    </div>
+                    @Nivel0(nodo)
                 }
-
-                @if (MostrarOtorgamiento())
-                {
-                    @* Otorgamiento permanece siempre desplegado: es un encabezado de sección, no un toggle. *@
-                    <div class="nav-item px-3">
-                        <div class="nav-link nav-section-title">
-                            <RadzenIcon Icon="credit_score" />
-                            <span>Otorgamiento</span>
-                        </div>
-                    </div>
-
-                    <div class="nav-subgroup">
-                        @if (MostrarProcesamientoDatos())
-                        {
-                            <div class="nav-item nav-item-sub px-3">
-                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleProcesamientoDatos">
-                                    <RadzenIcon Icon="fact_check" />
-                                    <span>Procesamiento de Datos</span>
-                                    <RadzenIcon Icon="@(ProcesamientoDatosAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
-                                </button>
-                            </div>
-
-                            @if (ProcesamientoDatosAbierto)
-                            {
-                                <div class="nav-subgroup nav-subgroup-nivel2">
-                                    @if (Mostrar("Bandeja de verificación") || Mostrar("Bandeja de verificacion"))
-                                    {
-                                        <div class="nav-item nav-item-sub2 px-3">
-                                            <NavLink class="nav-link" href="otorgamiento/procesamiento-datos/bandeja-verificacion">
-                                                <RadzenIcon Icon="inbox" />
-                                                <span>Bandeja de verificación</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-
-                                    @if (Mostrar("Bandeja de crédito readecuación") || Mostrar("Bandeja de credito readecuacion"))
-                                    {
-                                        <div class="nav-item nav-item-sub2 px-3">
-                                            <NavLink class="nav-link" href="otorgamiento/procesamiento-datos/bandeja-credito-readecuacion">
-                                                <RadzenIcon Icon="restart_alt" />
-                                                <span>Bandeja de crédito readecuación</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        }
-
-                        @if (MostrarNivelesAutorizacion())
-                        {
-                            <div class="nav-item nav-item-sub px-3">
-                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleNivelesAutorizacion">
-                                    <RadzenIcon Icon="verified_user" />
-                                    <span>Niveles de Autorización</span>
-                                    <RadzenIcon Icon="@(NivelesAutorizacionAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
-                                </button>
-                            </div>
-
-                            @if (NivelesAutorizacionAbierto)
-                            {
-                                <div class="nav-subgroup nav-subgroup-nivel2">
-                                    @if (Mostrar("Autorizar crédito") || Mostrar("Autorizar credito"))
-                                    {
-                                        <div class="nav-item nav-item-sub2 px-3">
-                                            <NavLink class="nav-link" href="otorgamiento/niveles-autorizacion/autorizar-credito">
-                                                <RadzenIcon Icon="task_alt" />
-                                                <span>Autorizar crédito</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        }
-
-                        @if (MostrarTesoreria())
-                        {
-                            <div class="nav-item nav-item-sub px-3">
-                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleTesoreria">
-                                    <RadzenIcon Icon="account_balance" />
-                                    <span>Tesorería</span>
-                                    <RadzenIcon Icon="@(TesoreriaAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
-                                </button>
-                            </div>
-
-                            @if (TesoreriaAbierto)
-                            {
-                                <div class="nav-subgroup nav-subgroup-nivel2">
-                                    @if (Mostrar("Bandeja de créditos a Abonar") || Mostrar("Bandeja de creditos a Abonar"))
-                                    {
-                                        <div class="nav-item nav-item-sub2 px-3">
-                                            <NavLink class="nav-link" href="otorgamiento/tesoreria/bandeja-creditos-abonar">
-                                                <RadzenIcon Icon="payments" />
-                                                <span>Bandeja de créditos a Abonar</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-
-                                    @if (Mostrar("Bandeja de créditos a abonar en agencia") || Mostrar("Bandeja de creditos a abonar en agencia"))
-                                    {
-                                        <div class="nav-item nav-item-sub2 px-3">
-                                            <NavLink class="nav-link" href="otorgamiento/tesoreria/bandeja-creditos-abonar-agencia">
-                                                <RadzenIcon Icon="store" />
-                                                <span>Bandeja de créditos a abonar en agencia</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        }
-
-                        @if (MostrarAgenciaSucursal())
-                        {
-                            <div class="nav-item nav-item-sub px-3">
-                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleAgenciaSucursal">
-                                    <RadzenIcon Icon="storefront" />
-                                    <span>Agencia Sucursal</span>
-                                    <RadzenIcon Icon="@(AgenciaSucursalAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
-                                </button>
-                            </div>
-
-                            @if (AgenciaSucursalAbierto)
-                            {
-                                <div class="nav-subgroup nav-subgroup-nivel2">
-                                    @if (Mostrar("Registrar créditos a oficiales") || Mostrar("Registrar creditos a oficiales"))
-                                    {
-                                        <div class="nav-item nav-item-sub2 px-3">
-                                            <NavLink class="nav-link" href="otorgamiento/agencia-sucursal/registrar-creditos-oficiales">
-                                                <RadzenIcon Icon="person_add" />
-                                                <span>Registrar créditos a oficiales</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-
-                                    @if (Mostrar("Abono a oficial de desembolso"))
-                                    {
-                                        <div class="nav-item nav-item-sub2 px-3">
-                                            <NavLink class="nav-link" href="otorgamiento/agencia-sucursal/abono-oficial-desembolso">
-                                                <RadzenIcon Icon="paid" />
-                                                <span>Abono a oficial de desembolso</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        }
-
-                        @if (MostrarDesembolso())
-                        {
-                            <div class="nav-item nav-item-sub px-3">
-                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleDesembolso">
-                                    <RadzenIcon Icon="local_atm" />
-                                    <span>Desembolso</span>
-                                    <RadzenIcon Icon="@(DesembolsoAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
-                                </button>
-                            </div>
-
-                            @if (DesembolsoAbierto)
-                            {
-                                <div class="nav-subgroup nav-subgroup-nivel2">
-                                    @if (Mostrar("Bandeja de créditos por desembolsar") || Mostrar("Bandeja de creditos por desembolsar"))
-                                    {
-                                        <div class="nav-item nav-item-sub2 px-3">
-                                            <NavLink class="nav-link" href="otorgamiento/desembolso/bandeja-creditos-desembolsar">
-                                                <RadzenIcon Icon="outbox" />
-                                                <span>Bandeja de créditos por desembolsar</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        }
-                    </div>
-                }
-
-                <AuthorizeView Policy="@AuthorizationPolicies.Maintenance" Context="mantenimientosContext">
-                    <Authorized>
-                        @if (MostrarMantenimientos())
-                        {
-                            <div class="nav-item px-3">
-                                <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100" @onclick="ToggleMantenimientos">
-                                    <RadzenIcon Icon="build" />
-                                    <span>Mantenimientos</span>
-                                    <RadzenIcon Icon="@(MantenimientosAbierto ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
-                                </button>
-                            </div>
-
-                            @if (MantenimientosAbierto)
-                            {
-                                <div class="nav-subgroup">
-                                    @if (Mostrar("Empleados") || Mostrar("Mantenimiento de Empleados"))
-                                    {
-                                        <div class="nav-item nav-item-sub px-3">
-                                            <NavLink class="nav-link" href="empleados" title="Mantenimiento de Empleados">
-                                                <RadzenIcon Icon="badge" />
-                                                <span>Empleados</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-
-                                    @if (Mostrar("Roles") || Mostrar("Mantenimiento de Roles"))
-                                    {
-                                        <div class="nav-item nav-item-sub px-3">
-                                            <NavLink class="nav-link" href="roles" title="Mantenimiento de Roles">
-                                                <RadzenIcon Icon="admin_panel_settings" />
-                                                <span>Roles</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-
-                                    @if (Mostrar("Agencias") || Mostrar("Mantenimiento de Agencias"))
-                                    {
-                                        <div class="nav-item nav-item-sub px-3">
-                                            <NavLink class="nav-link" href="agencias" title="Mantenimiento de Agencias">
-                                                <RadzenIcon Icon="storefront" />
-                                                <span>Agencias</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-
-                                    @if (Mostrar("Catálogos") || Mostrar("Catalogos") || Mostrar("Mantenimiento de Catálogos"))
-                                    {
-                                        <div class="nav-item nav-item-sub px-3">
-                                            <NavLink class="nav-link" href="catalogos-codigos" title="Mantenimiento de Catálogos de Códigos">
-                                                <RadzenIcon Icon="list_alt" />
-                                                <span>Catálogos</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-
-                                    @if (Mostrar("Líneas de Crédito") || Mostrar("Lineas de Credito") || Mostrar("Mantenimiento de Líneas de Crédito"))
-                                    {
-                                        <div class="nav-item nav-item-sub px-3">
-                                            <NavLink class="nav-link" href="lineas-credito" title="Mantenimiento de Líneas de Crédito">
-                                                <RadzenIcon Icon="credit_card" />
-                                                <span>Líneas de Crédito</span>
-                                            </NavLink>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        }
-                    </Authorized>
-                </AuthorizeView>
-
             </nav>
         </div>
     </Authorized>
@@ -280,68 +37,127 @@
 
 @code {
     private string busqueda = string.Empty;
-    private bool mantenimientosExpandido;
-    private bool procesamientoDatosExpandido;
-    private bool nivelesAutorizacionExpandido;
-    private bool tesoreriaExpandido;
-    private bool agenciaSucursalExpandido;
-    private bool desembolsoExpandido;
+    private readonly HashSet<string> expandidos = [];
 
-    private bool MantenimientosAbierto => mantenimientosExpandido || !string.IsNullOrWhiteSpace(busqueda);
-    private bool ProcesamientoDatosAbierto => procesamientoDatosExpandido || !string.IsNullOrWhiteSpace(busqueda);
-    private bool NivelesAutorizacionAbierto => nivelesAutorizacionExpandido || !string.IsNullOrWhiteSpace(busqueda);
-    private bool TesoreriaAbierto => tesoreriaExpandido || !string.IsNullOrWhiteSpace(busqueda);
-    private bool AgenciaSucursalAbierto => agenciaSucursalExpandido || !string.IsNullOrWhiteSpace(busqueda);
-    private bool DesembolsoAbierto => desembolsoExpandido || !string.IsNullOrWhiteSpace(busqueda);
+    private bool Buscando => !string.IsNullOrWhiteSpace(busqueda);
+
+    protected override async Task OnInitializedAsync()
+    {
+        Permisos.Changed += OnPermisosChanged;
+        await Permisos.CargarAsync();
+    }
+
+    private void OnPermisosChanged() => InvokeAsync(StateHasChanged);
+
+    private async Task ReintentarAsync() => await Permisos.RecargarAsync();
 
     private void OnBusquedaChanged(ChangeEventArgs e) => busqueda = e.Value?.ToString() ?? string.Empty;
 
-    private void ToggleMantenimientos() => mantenimientosExpandido = !mantenimientosExpandido;
-    private void ToggleProcesamientoDatos() => procesamientoDatosExpandido = !procesamientoDatosExpandido;
-    private void ToggleNivelesAutorizacion() => nivelesAutorizacionExpandido = !nivelesAutorizacionExpandido;
-    private void ToggleTesoreria() => tesoreriaExpandido = !tesoreriaExpandido;
-    private void ToggleAgenciaSucursal() => agenciaSucursalExpandido = !agenciaSucursalExpandido;
-    private void ToggleDesembolso() => desembolsoExpandido = !desembolsoExpandido;
+    private void Toggle(string clave)
+    {
+        if (!expandidos.Remove(clave))
+            expandidos.Add(clave);
+    }
 
-    private bool Mostrar(string texto) =>
-        string.IsNullOrWhiteSpace(busqueda) || texto.Contains(busqueda, StringComparison.OrdinalIgnoreCase);
+    private bool Abierto(MenuNode nodo) => nodo.Kind == MenuNodeKind.Section || Buscando || expandidos.Contains(nodo.Key);
 
-    private bool MostrarMantenimientos() =>
-        Mostrar("Mantenimientos")
-        || Mostrar("Empleados") || Mostrar("Mantenimiento de Empleados")
-        || Mostrar("Roles") || Mostrar("Mantenimiento de Roles")
-        || Mostrar("Agencias") || Mostrar("Mantenimiento de Agencias")
-        || Mostrar("Catálogos") || Mostrar("Catalogos") || Mostrar("Mantenimiento de Catálogos")
-        || Mostrar("Líneas de Crédito") || Mostrar("Lineas de Credito") || Mostrar("Mantenimiento de Líneas de Crédito");
+    /// <summary>Permitido y, si hay búsqueda, el título coincide en el nodo, en un ancestro o en algún descendiente.</summary>
+    private bool Visible(MenuNode nodo) => Permisos.PuedeVer(nodo) && (!Buscando || CoincideEnRama(nodo));
 
-    private bool MostrarProcesamientoDatos() =>
-        Mostrar("Procesamiento de Datos")
-        || Mostrar("Bandeja de verificación") || Mostrar("Bandeja de verificacion")
-        || Mostrar("Bandeja de crédito readecuación") || Mostrar("Bandeja de credito readecuacion");
+    private bool VisibleBajo(MenuNode padre, MenuNode hijo) =>
+        Permisos.PuedeVer(hijo) && (!Buscando || Coincide(padre) || CoincideEnRama(hijo));
 
-    private bool MostrarNivelesAutorizacion() =>
-        Mostrar("Niveles de Autorización") || Mostrar("Niveles de Autorizacion")
-        || Mostrar("Autorizar crédito") || Mostrar("Autorizar credito");
+    private bool Coincide(MenuNode nodo) => nodo.Title.Contains(busqueda.Trim(), StringComparison.OrdinalIgnoreCase);
 
-    private bool MostrarTesoreria() =>
-        Mostrar("Tesorería") || Mostrar("Tesoreria")
-        || Mostrar("Bandeja de créditos a Abonar") || Mostrar("Bandeja de creditos a Abonar")
-        || Mostrar("Bandeja de créditos a abonar en agencia") || Mostrar("Bandeja de creditos a abonar en agencia");
+    private bool CoincideEnRama(MenuNode nodo) => Coincide(nodo) || nodo.Items.Any(CoincideEnRama);
 
-    private bool MostrarAgenciaSucursal() =>
-        Mostrar("Agencia Sucursal")
-        || Mostrar("Registrar créditos a oficiales") || Mostrar("Registrar creditos a oficiales")
-        || Mostrar("Abono a oficial de desembolso");
+    private RenderFragment Nivel0(MenuNode nodo) => __builder =>
+    {
+        switch (nodo.Kind)
+        {
+            case MenuNodeKind.Page:
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="@nodo.Href" Match="@(nodo.Href == "" ? NavLinkMatch.All : NavLinkMatch.Prefix)" title="@nodo.Title">
+                        <RadzenIcon Icon="@nodo.Icon" />
+                        <span>@nodo.Title</span>
+                    </NavLink>
+                </div>
+                break;
 
-    private bool MostrarDesembolso() =>
-        Mostrar("Desembolso")
-        || Mostrar("Bandeja de créditos por desembolsar") || Mostrar("Bandeja de creditos por desembolsar");
+            case MenuNodeKind.Section:
+                @* Encabezado fijo de sección: siempre desplegado, sin interacción. *@
+                <div class="nav-item px-3">
+                    <div class="nav-link nav-section-title">
+                        <RadzenIcon Icon="@nodo.Icon" />
+                        <span>@nodo.Title</span>
+                    </div>
+                </div>
+                <div class="nav-subgroup">
+                    @foreach (var hijo in nodo.Items.Where(h => VisibleBajo(nodo, h)))
+                    {
+                        @Nivel1(nodo, hijo)
+                    }
+                </div>
+                break;
 
-    private bool MostrarOtorgamiento() =>
-        Mostrar("Otorgamiento")
-        || MostrarProcesamientoDatos()
-        || MostrarNivelesAutorizacion()
-        || MostrarTesoreria()
-        || MostrarAgenciaSucursal()
-        || MostrarDesembolso();
+            default:
+                <div class="nav-item px-3">
+                    <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100"
+                            aria-expanded="@Abierto(nodo)" @onclick="() => Toggle(nodo.Key)">
+                        <RadzenIcon Icon="@nodo.Icon" />
+                        <span>@nodo.Title</span>
+                        <RadzenIcon Icon="@(Abierto(nodo) ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
+                    </button>
+                </div>
+                @if (Abierto(nodo))
+                {
+                    <div class="nav-subgroup">
+                        @foreach (var hijo in nodo.Items.Where(h => VisibleBajo(nodo, h)))
+                        {
+                            @Nivel1(nodo, hijo)
+                        }
+                    </div>
+                }
+                break;
+        }
+    };
+
+    private RenderFragment Nivel1(MenuNode padre, MenuNode nodo) => __builder =>
+    {
+        if (nodo.IsPage)
+        {
+            <div class="nav-item nav-item-sub px-3">
+                <NavLink class="nav-link" href="@nodo.Href" title="@nodo.Title">
+                    <RadzenIcon Icon="@nodo.Icon" />
+                    <span>@nodo.Title</span>
+                </NavLink>
+            </div>
+            return;
+        }
+
+        <div class="nav-item nav-item-sub px-3">
+            <button type="button" class="nav-link nav-link-toggle btn btn-link text-start w-100"
+                    aria-expanded="@Abierto(nodo)" @onclick="() => Toggle(nodo.Key)">
+                <RadzenIcon Icon="@nodo.Icon" />
+                <span>@nodo.Title</span>
+                <RadzenIcon Icon="@(Abierto(nodo) ? "expand_less" : "expand_more")" class="nav-toggle-icon" />
+            </button>
+        </div>
+        @if (Abierto(nodo))
+        {
+            <div class="nav-subgroup nav-subgroup-nivel2">
+                @foreach (var hoja in nodo.Items.Where(h => VisibleBajo(nodo, h) || (Buscando && Permisos.PuedeVer(h) && Coincide(padre))))
+                {
+                    <div class="nav-item nav-item-sub2 px-3">
+                        <NavLink class="nav-link" href="@hoja.Href" title="@hoja.Title">
+                            <RadzenIcon Icon="@hoja.Icon" />
+                            <span>@hoja.Title</span>
+                        </NavLink>
+                    </div>
+                }
+            </div>
+        }
+    };
+
+    public void Dispose() => Permisos.Changed -= OnPermisosChanged;
 }

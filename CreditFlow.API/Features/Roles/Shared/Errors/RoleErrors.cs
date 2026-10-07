@@ -12,6 +12,14 @@ public static class RoleErrors
         "role_not_found",
         "El rol no existe.");
 
+    public static ErrorDefinition InvalidMenuKey(string? key) => new(
+        "role_permission_invalid_key",
+        $"La opción de menú '{key}' no es válida.");
+
+    public static readonly ErrorDefinition DuplicatedMenuKey = new(
+        "role_permission_duplicated_key",
+        "La misma opción de menú viene más de una vez.");
+
     public static ErrorDefinition ActiveNameAlreadyExists(string name) => new(
         "role_name_already_exists",
         $"Ya existe un rol activo con el nombre '{name}'.");

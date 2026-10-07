@@ -114,6 +114,8 @@ Cada patrón visual se implementa **una sola vez** y las páginas lo componen. A
 | Indicador de resumen | `CdsKpi` | `Label`, `Value`, `Description`, `Strong`, `Icon`. Resumen de página (fila de métricas): cada indicador con `Icon` (recuadro 44px en `--cds-surface-selected`) y `Strong`, del mismo ancho, separados por líneas verticales `--cds-border-soft`. Resumen junto a una cifra *hero* (Simulador): sin ícono y un solo `Strong` |
 | Fila de indicadores de una página | `CdsKpiRow` | Dentro de una `CdsCard`; agrupa los `CdsKpi` con ícono (mismo ancho y separadores). `Columns` (4 por defecto; de a dos en pantallas angostas) |
 | Tarjeta de listado | `CdsListCard` | `Title`, `Badge` (conteo), `<Actions>` (Excel + «Nuevo…»), `<Filters>` (`CdsTabs`), `<Search>` (campo de búsqueda) y la tabla en `ChildContent`; ocupa el alto restante de la página |
+| Lista maestra (maestro–detalle) | `CdsMasterList<TItem>` | Encabezado con conteo y acciones, buscador e ítems con insignia de código, nombre, detalle y conteo; el seleccionado en color de marca. Usado por Catálogos y Permisos por rol |
+| Casilla de verificación | `CdsCheckbox` | `Checked` `true`/`false`/`null` (parcial, p. ej. un grupo con algunas opciones marcadas); marcada en `--cds-primary`. Para formularios nativos del login se usa `AuthCheckbox` |
 | Confirmar eliminación | `CdsDeleteDialog` | Con `DialogService.OpenAsync<CdsDeleteDialog>`; devuelve `CdsDeleteChoice` y ofrece «Desactivar» como alternativa cuando `PuedeDesactivar` |
 | Chip de estado | `CdsStatusBadge Variant="Chip"` | `Appearance` `Success`/`Danger`, `Icon`, `Celebrate` + `@key` para animar en cada resultado |
 | Pestañas (filtros sobre una tabla, secciones de un expediente) | `CdsTabs` + `CdsTab` (`Text`, `Count` opcional) | Texto `small`; activa en `strong`/`value` con línea `--cds-primary` de 2px sobre el borde inferior y contador en `--cds-surface-selected`; sin colores de estado |
@@ -196,6 +198,12 @@ Siempre `CdsExportButton` (`Format="CdsExportFormat.Excel"` o `Pdf`), a la derec
 - Tabla `GridEstandar` (`FillHeight`, sin botón flotante ni Excel propio): código en `cds-mono` primero y fijo; nombre o descripción a la izquierda; vacíos con texto explícito («Sin correo»); estado con `CdsSwitch` que guarda al instante (texto plano sin permiso); acciones de ícono (`edit`, `delete`) en la última columna.
 - Filas como modelo `…ListItem` de la feature con los textos visibles ya resueltos, para que ordenar, filtrar y exportar usen lo mismo que se ve.
 - Crear/editar en `CdsDrawer` con validación en vivo por campo (validator de la feature que devuelve errores por campo); eliminar con `CdsDeleteDialog`; cada cambio guardado muestra `CdsUndoToast` (sin «Deshacer» cuando la API no permite revertirlo).
+
+### Permisos por rol (referencia: `/permisos-roles`)
+- Maestro–detalle: `CdsMasterList` de roles (conteo de opciones habilitadas) y, a la derecha, `CdsCard` con `CdsCardHeader` (insignia del rol, «N de M opciones habilitadas · Cambios sin guardar», Descartar y Guardar permisos).
+- Barra de herramientas: «Marcar todo», «Quitar todo», «Copiar permisos de…» (`CdsDropdown` + botón) y búsqueda de opciones. Sin permiso de edición se muestra «Solo lectura».
+- Árbol de menús como tabla (columnas Opción, Ver, Crear, Editar, Eliminar): grupos y secciones con fondo sutil, título en negrita y casilla parcial; páginas con su ruta en `cds-mono`; «—» si la pantalla no tiene esa acción; candado con explicación si la API no la permite al rol o si es un permiso que se conserva siempre.
+- Cambios en memoria hasta «Guardar permisos»; cambiar de rol con cambios pendientes pide confirmación; al guardar, `CdsUndoToast` con «Deshacer».
 
 ### Pantalla de acceso (referencia: Login)
 - Pantalla dividida sin barra superior (`LoginLayout`): panel de marca oscuro (`AuthHero`, tokens `--cds-auth-*`) y formulario centrado (`LoginForm`) de máximo 400px. Bajo 960px se oculta el panel de marca.

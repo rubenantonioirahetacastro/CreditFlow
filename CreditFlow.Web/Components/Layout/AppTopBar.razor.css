@@ -278,6 +278,22 @@
         margin: 0;
     }
 
+/* Encabezado del menú: foto de perfil más grande, usuario y rol. */
+.topbar-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 220px;
+    margin-bottom: 6px;
+    padding: 8px 10px 12px;
+    border-bottom: 1px solid var(--cds-border-soft);
+}
+
+    .topbar-user-profile ::deep .avatar-contenedor {
+        flex: none;
+        margin: 0;
+    }
+
 .topbar-user-item {
     display: flex;
     align-items: center;
@@ -313,5 +329,10 @@
     .topbar-title-desc,
     .topbar-user-info {
         display: none;
+    }
+
+    /* En el menú desplegable sí hay espacio para el usuario y el rol. */
+    .topbar-user-profile .topbar-user-info {
+        display: flex;
     }
 }

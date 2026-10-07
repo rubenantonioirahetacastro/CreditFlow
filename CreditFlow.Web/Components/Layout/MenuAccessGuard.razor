@@ -1,0 +1,54 @@
+@using CreditFlow.Web.Core.Navigation
+@implements IDisposable
+@inject MenuPermissionService Permisos
+@inject NavigationManager Navigation
+
+@* Protege las páginas del menú: si el rol no tiene la opción (aunque se escriba la URL), se muestra
+   «Sin acceso». Las páginas fuera del menú (p. ej. el detalle de evaluación) siguen con su propia autorización. *@
+@if (Pagina is null || Permisos.Puede(Pagina.Key))
+{
+    @ChildContent
+}
+else if (!Permisos.Cargado)
+{
+    <CdsPageState Kind="CdsPageStateKind.Loading" Title="Cargando…" />
+}
+else if (Permisos.ErrorDeCarga)
+{
+    <CdsPageState Kind="CdsPageStateKind.Error"
+                  Title="No pudimos cargar tus permisos"
+                  Message="Intenta de nuevo en unos segundos."
+                  OnAction="@Permisos.RecargarAsync" />
+}
+else
+{
+    <CdsPageHeader Title="Sin acceso" Icon="lock" Description="Tu rol no tiene permiso para esta opción." />
+    <CdsPageState Kind="CdsPageStateKind.Error"
+                  Title="@($"No tienes acceso a «{Pagina.Title}»")"
+                  Message="Si lo necesitas, pide a un administrador que lo habilite en Mantenimientos › Permisos por rol."
+                  ActionText="Ir al inicio"
+                  OnAction="@(() => Navigation.NavigateTo(""))" />
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private MenuNode? Pagina => MenuCatalog.FindPageByPath(Navigation.ToBaseRelativePath(Navigation.Uri));
+
+    protected override async Task OnInitializedAsync()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        Permisos.Changed += OnPermisosChanged;
+        await Permisos.CargarAsync();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => InvokeAsync(StateHasChanged);
+
+    private void OnPermisosChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        Permisos.Changed -= OnPermisosChanged;
+    }
+}

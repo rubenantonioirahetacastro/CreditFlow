@@ -34,10 +34,13 @@ else
                 <CdsExportButton Format="CdsExportFormat.Excel"
                                  Disabled="@(RolesFiltrados.Count == 0)"
                                  Click="@(() => grilla.ExportarExcelAsync())" />
-                <CdsButton Text="Nuevo rol"
-                           Icon="add"
-                           Size="ButtonSize.Small"
-                           Click="@(() => AbrirFormulario(null))" />
+                @if (puedeCrear)
+                {
+                    <CdsButton Text="Nuevo rol"
+                               Icon="add"
+                               Size="ButtonSize.Small"
+                               Click="@(() => AbrirFormulario(null))" />
+                }
             </Actions>
             <Filters>
                 <CdsTabs AriaLabel="Filtrar roles por estado">
@@ -71,14 +74,21 @@ else
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn TItem="RoleListItem" Property="@nameof(RoleListItem.EstadoTexto)" Title="Estado" Width="140px" TextAlign="TextAlign.Center">
                         <Template Context="rol">
-                            <CdsSwitch Value="@rol.Activo"
-                                       Text="@rol.EstadoTexto"
-                                       AriaLabel="@($"Estado de {rol.Nombre}")"
-                                       Disabled="@guardando"
-                                       ValueChanged="@(activo => CambiarEstadoAsync(rol, activo))" />
+                            @if (puedeEditar)
+                            {
+                                <CdsSwitch Value="@rol.Activo"
+                                           Text="@rol.EstadoTexto"
+                                           AriaLabel="@($"Estado de {rol.Nombre}")"
+                                           Disabled="@guardando"
+                                           ValueChanged="@(activo => CambiarEstadoAsync(rol, activo))" />
+                            }
+                            else
+                            {
+                                @rol.EstadoTexto
+                            }
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="RoleListItem" Title="Acciones" Width="100px" Sortable="false" Filterable="false" TextAlign="TextAlign.Center">
+                    <RadzenDataGridColumn TItem="RoleListItem" Title="Acciones" Width="100px" Sortable="false" Filterable="false" TextAlign="TextAlign.Center" Visible="@puedeEditar">
                         <Template Context="rol">
                             <CdsButton Icon="edit"
                                        Variant="Variant.Text"
@@ -109,8 +119,8 @@ else
               OnClose="@(() => avisoVisible = false)" />
 
 @code {
-    // Crear y editar roles usa la misma política de la página (Maintenance), igual que la API.
     [Inject] private IRoleService RoleService { get; set; } = default!;
+    [Inject] private MenuPermissionService Permisos { get; set; } = default!;
     [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -123,6 +133,8 @@ else
     private bool cargando = true;
     private string? errorCarga;
     private bool guardando;
+    private bool puedeCrear;
+    private bool puedeEditar;
 
     private FiltroEstado filtroEstado = FiltroEstado.Todos;
     private string filtroTexto = string.Empty;
@@ -154,7 +166,15 @@ else
             .Where(r => string.IsNullOrWhiteSpace(filtroTexto) || r.Coincide(filtroTexto.Trim()))
             .ToList();
 
-    protected override Task OnInitializedAsync() => CargarAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        // Acciones según «Permisos por rol» (la API mantiene sus políticas por rol como límite).
+        await Permisos.CargarAsync();
+        puedeCrear = Permisos.Puede("mantenimientos.roles", MenuActions.Crear);
+        puedeEditar = Permisos.Puede("mantenimientos.roles", MenuActions.Editar);
+
+        await CargarAsync();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

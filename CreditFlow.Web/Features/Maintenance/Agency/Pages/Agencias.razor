@@ -35,7 +35,7 @@ else
                 <CdsExportButton Format="CdsExportFormat.Excel"
                                  Disabled="@(AgenciasFiltradas.Count == 0)"
                                  Click="@(() => grilla.ExportarExcelAsync())" />
-                @if (puedeEditar)
+                @if (puedeCrear)
                 {
                     <CdsButton Text="Nueva agencia"
                                Icon="add"
@@ -77,22 +77,28 @@ else
                     <RadzenDataGridColumn TItem="AgenciaListItem" Property="@nameof(AgenciaListItem.Correo)" Title="Correo" Width="230px" TextAlign="TextAlign.Center">
                         <Template Context="agencia"><CdsTruncatedText Text="@agencia.Correo" /></Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="AgenciaListItem" Title="Acciones" Width="110px" Sortable="false" Filterable="false" TextAlign="TextAlign.Center" Visible="@puedeEditar">
+                    <RadzenDataGridColumn TItem="AgenciaListItem" Title="Acciones" Width="110px" Sortable="false" Filterable="false" TextAlign="TextAlign.Center" Visible="@(puedeEditar || puedeEliminar)">
                         <Template Context="agencia">
-                            <CdsButton Icon="edit"
-                                       Variant="Variant.Text"
-                                       ButtonStyle="ButtonStyle.Base"
-                                       Size="ButtonSize.ExtraSmall"
-                                       title="Editar agencia"
-                                       aria-label="@($"Editar {agencia.Nombre}")"
-                                       Click="@(() => AbrirFormulario(agencia.Agencia))" />
-                            <CdsButton Icon="delete"
-                                       Variant="Variant.Text"
-                                       ButtonStyle="ButtonStyle.Base"
-                                       Size="ButtonSize.ExtraSmall"
-                                       title="Eliminar agencia"
-                                       aria-label="@($"Eliminar {agencia.Nombre}")"
-                                       Click="@(() => EliminarAsync(agencia))" />
+                            @if (puedeEditar)
+                            {
+                                <CdsButton Icon="edit"
+                                           Variant="Variant.Text"
+                                           ButtonStyle="ButtonStyle.Base"
+                                           Size="ButtonSize.ExtraSmall"
+                                           title="Editar agencia"
+                                           aria-label="@($"Editar {agencia.Nombre}")"
+                                           Click="@(() => AbrirFormulario(agencia.Agencia))" />
+                            }
+                            @if (puedeEliminar)
+                            {
+                                <CdsButton Icon="delete"
+                                           Variant="Variant.Text"
+                                           ButtonStyle="ButtonStyle.Base"
+                                           Size="ButtonSize.ExtraSmall"
+                                           title="Eliminar agencia"
+                                           aria-label="@($"Eliminar {agencia.Nombre}")"
+                                           Click="@(() => EliminarAsync(agencia))" />
+                            }
                         </Template>
                     </RadzenDataGridColumn>
                 </GridEstandar>
@@ -119,7 +125,9 @@ else
     [Inject] private DialogService DialogService { get; set; } = default!;
     [Inject] private ICdsNotificationService Notifications { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
-    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
+    [Inject] private MenuPermissionService Permisos { get; set; } = default!;
+
+    private const string ClaveMenu = "mantenimientos.agencias";
 
     private enum FiltroDatos { Todas, Completas, Incompletas }
 
@@ -130,7 +138,9 @@ else
     private bool cargando = true;
     private string? errorCarga;
     private bool guardando;
+    private bool puedeCrear;
     private bool puedeEditar;
+    private bool puedeEliminar;
 
     private FiltroDatos filtro = FiltroDatos.Todas;
     private string filtroTexto = string.Empty;
@@ -159,11 +169,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthStateTask is not null)
-        {
-            var authState = await AuthStateTask;
-            puedeEditar = RoleAuthorization.HasAnyRoleId(authState.User, RoleIds.MaintenanceEditAccess);
-        }
+        // Acciones según «Permisos por rol» (la API mantiene sus políticas por rol como límite).
+        await Permisos.CargarAsync();
+        puedeCrear = Permisos.Puede(ClaveMenu, MenuActions.Crear);
+        puedeEditar = Permisos.Puede(ClaveMenu, MenuActions.Editar);
+        puedeEliminar = Permisos.Puede(ClaveMenu, MenuActions.Eliminar);
 
         await CargarAsync();
     }
